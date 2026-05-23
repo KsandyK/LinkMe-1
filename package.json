@@ -1,0 +1,26 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "preinstall": "node -e \"try{const ua=process.env.npm_config_user_agent||''; if(!ua.startsWith('pnpm/')){console.error('Use pnpm instead'); process.exit(1);}}catch(e){console.error(e);process.exit(1);}\"",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "dev:frontend": "set PORT=3000&& set BASE_PATH=/&& pnpm --filter @workspace/vibelink run dev",
+    "dev:api": "set PORT=4000&& pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/api-server run start",
+    "dev:local": "powershell.exe -NoLogo -ExecutionPolicy Bypass -Command \"Start-Process pnpm -ArgumentList 'run','dev:api' -NoNewWindow; Start-Process pnpm -ArgumentList 'run','dev:frontend' -NoNewWindow; Wait-Process -Name pnpm\"",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "@esbuild/win32-x64": "^0.27.3",
+    "@rollup/rollup-win32-x64-msvc": "^4.60.4",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.2.1",
+    "lightningcss-win32-x64-msvc": "1.31.1",
+    "rollup": "^4.60.4"
+  }
+}
