@@ -14,7 +14,7 @@ const securityMiddleware = [
   // 2. Strict CORS - only our domains (prevents unauthorized API calls)
   cors({
     origin: [
-      'http://localhost:5173',     // Vite frontend dev
+      'http://localhost:5175',     // Vite frontend dev
       'http://localhost:3000',     // possible prod frontend
       'https://vibelink.com',
       'https://www.vibelink.com',
@@ -36,3 +36,4 @@ const securityMiddleware = [
 ];
 
 export default securityMiddleware;
+
