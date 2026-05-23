@@ -1,25 +1,18 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+﻿import express from 'express';
+import securityMiddleware from './middleware/security.js';
+import monetizationRoutes from './routes/monetization.js';
 
-const rawPort = process.env["PORT"];
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
+app.use(express.json());
+app.use(securityMiddleware);
+app.use('/api', monetizationRoutes);
 
-const port = Number(rawPort);
+app.get('/', (req, res) => {
+  res.send(' VibeLink API is running!');
+});
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
-
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
-
-  logger.info({ port }, "Server listening");
+app.listen(PORT, () => {
+  console.log(\ VibeLink API running on http://localhost:\\);
 });

@@ -1,13 +1,13 @@
 ﻿import React, { useState, useEffect } from 'react';
 
 const creditPackages = [
-  { amount: 500,  price: 4.99,  label: 'Starter' },
+  { amount: 500, price: 4.99, label: 'Starter' },
   { amount: 1500, price: 12.99, label: 'Popular' },
   { amount: 5000, price: 34.99, label: 'VIP' },
-  { amount: 10000,price: 64.99, label: 'Legend' }
+  { amount: 10000, price: 64.99, label: 'Legend' }
 ];
 
-const CreditsCheckout: React.FC = () => {
+const CreditsCheckout = () => {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -16,13 +16,13 @@ const CreditsCheckout: React.FC = () => {
     try {
       const res = await fetch('/api/credits/balance');
       const data = await res.json();
-      setBalance(data.balance);
+      setBalance(data.balance || 0);
     } catch (err) { console.error(err); }
   };
 
   useEffect(() => { fetchBalance(); }, []);
 
-  const handlePurchase = async (amount: number) => {
+  const handlePurchase = async (amount) => {
     setLoading(true);
     setMessage('');
     try {
@@ -44,48 +44,96 @@ const CreditsCheckout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans flex items-center justify-center p-8 overflow-hidden">
-      <div className="max-w-5xl w-full">
-        <div className="text-center mb-16">
-          <h1 className="text-7xl font-black tracking-tighter bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#0a0a0a',
+      color: 'white',
+      fontFamily: 'system-ui, sans-serif',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem'
+    }}>
+      <div style={{ maxWidth: '1100px', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <h1 style={{
+            fontSize: '4.5rem',
+            fontWeight: 900,
+            background: 'linear-gradient(to right, #a855f7, #ec4899, #22d3ee)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            margin: 0
+          }}>
             VibeLink
           </h1>
-          <p className="text-2xl text-gray-400 mt-2">Credits Store</p>
+          <p style={{ fontSize: '1.5rem', color: '#a3a3a3', marginTop: '0.5rem' }}>Credits Store</p>
         </div>
 
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-4 bg-[#1a1a1a] border border-purple-500/30 rounded-3xl px-10 py-6 text-5xl font-semibold">
-             <span>{balance}</span> <span className="text-3xl text-gray-400">credits</span>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '1rem',
+            backgroundColor: '#1a1a1a',
+            border: '2px solid #a855f7',
+            borderRadius: '9999px',
+            padding: '1rem 2rem',
+            fontSize: '2.5rem',
+            fontWeight: 700
+          }}>
+             {balance} <span style={{ fontSize: '1.5rem', color: '#a3a3a3' }}>credits</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
           {creditPackages.map((pkg) => (
-            <div
-              key={pkg.amount}
-              className="group bg-[#111] border border-transparent hover:border-purple-400 rounded-3xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/30"
-            >
-              <div className="text-center">
-                <div className="text-6xl font-bold text-purple-300 mb-1">{pkg.amount}</div>
-                <div className="uppercase text-xs tracking-[2px] text-gray-500">credits</div>
-                <div className="my-8 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
-                <div className="text-5xl font-semibold text-white">\</div>
-                <div className="text-purple-400 text-lg mt-2">{pkg.label}</div>
+            <div key={pkg.amount} style={{
+              backgroundColor: '#111111',
+              borderRadius: '24px',
+              padding: '2rem',
+              textAlign: 'center',
+              border: '1px solid #a855f7',
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{ fontSize: '3rem', fontWeight: 800, color: '#c026d3' }}>{pkg.amount}</div>
+              <div style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', color: '#a3a3a3' }}>credits</div>
+              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, #c026d3, transparent)', margin: '2rem 0' }}></div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>\</div>
+              <div style={{ color: '#c026d3', marginTop: '0.5rem' }}>{pkg.label}</div>
 
-                <button
-                  onClick={() => handlePurchase(pkg.amount)}
-                  disabled={loading}
-                  className="mt-12 w-full py-6 text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl transition-all active:scale-95 shadow-lg shadow-purple-500/40"
-                >
-                  {loading ? 'Processing...' : 'Buy Now'}
-                </button>
-              </div>
+              <button
+                onClick={() => handlePurchase(pkg.amount)}
+                disabled={loading}
+                style={{
+                  marginTop: '3rem',
+                  width: '100%',
+                  padding: '1.25rem',
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  background: 'linear-gradient(to right, #a855f7, #ec4899)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '16px',
+                  cursor: 'pointer'
+                }}
+              >
+                {loading ? 'Processing...' : 'Buy Now'}
+              </button>
             </div>
           ))}
         </div>
 
         {message && (
-          <div className="mt-16 text-center text-2xl font-medium text-emerald-400 bg-emerald-900/30 py-4 rounded-2xl">
+          <div style={{
+            marginTop: '3rem',
+            padding: '1rem 2rem',
+            backgroundColor: '#052e16',
+            color: '#4ade80',
+            borderRadius: '9999px',
+            textAlign: 'center',
+            fontSize: '1.25rem',
+            fontWeight: 600
+          }}>
             {message}
           </div>
         )}
