@@ -20,3 +20,8 @@ router.use(boostsRouter);
 router.use(creatorRouter);
 
 export default router;
+
+
+// === SECURITY HARDENING ADDED BY CEO KEN (Step 2) ===
+import securityMiddleware from './middleware/security.js';
+app.use(securityMiddleware);
