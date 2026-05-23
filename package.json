@@ -1,9 +1,15 @@
-{
+﻿{
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {
-    "preinstall": "node -e \"try{const ua=process.env.npm_config_user_agent||''; if(!ua.startsWith('pnpm/')){console.error('Use pnpm instead'); process.exit(1);}}catch(e){console.error(e);process.exit(1);}\"",
+    "scripts": {
+    "dev": "concurrently \"pnpm --filter api-server dev\" \"echo Frontend coming in next step\"",
+    "dev:api": "pnpm --filter api-server dev",
+    "build": "pnpm --filter api-server build",
+    "start": "pnpm --filter api-server start",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },}catch(e){console.error(e);process.exit(1);}\"",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "dev:frontend": "set PORT=3000&& set BASE_PATH=/&& pnpm --filter @workspace/vibelink run dev",
     "dev:api": "set PORT=4000&& pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/api-server run start",
@@ -24,3 +30,4 @@
     "rollup": "^4.60.4"
   }
 }
+
