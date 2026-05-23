@@ -20,4 +20,4 @@ services:
       - "6379:6379"
     command: redis-server --appendonly yes
 
-  # Frontend will be added here in Step 4
+  # Frontend service will be added in Step 4
