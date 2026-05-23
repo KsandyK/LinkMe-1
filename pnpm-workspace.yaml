@@ -1,6 +1,7 @@
-packages:
+﻿packages:
   - artifacts/*
   - packages/*
+  - 'packages/frontend'
   - lib/*
   - lib/integrations/*
   - scripts
@@ -124,3 +125,4 @@ overrides:
   rollup>@rollup/rollup-win32-ia32-msvc: '-'
   rollup>@rollup/rollup-win32-x64-gnu: '-'
   rollup>@rollup/rollup-win32-x64-msvc: '-'
+

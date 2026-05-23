@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
     "scripts": {
-    "dev": "concurrently \"pnpm --filter api-server dev\" \"echo  Frontend workspace coming in Step 4\"",
+    "dev": "concurrently \"pnpm --filter api-server dev\" \"pnpm --filter frontend dev\""pnpm --filter api-server dev\" \"echo  Frontend workspace coming in Step 4\"",
     "dev:api": "pnpm --filter api-server dev",
     "dev:frontend": "echo \"Frontend not yet migrated - coming in Step 4\"",
     "build": "pnpm --filter api-server build",
@@ -32,6 +32,7 @@
     "rollup": "^4.60.4"
   }
 }
+
 
 
 

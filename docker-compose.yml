@@ -21,3 +21,13 @@ services:
     command: redis-server --appendonly yes
 
   # Frontend service will be added in Step 4
+
+  frontend:
+    build: ./packages/frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./packages/frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
