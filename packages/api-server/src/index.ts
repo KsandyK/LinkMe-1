@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import securityMiddleware from './middleware/security.js';
 import monetizationRoutes from './routes/monetization.js';
 
@@ -14,5 +14,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(\ VibeLink API running on http://localhost:\\);
+  console.log(`VibeLink API running on http://localhost:${PORT}`);
 });
