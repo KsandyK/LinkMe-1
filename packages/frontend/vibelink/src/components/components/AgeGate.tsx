@@ -1,5 +1,5 @@
 /**
- * VIBELINK — AgeGate Component
+ * LINKME â€” AgeGate Component
  * Velvet Dark Design System
  * Full-screen +18 acknowledgement landing page with legal compliance.
  * Must be accepted before any site content is shown.
@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 
-const AGE_GATE_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-age-gate-bg-CBMZMrcGskdmGvkrriSpfG.webp";
+const AGE_GATE_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-age-gate-bg-CBMZMrcGskdmGvkrriSpfG.webp";
 
 export function AgeGate() {
   const { ageGateAccepted, setAgeGateAccepted } = useApp();
@@ -51,8 +51,8 @@ export function AgeGate() {
             {/* Logo */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-3 mb-3">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-icon-neUNxmofy3E6uibRvANW8R.webp" alt="VibeLink" className="w-10 h-10" />
-                <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>VibeLink</h1>
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-icon-neUNxmofy3E6uibRvANW8R.webp" alt="LINKME" className="w-10 h-10" />
+                <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>LINKME</h1>
               </div>
               <p style={{ color: "#14b8a6", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Premium Live Interaction Platform</p>
             </div>
@@ -63,9 +63,9 @@ export function AgeGate() {
             {/* Warning */}
             <div className="rounded-xl p-4 mb-6" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
               <div className="flex items-start gap-3">
-                <span className="text-xl mt-0.5">⚠️</span>
+                <span className="text-xl mt-0.5">âš ï¸</span>
                 <div>
-                  <p style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.25rem" }}>ADULT CONTENT — 18+ ONLY</p>
+                  <p style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.25rem" }}>ADULT CONTENT â€” 18+ ONLY</p>
                   <p style={{ color: "rgba(252,165,165,0.75)", fontSize: "0.8rem", lineHeight: 1.5 }}>
                     This website contains sexually explicit material, adult content, and mature themes intended exclusively for adults aged 18 years or older. Access by minors is strictly prohibited.
                   </p>
@@ -75,15 +75,15 @@ export function AgeGate() {
 
             {/* Description */}
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "1.5rem", textAlign: "center" }}>
-              VibeLink is a premium adult live interaction platform. All creators are verified adults who have consented to share content on this platform. All content is legal and compliant with applicable laws.
+              LINKME is a premium adult live interaction platform. All creators are verified adults who have consented to share content on this platform. All content is legal and compliant with applicable laws.
             </p>
 
             {/* Compliance badges */}
             <div className="grid grid-cols-3 gap-2 mb-6">
               {[
-                { icon: "🔒", label: "SSL Secured" },
-                { icon: "✓", label: "2257 Compliant" },
-                { icon: "🛡️", label: "COPPA Compliant" },
+                { icon: "ðŸ”’", label: "SSL Secured" },
+                { icon: "âœ“", label: "2257 Compliant" },
+                { icon: "ðŸ›¡ï¸", label: "COPPA Compliant" },
               ].map(b => (
                 <div key={b.label} className="rounded-lg p-2 text-center" style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.15)" }}>
                   <div style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>{b.icon}</div>
@@ -109,7 +109,7 @@ export function AgeGate() {
                     boxShadow: checked ? "0 0 10px rgba(20,184,166,0.4)" : "none",
                   }}
                 >
-                  {checked && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
+                  {checked && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>âœ“</span>}
                 </div>
               </div>
               <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.8rem", lineHeight: 1.5 }}>
@@ -131,7 +131,7 @@ export function AgeGate() {
                 className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
               >
-                I am under 18 — Leave
+                I am under 18 â€” Leave
               </button>
               <button
                 onClick={handleEnter}
@@ -143,7 +143,7 @@ export function AgeGate() {
                   boxShadow: checked ? "0 4px 20px rgba(20,184,166,0.35)" : "none",
                 }}
               >
-                I am 18+ — Enter Site
+                I am 18+ â€” Enter Site
               </button>
             </div>
 

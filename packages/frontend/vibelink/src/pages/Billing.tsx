@@ -13,7 +13,7 @@ export default function Billing() {
         <div className="bg-[#111214] border border-[#222] rounded-2xl p-6 mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-[#14B8A6]/20 rounded-full flex items-center justify-center">
-              ⚡
+              âš¡
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Current Balance</p>
@@ -26,19 +26,19 @@ export default function Billing() {
         {/* Security Assurance */}
         <div className="bg-[#111214] border border-[#222] rounded-2xl p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <span>🔒</span>
+            <span>ðŸ”’</span>
             <h3 className="font-semibold text-[#14B8A6]">Your Financial Data is Fully Protected</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
-              <div>✓ PCI DSS Level 1 certified payment processing</div>
-              <div>✓ All transactions use TLS 1.3 encryption</div>
-              <div>✓ Real-time fraud detection and monitoring</div>
+              <div>âœ“ PCI DSS Level 1 certified payment processing</div>
+              <div>âœ“ All transactions use TLS 1.3 encryption</div>
+              <div>âœ“ Real-time fraud detection and monitoring</div>
             </div>
             <div className="space-y-2">
-              <div>✓ Full card numbers are never stored on our servers</div>
-              <div>✓ Tokenized card storage — only last 4 digits retained</div>
-              <div>✓ 3D Secure authentication on all transactions</div>
+              <div>âœ“ Full card numbers are never stored on our servers</div>
+              <div>âœ“ Tokenized card storage â€” only last 4 digits retained</div>
+              <div>âœ“ 3D Secure authentication on all transactions</div>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function Billing() {
         {/* Tab Content */}
         {activeTab === "methods" && (
           <div className="bg-[#111214] border border-[#222] rounded-2xl p-10 text-center">
-            <div className="text-5xl mb-4">💳</div>
+            <div className="text-5xl mb-4">ðŸ’³</div>
             <p className="font-semibold text-xl mb-2">No Payment Methods Saved</p>
             <p className="text-muted-foreground mb-6">Add a card to purchase credits and subscriptions.</p>
             <button className="px-6 py-3 rounded-xl bg-[#14B8A6] text-white font-medium">+ Add Payment Method</button>
@@ -85,7 +85,7 @@ export default function Billing() {
                 <tr className="border-b border-[#222]">
                   <td className="py-3">Platinum VIP Monthly</td>
                   <td className="py-3 text-muted-foreground">May 17, 2026</td>
-                  <td className="py-3 text-right">—</td>
+                  <td className="py-3 text-right">â€”</td>
                   <td className="py-3 text-right">$39.99</td>
                 </tr>
               </tbody>
@@ -100,7 +100,7 @@ export default function Billing() {
         )}
 
         <div className="mt-8 text-xs text-muted-foreground">
-          All transactions are processed securely. Charges will appear on your statement as VIBELINK.
+          All transactions are processed securely. Charges will appear on your statement as LINKME.
         </div>
       </div>
     </div>

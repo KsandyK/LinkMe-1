@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Become a Creator Page
+ * LINKME â€” Become a Creator Page
  * Velvet Dark Design System
  * Creator onboarding with age verification requirement and PII safety.
  */
@@ -9,7 +9,7 @@ import { useApp } from "@/contexts/AppContext";
 import { Shield, Lock, CheckCircle, Upload, AlertTriangle, Mic, Video } from "lucide-react";
 import { useMediaDevices } from "@/hooks/useMediaDevices";
 
-const CREATOR_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-creator-bg-TidpZ9vPtwVzH6Bn4KTMHy.webp";
+const CREATOR_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-creator-bg-TidpZ9vPtwVzH6Bn4KTMHy.webp";
 
 type Step = "info" | "identity" | "banking" | "review" | "complete";
 
@@ -45,7 +45,7 @@ export default function BecomeCreator() {
             <CheckCircle className="w-10 h-10" style={{ color: "#14b8a6" }} />
           </div>
           <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>Application Submitted!</h2>
-          <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: "1.5rem" }}>Your creator application is under review. We'll notify you within 24–48 hours.</p>
+          <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: "1.5rem" }}>Your creator application is under review. We'll notify you within 24â€“48 hours.</p>
           <button onClick={() => navigate("/")} className="vl-btn-primary px-6 py-3 text-sm">Return to Home</button>
         </div>
       </div>
@@ -60,7 +60,7 @@ export default function BecomeCreator() {
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container py-12 text-center">
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.5rem", fontWeight: 700, color: "white" }}>Become a Creator</h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", marginTop: "0.5rem" }}>Join thousands of creators earning on VibeLink</p>
+          <p style={{ color: "rgba(255,255,255,0.6)", marginTop: "0.5rem" }}>Join thousands of creators earning on LINKME</p>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export default function BecomeCreator() {
               <p className="text-xs mt-0.5" style={{ color: "rgba(252,165,165,0.7)" }}>You must verify your age before applying to become a creator.</p>
               <Link href="/verify-age">
                 <button className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
-                  Verify Age Now →
+                  Verify Age Now â†’
                 </button>
               </Link>
             </div>
@@ -98,19 +98,19 @@ export default function BecomeCreator() {
 
         {/* Media Device Status */}
         <div className="mb-6 p-4 rounded-xl" style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}>
-          <p className="text-xs font-semibold mb-3" style={{ color: "#14b8a6" }}>📹 Streaming Equipment Status</p>
+          <p className="text-xs font-semibold mb-3" style={{ color: "#14b8a6" }}>ðŸ“¹ Streaming Equipment Status</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${mediaDevices.hasWebcam ? "bg-green-500" : "bg-red-500"}`} />
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Webcam: {mediaDevices.hasWebcam ? "✓ Ready" : "✗ Not Found"}</span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Webcam: {mediaDevices.hasWebcam ? "âœ“ Ready" : "âœ— Not Found"}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${mediaDevices.hasMicrophone ? "bg-green-500" : "bg-red-500"}`} />
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Microphone: {mediaDevices.hasMicrophone ? "✓ Ready" : "✗ Not Found"}</span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Microphone: {mediaDevices.hasMicrophone ? "âœ“ Ready" : "âœ— Not Found"}</span>
             </div>
           </div>
           {mediaDevices.error && (
-            <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>⚠️ {mediaDevices.error}</p>
+            <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>âš ï¸ {mediaDevices.error}</p>
           )}
         </div>
 
@@ -142,10 +142,10 @@ export default function BecomeCreator() {
               <div>
                 <p className="font-bold text-xs mb-1" style={{ color: "#5eead4" }}>Creator PII Protection</p>
                 <ul className="text-xs space-y-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  <li>• Government ID is encrypted and deleted after verification</li>
-                  <li>• Only age confirmation is stored — not your ID details</li>
-                  <li>• Compliant with 18 U.S.C. § 2257 record-keeping requirements</li>
-                  <li>• Your legal name is never displayed publicly</li>
+                  <li>â€¢ Government ID is encrypted and deleted after verification</li>
+                  <li>â€¢ Only age confirmation is stored â€” not your ID details</li>
+                  <li>â€¢ Compliant with 18 U.S.C. Â§ 2257 record-keeping requirements</li>
+                  <li>â€¢ Your legal name is never displayed publicly</li>
                 </ul>
               </div>
             </div>
@@ -176,11 +176,11 @@ export default function BecomeCreator() {
                 <input type="checkbox" checked={piiConsent} onChange={e => setPiiConsent(e.target.checked)} className="sr-only" />
                 <div className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                   style={{ background: piiConsent ? "linear-gradient(135deg, #14b8a6, #0d9488)" : "rgba(255,255,255,0.05)", border: piiConsent ? "none" : "1px solid rgba(255,255,255,0.2)" }}>
-                  {piiConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
+                  {piiConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>âœ“</span>}
                 </div>
               </div>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
-                I consent to the processing of my identity documents for creator verification in compliance with 18 U.S.C. § 2257 and applicable privacy laws.
+                I consent to the processing of my identity documents for creator verification in compliance with 18 U.S.C. Â§ 2257 and applicable privacy laws.
               </p>
             </label>
 
@@ -203,7 +203,7 @@ export default function BecomeCreator() {
               <div>
                 <p className="font-bold text-xs mb-1" style={{ color: "#5eead4" }}>Banking Data Security</p>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
-                  Banking details are encrypted with AES-256 and stored by our PCI DSS Level 1 certified payout partner. VibeLink never stores full account numbers. Your banking data is used solely for payout processing.
+                  Banking details are encrypted with AES-256 and stored by our PCI DSS Level 1 certified payout partner. LINKME never stores full account numbers. Your banking data is used solely for payout processing.
                 </p>
               </div>
             </div>
@@ -236,11 +236,11 @@ export default function BecomeCreator() {
                 <input type="checkbox" checked={bankingConsent} onChange={e => setBankingConsent(e.target.checked)} className="sr-only" />
                 <div className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                   style={{ background: bankingConsent ? "linear-gradient(135deg, #14b8a6, #0d9488)" : "rgba(255,255,255,0.05)", border: bankingConsent ? "none" : "1px solid rgba(255,255,255,0.2)" }}>
-                  {bankingConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
+                  {bankingConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>âœ“</span>}
                 </div>
               </div>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
-                I authorize VibeLink to store my banking information for payout processing purposes, in accordance with the <a href="/legal/privacy" style={{ color: "#14b8a6" }}>Privacy Policy</a>.
+                I authorize LINKME to store my banking information for payout processing purposes, in accordance with the <a href="/legal/privacy" style={{ color: "#14b8a6" }}>Privacy Policy</a>.
               </p>
             </label>
 

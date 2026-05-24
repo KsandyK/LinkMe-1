@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Profile Detail Page
+ * LINKME â€” Profile Detail Page
  * Velvet Dark Design System
  */
 import { useParams, useLocation } from "wouter";
@@ -43,7 +43,7 @@ export default function ProfileDetail() {
         {profile.isLive && (
           <div className="absolute top-4 right-4 vl-badge-live flex items-center gap-1.5 text-sm px-3 py-1">
             <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
-            LIVE — {profile.viewerCount.toLocaleString()} viewers
+            LIVE â€” {profile.viewerCount.toLocaleString()} viewers
           </div>
         )}
       </div>
@@ -63,7 +63,7 @@ export default function ProfileDetail() {
                 </span>
               ))}
             </div>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>@{profile.username} • {profile.age} • {profile.location}</p>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>@{profile.username} â€¢ {profile.age} â€¢ {profile.location}</p>
           </div>
           <div className="flex gap-2 pb-1">
             <button className="p-2 rounded-xl transition-all duration-200 hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
@@ -151,7 +151,7 @@ export default function ProfileDetail() {
                       </div>
                     )}
                     {unlocked && (
-                      <div className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: "rgba(20,184,166,0.9)", color: "white" }}>✓ Unlocked</div>
+                      <div className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: "rgba(20,184,166,0.9)", color: "white" }}>âœ“ Unlocked</div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-2" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.9), transparent)" }}>
                       <p className="text-xs font-semibold text-white truncate">{item.title}</p>

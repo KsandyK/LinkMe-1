@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Credits Store
+ * LINKME â€” Credits Store
  * Velvet Dark Design System
  * Micro, Standard, Bulk, and Subscription credit packages
  */
@@ -133,26 +133,26 @@ export default function CreditsStore() {
             {categories.subscription.map((pkg, idx) => renderPackageCard(pkg, idx === 1))}
           </div>
           <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.5)" }}>
-            💡 Auto-recharge subscriptions renew monthly. Cancel anytime from your account settings.
+            ðŸ’¡ Auto-recharge subscriptions renew monthly. Cancel anytime from your account settings.
           </p>
         </div>
 
         {/* Info Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">💳 Secure Payment</h3>
+            <h3 className="font-bold text-white mb-2">ðŸ’³ Secure Payment</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               All transactions are encrypted and PCI DSS Level 1 compliant. Your payment info is safe.
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">♾️ Credits Never Expire</h3>
+            <h3 className="font-bold text-white mb-2">â™¾ï¸ Credits Never Expire</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Your credits remain active as long as your account is open. Use them anytime.
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">🎁 Bonus Credits</h3>
+            <h3 className="font-bold text-white mb-2">ðŸŽ Bonus Credits</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               VIP members earn monthly bonus credits. Higher tiers = bigger bonuses!
             </p>

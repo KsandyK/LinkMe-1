@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 /**
  * Button Functionality Tests
- * Verify all interactive buttons across VibeLink work correctly
+ * Verify all interactive buttons across LINKME work correctly
  */
 
 describe("Button Functionality", () => {
@@ -50,7 +50,7 @@ describe("Button Functionality", () => {
         price: 39.99,
         monthlyCredits: 500,
         features: ["Priority matching", "Unlimited messages"],
-        badge: "💎",
+        badge: "ðŸ’Ž",
         color: "#14b8a6",
       };
 
@@ -77,7 +77,7 @@ describe("Button Functionality", () => {
       const mockGift = {
         id: "gift-rose",
         name: "Rose",
-        emoji: "🌹",
+        emoji: "ðŸŒ¹",
         price: 5,
         category: "romantic",
         description: "A beautiful rose",

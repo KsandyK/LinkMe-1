@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Creator Dashboard
+ * LINKME â€” Creator Dashboard
  * Velvet Dark Design System
  */
 import { MOCK_CREATOR_STATS } from "@/lib/mock-data";

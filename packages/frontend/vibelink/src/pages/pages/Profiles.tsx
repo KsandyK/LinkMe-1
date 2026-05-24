@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Profiles / Browse Creators Page
+ * LINKME â€” Profiles / Browse Creators Page
  * Velvet Dark Design System
  */
 import { useState } from "react";
@@ -98,10 +98,10 @@ export default function Profiles() {
                       <h3 className="font-bold text-xs text-white truncate">{profile.displayName}</h3>
                       <span className="text-xs ml-1 flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'DM Mono', monospace" }}>{profile.age}</span>
                     </div>
-                    <p className="text-xs truncate mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {profile.location}</p>
+                    <p className="text-xs truncate mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>ðŸ“ {profile.location}</p>
                     <div className="rounded-lg py-1.5 text-center text-xs font-bold text-white"
                       style={{ background: profile.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-                      {profile.isLive ? "🔴 Live" : "View"}
+                      {profile.isLive ? "ðŸ”´ Live" : "View"}
                     </div>
                   </div>
                 </div>

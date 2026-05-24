@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Boosts Page
+ * LINKME â€” Boosts Page
  * Velvet Dark Design System
  */
 import { useState } from "react";
@@ -72,11 +72,11 @@ export default function BoostsPage() {
 
               <div className="mb-6 space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  <span style={{ color: "#14b8a6" }}>⏱️</span>
+                  <span style={{ color: "#14b8a6" }}>â±ï¸</span>
                   <span style={{ color: "rgba(255,255,255,0.7)" }}>{pkg.hours} hour boost</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span style={{ color: "#14b8a6" }}>👁️</span>
+                  <span style={{ color: "#14b8a6" }}>ðŸ‘ï¸</span>
                   <span style={{ color: "rgba(255,255,255,0.7)" }}>{pkg.viewers} visibility</span>
                 </div>
               </div>
@@ -110,19 +110,19 @@ export default function BoostsPage() {
         {/* Benefits */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">📈 Increased Visibility</h3>
+            <h3 className="font-bold text-white mb-2">ðŸ“ˆ Increased Visibility</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Your profile appears at the top of search results and browse pages.
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">💬 More Matches</h3>
+            <h3 className="font-bold text-white mb-2">ðŸ’¬ More Matches</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Get more profile views, messages, and potential connections.
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">⏰ Limited Time</h3>
+            <h3 className="font-bold text-white mb-2">â° Limited Time</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Boosts are time-limited. Stack multiple boosts for extended visibility.
             </p>

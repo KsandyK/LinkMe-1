@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Messages Page
+ * LINKME â€” Messages Page
  * Velvet Dark Design System
  */
 import { useState } from "react";
@@ -33,7 +33,7 @@ export default function Messages() {
                   <div className="relative flex-shrink-0">
                     <img src={profile?.avatarUrl} alt={profile?.displayName} className="w-9 h-9 rounded-full" />
                     {isUnread && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center" style={{ background: "#14b8a6", color: "white", fontSize: "0.6rem" }}>•</span>
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center" style={{ background: "#14b8a6", color: "white", fontSize: "0.6rem" }}>â€¢</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -59,7 +59,7 @@ export default function Messages() {
                 <div className="flex-1 p-4 overflow-y-auto">
                   <div className="flex justify-end mb-3">
                     <div className="max-w-xs px-3 py-2 rounded-xl text-sm" style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.2)", color: "white" }}>
-                      Hey! I loved your last stream 🔥
+                      Hey! I loved your last stream ðŸ”¥
                     </div>
                   </div>
                   <div className="flex justify-start mb-3">

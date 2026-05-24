@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Gifts Store
+ * LINKME â€” Gifts Store
  * Velvet Dark Design System
  * 20+ gift options at various price points
  */
@@ -68,7 +68,7 @@ export default function GiftsStore() {
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
             <Heart className="w-5 h-5" style={{ color: "#14b8a6" }} />
-            <h2 className="text-2xl font-bold text-white">Social Gifts ($1–$5)</h2>
+            <h2 className="text-2xl font-bold text-white">Social Gifts ($1â€“$5)</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.social.map((gift: any) => renderGiftCard(gift))}
@@ -79,7 +79,7 @@ export default function GiftsStore() {
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
             <Heart className="w-5 h-5" style={{ color: "#ec4899" }} />
-            <h2 className="text-2xl font-bold text-white">Date Gifts ($10–$25)</h2>
+            <h2 className="text-2xl font-bold text-white">Date Gifts ($10â€“$25)</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...categories.romantic, ...categories.date].map((gift: any) => renderGiftCard(gift))}
@@ -90,7 +90,7 @@ export default function GiftsStore() {
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
             <Zap className="w-5 h-5" style={{ color: "#f97316" }} />
-            <h2 className="text-2xl font-bold text-white">Luxury Gifts ($50–$500)</h2>
+            <h2 className="text-2xl font-bold text-white">Luxury Gifts ($50â€“$500)</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...categories.experience, ...categories.luxury].map((gift: any) => renderGiftCard(gift))}
@@ -101,7 +101,7 @@ export default function GiftsStore() {
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
             <Gift className="w-5 h-5" style={{ color: "#a78bfa" }} />
-            <h2 className="text-2xl font-bold text-white">Ultra Luxury ($250–$5000)</h2>
+            <h2 className="text-2xl font-bold text-white">Ultra Luxury ($250â€“$5000)</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...categories.vip, ...categories.ultra_luxury].map((gift: any) => renderGiftCard(gift))}
@@ -111,21 +111,21 @@ export default function GiftsStore() {
         {/* Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">💝 Creator Earnings</h3>
+            <h3 className="font-bold text-white mb-2">ðŸ’ Creator Earnings</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Creators earn 70% of gift value. Your support directly funds their content.
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">🎁 Public Recognition</h3>
+            <h3 className="font-bold text-white mb-2">ðŸŽ Public Recognition</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
               Your gift appears publicly in their stream. Creators love seeing supporter names!
             </p>
           </div>
           <div className="vl-card p-6">
-            <h3 className="font-bold text-white mb-2">⭐ Spender Rewards</h3>
+            <h3 className="font-bold text-white mb-2">â­ Spender Rewards</h3>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Earn cashback on gifts. Higher spender tiers = bigger rewards (5–25%).
+              Earn cashback on gifts. Higher spender tiers = bigger rewards (5â€“25%).
             </p>
           </div>
         </div>

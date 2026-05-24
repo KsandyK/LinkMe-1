@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Navigation Component
+ * LINKME â€” Navigation Component
  * Velvet Dark Design System
  * Top navigation bar with mobile menu support.
  */
@@ -32,8 +32,8 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-icon-neUNxmofy3E6uibRvANW8R.webp" alt="VibeLink" className="w-8 h-8" />
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.35rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>VibeLink</span>
+              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-icon-neUNxmofy3E6uibRvANW8R.webp" alt="LINKME" className="w-8 h-8" />
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.35rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>LINKME</span>
             </div>
           </Link>
 
@@ -73,7 +73,7 @@ export function Navigation() {
               <Link href="/verify-age">
                 <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all duration-200"
                   style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.25)", color: "#fbbf24" }}>
-                  🛡️ Verify Age
+                  ðŸ›¡ï¸ Verify Age
                 </div>
               </Link>
             )}

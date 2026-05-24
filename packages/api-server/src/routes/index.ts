@@ -7,9 +7,10 @@ import messagesRouter from "./messages";
 import giftsRouter from "./gifts";
 import boostsRouter from "./boosts";
 import creatorRouter from "./creator";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
-
+router.use(authRouter);
 router.use(healthRouter);
 router.use(profilesRouter);
 router.use(livefeedsRouter);
@@ -18,15 +19,4 @@ router.use(messagesRouter);
 router.use(giftsRouter);
 router.use(boostsRouter);
 router.use(creatorRouter);
-
 export default router;
-
-
-// === SECURITY HARDENING ADDED BY CEO KEN (Step 2) ===
-import securityMiddleware from './middleware/security.js';
-app.use(securityMiddleware);
-
-
-// === MONETIZATION ROUTES + ZOD VALIDATION (Step 5) ===
-import monetizationRoutes from './routes/monetization.js';
-app.use('/api', monetizationRoutes);

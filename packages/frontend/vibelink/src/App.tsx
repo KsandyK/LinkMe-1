@@ -1,5 +1,5 @@
 /**
- * VIBELINK — App Router
+ * LINKME â€” App Router
  * Velvet Dark Design System
  * All routes, providers, age gate, and navigation.
  */

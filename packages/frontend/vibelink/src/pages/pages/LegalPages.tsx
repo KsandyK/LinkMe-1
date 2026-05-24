@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Legal Pages
+ * LINKME â€” Legal Pages
  * Comprehensive legal documents with Terms of Service, Privacy Policy, Creator Agreement, Code of Conduct
  * No CCBill references. No AI watermarks.
  */
@@ -10,31 +10,31 @@ const LEGAL_CONTENT: Record<string, { title: string; content: string }> = {
   terms: {
     title: "Terms of Service",
     content: `
-# VIBELINK INC. TERMS OF SERVICE
+# LINKME INC. TERMS OF SERVICE
 
 **Version:** 2.0  
 **Effective Date:** March 27, 2026  
 **Last Updated:** March 27, 2026
 
-VibeLink Inc.  
+LINKME INC.  
 1234 Platform Way  
 Wilmington, DE 19801, USA
 
-Legal Department: legal@vibelink.com
+Legal Department: legal@LINKME.com
 
 ---
 
-## IMPORTANT LEGAL NOTICE — READ CAREFULLY
+## IMPORTANT LEGAL NOTICE â€” READ CAREFULLY
 
-VibeLink is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.
+LINKME is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.
 
 ---
 
 ## 1. ACCEPTANCE OF TERMS & BINDING AGREEMENT
 
-1.1 By accessing, registering for, or using VibeLink ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, and our Code of Conduct, all of which are incorporated herein by reference.
+1.1 By accessing, registering for, or using LINKME ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, and our Code of Conduct, all of which are incorporated herein by reference.
 
-1.2 These Terms constitute a legally binding agreement between you and VibeLink Inc., a Delaware corporation ("Company"). If you do not agree, you have no right to use the Service.
+1.2 These Terms constitute a legally binding agreement between you and LINKME INC., a Delaware corporation ("Company"). If you do not agree, you have no right to use the Service.
 
 1.3 Electronic Acceptance: Clicking "I Agree," checking the age-confirmation box, creating an account, or continuing to use the Service after any update to these Terms constitutes your full legal acceptance. You waive any defense that an electronic agreement is unenforceable.
 
@@ -53,15 +53,15 @@ VibeLink is an adult platform restricted to users 18 years of age or older. By a
 - You are legally permitted to access adult content in your jurisdiction
 - You are not accessing this Service from a jurisdiction where adult content is prohibited
 
-2.3 **Minors:** If VibeLink discovers or has reason to believe any user is under 18, we will immediately terminate their account, report the matter to relevant authorities, and preserve all relevant evidence for law enforcement. Attempts to circumvent age verification may constitute criminal fraud.
+2.3 **Minors:** If LINKME discovers or has reason to believe any user is under 18, we will immediately terminate their account, report the matter to relevant authorities, and preserve all relevant evidence for law enforcement. Attempts to circumvent age verification may constitute criminal fraud.
 
-2.4 You acknowledge that VibeLink employs technical, procedural, and contractual measures to prevent minor access, and that your affirmative representation of age is the foundational layer of this system. Providing false age information is a material breach of these Terms.
+2.4 You acknowledge that LINKME employs technical, procedural, and contractual measures to prevent minor access, and that your affirmative representation of age is the foundational layer of this system. Providing false age information is a material breach of these Terms.
 
 ---
 
 ## 3. DESCRIPTION OF SERVICE & NO GUARANTEE
 
-3.1 VibeLink is a premium hybrid adult dating and live interaction platform providing:
+3.1 LINKME is a premium hybrid adult dating and live interaction platform providing:
 - Live streaming rooms and interactive broadcasts
 - Creator profiles with optional locked/premium content
 - Virtual gift and tipping systems
@@ -70,11 +70,11 @@ VibeLink is an adult platform restricted to users 18 years of age or older. By a
 - Profile boost and visibility features
 - Membership subscription plans
 
-3.2 **THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE."** VIBELINK MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+3.2 **THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE."** LINKME MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
 
 3.3 We do not guarantee uninterrupted service, error-free operation, or that the Service will meet your expectations. Scheduled and unscheduled downtime may occur without notice or compensation.
 
-3.4 **Creator Content:** Creators are independent contractors. VibeLink does not endorse, validate, or guarantee the accuracy, quality, or appropriateness of creator content beyond our moderation standards.
+3.4 **Creator Content:** Creators are independent contractors. LINKME does not endorse, validate, or guarantee the accuracy, quality, or appropriateness of creator content beyond our moderation standards.
 
 ---
 
@@ -84,19 +84,19 @@ VibeLink is an adult platform restricted to users 18 years of age or older. By a
 
 4.2 All credit and subscription purchases are **FINAL AND NON-REFUNDABLE**, except:
 - Where required by applicable consumer protection law
-- At VibeLink's sole discretion in cases of demonstrable technical error
+- At LINKME's sole discretion in cases of demonstrable technical error
 
 4.3 Credits do not expire while your account remains in good standing. Upon account termination for cause, all unused credits are forfeited without compensation.
 
 4.4 Pricing is in USD and subject to change with 7 days' notice for subscriptions. We reserve the right to modify credit-to-dollar ratios at any time.
 
-4.5 **Chargebacks & Disputes:** Initiating a chargeback or payment dispute without first exhausting VibeLink's internal dispute resolution process (support@vibelink.com) constitutes a breach of these Terms. In such cases:
+4.5 **Chargebacks & Disputes:** Initiating a chargeback or payment dispute without first exhausting LINKME's internal dispute resolution process (support@LINKME.com) constitutes a breach of these Terms. In such cases:
 - Your account will be immediately suspended pending investigation
 - You will be liable for the disputed amount plus a $50 processing fee
-- VibeLink reserves the right to pursue collection through any lawful means
+- LINKME reserves the right to pursue collection through any lawful means
 - Accounts with fraudulent chargebacks may be permanently banned
 
-4.6 **Bonus Credits:** Bonus credits issued through membership plans, promotions, or referrals are revocable at VibeLink's discretion and are the last credits spent from your balance.
+4.6 **Bonus Credits:** Bonus credits issued through membership plans, promotions, or referrals are revocable at LINKME's discretion and are the last credits spent from your balance.
 
 4.7 **Membership Subscriptions:** Auto-renew unless cancelled at least 48 hours before the renewal date. Cancellation takes effect at the end of the current billing period.
 
@@ -106,12 +106,12 @@ VibeLink is an adult platform restricted to users 18 years of age or older. By a
 
 5.1 You agree NOT to, and represent that you will not:
 - Access or use the Service if under 18 years of age
-- Harass, stalk, threaten, intimidate, or harm any user, creator, or VibeLink employee
+- Harass, stalk, threaten, intimidate, or harm any user, creator, or LINKME employee
 - Attempt to arrange in-person meetings with creators through the platform
 - Screenshot, record, download, copy, or distribute any content from the platform without explicit written permission
 - Use bots, scripts, crawlers, scrapers, or automated tools to interact with the platform
 - Reverse engineer, decompile, or attempt to extract source code from the platform
-- Impersonate any person, entity, or VibeLink staff member
+- Impersonate any person, entity, or LINKME staff member
 - Create multiple accounts to evade suspension or restrictions
 - Use VPN, proxy, or other tools to circumvent geo-restrictions or age verification
 - Upload, transmit, or share malware, viruses, or harmful code
@@ -119,21 +119,21 @@ VibeLink is an adult platform restricted to users 18 years of age or older. By a
 - Attempt to manipulate credit systems, exploit bugs, or conduct fraud
 - Use the platform to facilitate prostitution, trafficking, or any illegal exchange of services
 
-5.2 **Enforcement:** Violations may result in: content removal, account suspension, permanent ban, forfeiture of credits without refund, and/or referral to law enforcement. VibeLink is the sole arbiter of violations and its decisions are final.
+5.2 **Enforcement:** Violations may result in: content removal, account suspension, permanent ban, forfeiture of credits without refund, and/or referral to law enforcement. LINKME is the sole arbiter of violations and its decisions are final.
 
 ---
 
 ## 6. CONTENT, INTELLECTUAL PROPERTY & LICENSE
 
-6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of VibeLink Inc. and protected by copyright, trademark, and trade secret law.
+6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of LINKME INC. and protected by copyright, trademark, and trade secret law.
 
 6.2 **Creator Content:** Creators retain copyright in their original content. Purchasing or unlocking access to content grants you a personal, non-exclusive, non-transferable, revocable license to view that content within the Platform only.
 
-6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
+6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. Â§ 504, plus attorney's fees.
 
-6.4 **DMCA:** If you believe content infringes your copyright, send a DMCA notice to: dmca@vibelink.com. Repeat infringers' accounts will be terminated.
+6.4 **DMCA:** If you believe content infringes your copyright, send a DMCA notice to: dmca@LINKME.com. Repeat infringers' accounts will be terminated.
 
-6.5 **User Content License:** By submitting any content (messages, profile information, reviews), you grant VibeLink a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.
+6.5 **User Content License:** By submitting any content (messages, profile information, reviews), you grant LINKME a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.
 
 ---
 
@@ -145,19 +145,19 @@ Your use of the Service is governed by our Privacy Policy, incorporated herein b
 - Use of cookies and tracking technologies
 - Storage and processing of data in the United States
 
-**Billing Discretion:** All charges appear as "VIBELINK" or similar neutral descriptor on your bank statement. We never use explicit descriptors in billing.
+**Billing Discretion:** All charges appear as "LINKME" or similar neutral descriptor on your bank statement. We never use explicit descriptors in billing.
 
 ---
 
 ## 8. LIMITATION OF LIABILITY & INDEMNIFICATION
 
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, VIBELINK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, LOST DATA, OR LOST BUSINESS OPPORTUNITY, EVEN IF VIBELINK HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LINKME SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, LOST DATA, OR LOST BUSINESS OPPORTUNITY, EVEN IF LINKME HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 ---
 
 ## 9. TERMINATION
 
-VibeLink may terminate or suspend your account at any time, with or without cause, with or without notice. Upon termination, your right to use the Service immediately ceases. All unused credits are forfeited.
+LINKME may terminate or suspend your account at any time, with or without cause, with or without notice. Upon termination, your right to use the Service immediately ceases. All unused credits are forfeited.
 
 ---
 
@@ -167,13 +167,13 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 ---
 
-© 2026 VibeLink Inc. All rights reserved.
+Â© 2026 LINKME INC. All rights reserved.
     `,
   },
   privacy: {
     title: "Privacy Policy",
     content: `
-# VIBELINK INC. PRIVACY POLICY
+# LINKME INC. PRIVACY POLICY
 
 **Version:** 1.0  
 **Effective Date:** March 27, 2026  
@@ -183,7 +183,7 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 ## PRIVACY NOTICE
 
-VibeLink Inc. ("we," "us," "our," or "Company") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and platform (the "Service").
+LINKME INC. ("we," "us," "our," or "Company") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and platform (the "Service").
 
 ---
 
@@ -279,7 +279,7 @@ You can control cookies through your browser settings. Note that disabling cooki
 
 ## 7. CHILDREN'S PRIVACY
 
-VibeLink is not intended for users under 18 years of age. We do not knowingly collect information from minors. If we discover a minor has provided information, we will immediately delete it and report to authorities.
+LINKME is not intended for users under 18 years of age. We do not knowingly collect information from minors. If we discover a minor has provided information, we will immediately delete it and report to authorities.
 
 ---
 
@@ -293,19 +293,19 @@ Your information may be transferred to, stored in, and processed in the United S
 
 For privacy inquiries, contact:
 
-**VibeLink Privacy Team**  
-Email: privacy@vibelink.com  
+**LINKME Privacy Team**  
+Email: privacy@LINKME.com  
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-© 2026 VibeLink Inc. All rights reserved.
+Â© 2026 LINKME INC. All rights reserved.
     `,
   },
   creator: {
     title: "Creator Agreement & NDA",
     content: `
-# VIBELINK INC. CREATOR AGREEMENT & NDA
+# LINKME INC. CREATOR AGREEMENT & NDA
 
 **Version:** 2.0  
 **Effective Date:** March 27, 2026  
@@ -313,19 +313,19 @@ Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-## LEGALLY BINDING AGREEMENT — READ EVERY SECTION
+## LEGALLY BINDING AGREEMENT â€” READ EVERY SECTION
 
-This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and VibeLink Inc., a Delaware corporation ("Company," "VibeLink," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
-
----
-
-## PART I — CREATOR SERVICES AGREEMENT
+This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and LINKME INC., a Delaware corporation ("Company," "LINKME," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
 
 ---
 
-## 1. CREATOR STATUS — INDEPENDENT CONTRACTOR
+## PART I â€” CREATOR SERVICES AGREEMENT
 
-1.1 You are an independent contractor, not an employee, agent, joint venture partner, or franchisee of VibeLink Inc. This Agreement does not create any employment relationship.
+---
+
+## 1. CREATOR STATUS â€” INDEPENDENT CONTRACTOR
+
+1.1 You are an independent contractor, not an employee, agent, joint venture partner, or franchisee of LINKME INC. This Agreement does not create any employment relationship.
 
 1.2 As an independent contractor, you:
 - Are solely responsible for your own federal, state, local, and international taxes
@@ -334,9 +334,9 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 - Must provide your own equipment, software, and internet connection
 - May engage in other business activities unless prohibited by a separately signed exclusivity agreement
 
-1.3 **Tax Reporting:** VibeLink will issue Form 1099-NEC to US-based Creators earning $600 or more in a calendar year. Non-US creators must complete IRS Form W-8BEN or W-8BEN-E.
+1.3 **Tax Reporting:** LINKME will issue Form 1099-NEC to US-based Creators earning $600 or more in a calendar year. Non-US creators must complete IRS Form W-8BEN or W-8BEN-E.
 
-1.4 You agree to indemnify and hold VibeLink harmless from any tax liability, penalty, or fine arising from your failure to report or pay taxes on earnings.
+1.4 You agree to indemnify and hold LINKME harmless from any tax liability, penalty, or fine arising from your failure to report or pay taxes on earnings.
 
 ---
 
@@ -344,18 +344,18 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 
 2.1 **Revenue Tiers:** Your creator revenue share is determined by your verified monthly gross platform earnings:
 
-- **Starter Tier** ($0–$2,500/mo gross): Creator 75% | Platform 25%
-- **Rising Tier** ($2,501–$5,000/mo gross): Creator 78% | Platform 22%
-- **Established Tier** ($5,001–$15,000/mo gross): Creator 80% | Platform 20%
-- **Elite Tier** ($15,001–$25,000/mo gross): Creator 83% | Platform 17%
-- **Partner Tier** ($25,001–$75,000/mo gross): Creator 90% | Platform 10%
+- **Starter Tier** ($0â€“$2,500/mo gross): Creator 75% | Platform 25%
+- **Rising Tier** ($2,501â€“$5,000/mo gross): Creator 78% | Platform 22%
+- **Established Tier** ($5,001â€“$15,000/mo gross): Creator 80% | Platform 20%
+- **Elite Tier** ($15,001â€“$25,000/mo gross): Creator 83% | Platform 17%
+- **Partner Tier** ($25,001â€“$75,000/mo gross): Creator 90% | Platform 10%
 - **Top Partner Tier** ($75,001+/mo gross): Creator 95% | Platform 5%
 
 ### IMPORTANT PROCESSING FEE DISCLAIMER
 
-All revenue share percentages above are calculated on GROSS transaction revenue BEFORE the deduction of third-party vendor payment processing fees. Payment processors charge approximately 3%–5% per transaction. These processing fees are deducted from gross revenue PRIOR to calculating creator payouts.
+All revenue share percentages above are calculated on GROSS transaction revenue BEFORE the deduction of third-party vendor payment processing fees. Payment processors charge approximately 3%â€“5% per transaction. These processing fees are deducted from gross revenue PRIOR to calculating creator payouts.
 
-**EXAMPLE:** On a $100 transaction — Processing fee (~4%) = $4.00. Net after processing = $96.00. Creator at 80% tier receives: $96.00 × 80% = $76.80. Platform keeps: $96.00 × 20% = $19.20.
+**EXAMPLE:** On a $100 transaction â€” Processing fee (~4%) = $4.00. Net after processing = $96.00. Creator at 80% tier receives: $96.00 Ã— 80% = $76.80. Platform keeps: $96.00 Ã— 20% = $19.20.
 
 2.2 **Additional Deductions:**
 - Chargeback amounts and associated fees
@@ -366,11 +366,11 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 2.4 **Payment Methods:** Bank ACH transfer (US), international wire transfer ($25 wire fee), or check.
 
-2.5 **Processing Time:** Funds typically clear in 3–7 business days. International transfers may take 5–10 business days.
+2.5 **Processing Time:** Funds typically clear in 3â€“7 business days. International transfers may take 5â€“10 business days.
 
 2.6 **Chargebacks & Reversals:** If a user initiates a chargeback, the full creator payout portion will be reversed from your next payout. Additionally, a $25 chargeback administration fee will be deducted.
 
-2.7 VibeLink reserves the right to adjust revenue tier thresholds and percentages upon 30 days' written notice.
+2.7 LINKME reserves the right to adjust revenue tier thresholds and percentages upon 30 days' written notice.
 
 2.8 Earnings estimates are informational only and do not constitute guarantees of income.
 
@@ -380,7 +380,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 3.1 You retain copyright ownership of all original content you create ("Creator Content"), subject to the license granted herein.
 
-3.2 **Platform License:** By uploading or streaming any Creator Content, you grant VibeLink an irrevocable, non-exclusive, royalty-free, sublicensable, worldwide license to:
+3.2 **Platform License:** By uploading or streaming any Creator Content, you grant LINKME an irrevocable, non-exclusive, royalty-free, sublicensable, worldwide license to:
 - Host, store, transcode, and serve Creator Content
 - Create thumbnails, previews, and promotional snippets (not exceeding 10 seconds)
 - Use your username and persona for platform marketing with prior consent
@@ -393,19 +393,19 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 - Creator Content does not infringe any third-party rights
 - You have obtained all necessary releases and consents from all individuals depicted
 - All individuals depicted are verifiably 18 years of age or older
-- You have maintained all records required by 18 U.S.C. § 2257
+- You have maintained all records required by 18 U.S.C. Â§ 2257
 
 ---
 
-## 4. AGE VERIFICATION & § 2257 RECORD-KEEPING (MANDATORY)
+## 4. AGE VERIFICATION & Â§ 2257 RECORD-KEEPING (MANDATORY)
 
-4.1 Compliance with 18 U.S.C. § 2257 is MANDATORY for all Creators producing sexually explicit content.
+4.1 Compliance with 18 U.S.C. Â§ 2257 is MANDATORY for all Creators producing sexually explicit content.
 
 4.2 You must maintain records verifying the age (18+) of every individual depicted in sexually explicit content, including yourself. Required documentation:
 - Government-issued photo ID showing legal name and date of birth
 - One additional form of identification if the primary ID does not include a photo
 
-4.3 You must maintain these records for a minimum of 5 years and make them available upon lawful demand from law enforcement or VibeLink compliance officers.
+4.3 You must maintain these records for a minimum of 5 years and make them available upon lawful demand from law enforcement or LINKME compliance officers.
 
 4.4 Failure to maintain or produce 2257 records upon demand will result in immediate content removal and account suspension pending investigation.
 
@@ -420,7 +420,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 - Explicit language in appropriate contexts
 
 **NEVER PERMITTED:**
-- Any sexual content involving minors (CSAM) — reported to NCMEC immediately
+- Any sexual content involving minors (CSAM) â€” reported to NCMEC immediately
 - Non-consensual content of any kind
 - Content depicting real violence, harm, or abuse
 - Bestiality or content involving animals
@@ -430,7 +430,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 ## 6. TERMINATION & SUSPENSION
 
-6.1 VibeLink may terminate this Agreement and suspend your account at any time for:
+6.1 LINKME may terminate this Agreement and suspend your account at any time for:
 - Violation of this Agreement or Terms of Service
 - Violation of applicable laws
 - Failure to maintain 2257 compliance
@@ -441,7 +441,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 ---
 
-## PART II — NON-DISCLOSURE AGREEMENT
+## PART II â€” NON-DISCLOSURE AGREEMENT
 
 ---
 
@@ -451,9 +451,9 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 - Platform algorithms and technical infrastructure
 - Creator earnings data and payment processing details
 - Other creators' personal information
-- VibeLink's business strategies and financial information
+- LINKME's business strategies and financial information
 
-7.2 You agree to maintain the confidentiality of all such information and not disclose it to any third party without VibeLink's written consent.
+7.2 You agree to maintain the confidentiality of all such information and not disclose it to any third party without LINKME's written consent.
 
 7.3 This obligation survives termination of this Agreement indefinitely.
 
@@ -465,13 +465,13 @@ This Agreement is governed by the laws of the State of Delaware, without regard 
 
 ---
 
-© 2026 VibeLink Inc. All rights reserved.
+Â© 2026 LINKME INC. All rights reserved.
     `,
   },
   conduct: {
     title: "Code of Conduct",
     content: `
-# VIBELINK INC. CODE OF CONDUCT
+# LINKME INC. CODE OF CONDUCT
 
 **Version:** 1.0  
 **Effective Date:** March 27, 2026  
@@ -481,7 +481,7 @@ This Agreement is governed by the laws of the State of Delaware, without regard 
 
 ## PURPOSE
 
-This Code of Conduct establishes community standards for all VibeLink users and creators. Our goal is to maintain a safe, respectful, and legal platform for all participants.
+This Code of Conduct establishes community standards for all LINKME users and creators. Our goal is to maintain a safe, respectful, and legal platform for all participants.
 
 ---
 
@@ -499,7 +499,7 @@ All users and creators agree to:
 ## 2. PROHIBITED BEHAVIOR
 
 ### 2.1 Harassment & Abuse
-- Do not harass, stalk, threaten, intimidate, or abuse any user, creator, or VibeLink employee
+- Do not harass, stalk, threaten, intimidate, or abuse any user, creator, or LINKME employee
 - Do not engage in cyberbullying, doxxing, or coordinated harassment campaigns
 - Do not send unsolicited explicit content or unwanted sexual advances
 - Do not impersonate others or create fake accounts to harass
@@ -526,7 +526,7 @@ All users and creators agree to:
 - Do not share anyone's personal information without their consent
 - Do not attempt to "doxx" anyone on or off-platform
 - Do not share screenshots or recordings outside the platform without consent
-- Creators' real identities are protected — do not attempt to identify them
+- Creators' real identities are protected â€” do not attempt to identify them
 
 ### 2.6 Content Standards
 - Do not upload content involving minors in any sexual context
@@ -540,8 +540,8 @@ All users and creators agree to:
 
 ### 3.1 How to Report
 - Use the in-platform "Report" button on any profile, chat, or stream
-- Email: safety@vibelink.com
-- For emergencies involving minors: law-enforcement@vibelink.com (escalated to authorities)
+- Email: safety@LINKME.com
+- For emergencies involving minors: law-enforcement@LINKME.com (escalated to authorities)
 
 All reports are anonymous. We review every report within 24 hours.
 
@@ -583,7 +583,7 @@ Viewers agree to:
 
 ## 6. ZERO TOLERANCE FOR CSAM
 
-VibeLink maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (CSAM). Any content, communication, or activity involving minors in a sexual context will result in:
+LINKME maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (CSAM). Any content, communication, or activity involving minors in a sexual context will result in:
 - Immediate account termination
 - Permanent ban from the platform
 - Preservation of all evidence
@@ -594,7 +594,7 @@ VibeLink maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (
 
 ## 7. MODIFICATIONS & UPDATES
 
-VibeLink reserves the right to modify this Code of Conduct at any time. Continued use of the platform constitutes acceptance of any updates.
+LINKME reserves the right to modify this Code of Conduct at any time. Continued use of the platform constitutes acceptance of any updates.
 
 ---
 
@@ -602,13 +602,13 @@ VibeLink reserves the right to modify this Code of Conduct at any time. Continue
 
 For questions about this Code of Conduct:
 
-**VibeLink Community Team**  
-Email: community@vibelink.com  
+**LINKME Community Team**  
+Email: community@LINKME.com  
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-© 2026 VibeLink Inc. All rights reserved.
+Â© 2026 LINKME INC. All rights reserved.
     `,
   },
 };
@@ -697,9 +697,9 @@ export default function LegalPages() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-gray-400 text-sm">
-          <p>© 2026 VibeLink Inc. All rights reserved.</p>
+          <p>Â© 2026 LINKME INC. All rights reserved.</p>
           <p className="mt-2">
-            For legal inquiries, contact: <span className="text-teal-400">legal@vibelink.com</span>
+            For legal inquiries, contact: <span className="text-teal-400">legal@LINKME.com</span>
           </p>
         </div>
       </div>

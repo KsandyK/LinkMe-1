@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Account Settings Page
+ * LINKME â€” Account Settings Page
  * Velvet Dark Design System
  * PII-safe account management.
  */
@@ -37,7 +37,7 @@ export default function Account() {
             <div>
               <p className="text-sm font-bold text-white">Age Verification</p>
               <p className="text-xs" style={{ color: ageVerificationStatus === "verified" ? "#14b8a6" : "#fbbf24" }}>
-                {ageVerificationStatus === "verified" ? "✓ Verified — Full access enabled" : "Not verified — Limited access"}
+                {ageVerificationStatus === "verified" ? "âœ“ Verified â€” Full access enabled" : "Not verified â€” Limited access"}
               </p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function Account() {
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Current Password</label>
                 <div className="relative">
-                  <input type={showCurrentPassword ? "text" : "password"} placeholder="••••••••" className="vl-input pr-10" />
+                  <input type={showCurrentPassword ? "text" : "password"} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className="vl-input pr-10" />
                   <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
                     {showCurrentPassword ? <EyeOff className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} /> : <Eye className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
                   </button>
@@ -108,7 +108,7 @@ export default function Account() {
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>New Password</label>
                 <div className="relative">
-                  <input type={showNewPassword ? "text" : "password"} placeholder="••••••••" className="vl-input pr-10" />
+                  <input type={showNewPassword ? "text" : "password"} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className="vl-input pr-10" />
                   <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
                     {showNewPassword ? <EyeOff className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} /> : <Eye className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
                   </button>
@@ -138,7 +138,7 @@ export default function Account() {
             <div className="vl-pii-shield">
               <p className="text-xs font-bold mb-2" style={{ color: "#5eead4" }}>Your Data Rights (GDPR / CCPA)</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
-                You have the right to access, correct, export, or delete your personal data at any time. VibeLink processes your data in accordance with GDPR, CCPA, and applicable privacy laws.
+                You have the right to access, correct, export, or delete your personal data at any time. LINKME processes your data in accordance with GDPR, CCPA, and applicable privacy laws.
               </p>
             </div>
             <div className="space-y-3">
@@ -149,7 +149,7 @@ export default function Account() {
                   {dataDownloadRequested ? <CheckCircle className="w-4 h-4" style={{ color: "#14b8a6" }} /> : <Shield className="w-4 h-4" style={{ color: "#14b8a6" }} />}
                   <div className="text-left">
                     <p className="text-sm font-semibold text-white">Download My Data</p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{dataDownloadRequested ? "Request submitted — you'll receive an email within 48 hours" : "Export all your personal data (GDPR Article 20)"}</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{dataDownloadRequested ? "Request submitted â€” you'll receive an email within 48 hours" : "Export all your personal data (GDPR Article 20)"}</p>
                   </div>
                 </div>
               </button>

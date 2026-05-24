@@ -11,6 +11,7 @@ model User {
   id            String   @id @default(cuid())
   username      String   @unique
   email         String?  @unique
+  password      String   @default("")
   credits       Int      @default(0)
   createdAt     DateTime @default(now())
   transactions  Transaction[]
@@ -36,3 +37,4 @@ model ContentUnlock {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
 }
+

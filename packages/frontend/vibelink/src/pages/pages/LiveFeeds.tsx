@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Live Feeds Page
+ * LINKME â€” Live Feeds Page
  * Velvet Dark Design System
  */
 import { Link } from "wouter";

@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Mock Data
+ * LINKME â€” Mock Data
  * All data is fictional. No CCBill references. No AI watermarks.
  * Maximized monetization system with 8+ VIP tiers, spender rewards, credits, gifts, and more.
  */
@@ -14,7 +14,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 30,
     features: ["Browse profiles", "Send messages", "View public content"],
     color: "#64748b",
-    badge: "📱",
+    badge: "ðŸ“±",
   },
   {
     id: "silver",
@@ -24,7 +24,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 60,
     features: ["All Basic features", "Profile boost (1x/month)", "Priority messages", "View 1 exclusive photo/creator"],
     color: "#c0c0c0",
-    badge: "🥈",
+    badge: "ðŸ¥ˆ",
   },
   {
     id: "gold",
@@ -34,7 +34,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 120,
     features: ["All Silver features", "Profile boost (2x/month)", "Unlimited exclusive photos", "1 private session/month", "Creator discount (10%)"],
     color: "#fbbf24",
-    badge: "🥇",
+    badge: "ðŸ¥‡",
   },
   {
     id: "platinum",
@@ -44,7 +44,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 300,
     features: ["All Gold features", "Profile boost (4x/month)", "2 private sessions/month", "Early access to new creators", "Creator discount (15%)", "Priority support"],
     color: "#e0e7ff",
-    badge: "💎",
+    badge: "ðŸ’Ž",
   },
   {
     id: "diamond",
@@ -54,7 +54,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 600,
     features: ["All Platinum features", "Profile boost (unlimited)", "4 private sessions/month", "VIP badge on profile", "Creator discount (20%)", "Concierge matching service"],
     color: "#7dd3fc",
-    badge: "💠",
+    badge: "ðŸ’ ",
   },
   {
     id: "elite",
@@ -64,7 +64,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 1000,
     features: ["All Diamond features", "6 private sessions/month", "Exclusive creator access", "Custom video messages", "Dedicated account manager", "Creator discount (25%)"],
     color: "#a78bfa",
-    badge: "👑",
+    badge: "ðŸ‘‘",
   },
   {
     id: "vip_plus",
@@ -74,7 +74,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 1500,
     features: ["All Elite features", "8 private sessions/month", "Priority live stream access", "Custom photo requests", "Monthly bonus credits (500)", "Creator discount (30%)"],
     color: "#f97316",
-    badge: "🔥",
+    badge: "ðŸ”¥",
   },
   {
     id: "founders_club",
@@ -84,7 +84,7 @@ export const VIP_TIERS = [
     videoCallMinutes: 2500,
     features: ["All VIP+ features", "10 private sessions/month", "Lifetime VIP badge", "Unlimited custom requests", "Monthly bonus credits (1000)", "Creator discount (40%)", "Exclusive founder events"],
     color: "#ec4899",
-    badge: "💎✨",
+    badge: "ðŸ’Žâœ¨",
   },
 ];
 
@@ -113,34 +113,34 @@ export const CREDIT_PACKAGES = [
 // ============ GIFT OPTIONS (20+ GIFTS) ============
 export const GIFT_OPTIONS = [
   // Tier 1: $1-5
-  { id: "gift-1", name: "Wink", emoji: "👋", price: 1, category: "social", description: "A friendly wink" },
-  { id: "gift-2", name: "Heart", emoji: "❤️", price: 2, category: "social", description: "Show your love" },
-  { id: "gift-3", name: "Rose", emoji: "🌹", price: 3, category: "romantic", description: "Classic romance" },
-  { id: "gift-4", name: "Champagne", emoji: "🍾", price: 5, category: "celebration", description: "Let's celebrate!" },
+  { id: "gift-1", name: "Wink", emoji: "ðŸ‘‹", price: 1, category: "social", description: "A friendly wink" },
+  { id: "gift-2", name: "Heart", emoji: "â¤ï¸", price: 2, category: "social", description: "Show your love" },
+  { id: "gift-3", name: "Rose", emoji: "ðŸŒ¹", price: 3, category: "romantic", description: "Classic romance" },
+  { id: "gift-4", name: "Champagne", emoji: "ðŸ¾", price: 5, category: "celebration", description: "Let's celebrate!" },
   
   // Tier 2: $10-25
-  { id: "gift-5", name: "Coffee Date", emoji: "☕", price: 10, category: "date", description: "Let's grab coffee" },
-  { id: "gift-6", name: "Dinner Date", emoji: "🍽️", price: 15, category: "date", description: "Dinner for two" },
-  { id: "gift-7", name: "Movie Night", emoji: "🎬", price: 12, category: "date", description: "Movie & chill" },
-  { id: "gift-8", name: "Adventure", emoji: "🎢", price: 20, category: "date", description: "Let's go on an adventure" },
-  { id: "gift-9", name: "Concert Tickets", emoji: "🎵", price: 25, category: "experience", description: "Live music experience" },
+  { id: "gift-5", name: "Coffee Date", emoji: "â˜•", price: 10, category: "date", description: "Let's grab coffee" },
+  { id: "gift-6", name: "Dinner Date", emoji: "ðŸ½ï¸", price: 15, category: "date", description: "Dinner for two" },
+  { id: "gift-7", name: "Movie Night", emoji: "ðŸŽ¬", price: 12, category: "date", description: "Movie & chill" },
+  { id: "gift-8", name: "Adventure", emoji: "ðŸŽ¢", price: 20, category: "date", description: "Let's go on an adventure" },
+  { id: "gift-9", name: "Concert Tickets", emoji: "ðŸŽµ", price: 25, category: "experience", description: "Live music experience" },
   
   // Tier 3: $50-100
-  { id: "gift-10", name: "Luxury Watch", emoji: "⌚", price: 50, category: "luxury", description: "Timeless elegance" },
-  { id: "gift-11", name: "Designer Bag", emoji: "👜", price: 75, category: "luxury", description: "High fashion" },
-  { id: "gift-12", name: "Jewelry", emoji: "💎", price: 100, category: "luxury", description: "Sparkling beauty" },
-  { id: "gift-13", name: "Weekend Getaway", emoji: "🏖️", price: 150, category: "experience", description: "Escape together" },
+  { id: "gift-10", name: "Luxury Watch", emoji: "âŒš", price: 50, category: "luxury", description: "Timeless elegance" },
+  { id: "gift-11", name: "Designer Bag", emoji: "ðŸ‘œ", price: 75, category: "luxury", description: "High fashion" },
+  { id: "gift-12", name: "Jewelry", emoji: "ðŸ’Ž", price: 100, category: "luxury", description: "Sparkling beauty" },
+  { id: "gift-13", name: "Weekend Getaway", emoji: "ðŸ–ï¸", price: 150, category: "experience", description: "Escape together" },
   
   // Tier 4: $250-500
-  { id: "gift-14", name: "Yacht Party", emoji: "⛵", price: 250, category: "vip", description: "Luxury yacht experience" },
-  { id: "gift-15", name: "Private Jet", emoji: "✈️", price: 500, category: "vip", description: "First-class travel" },
-  { id: "gift-16", name: "Diamond Ring", emoji: "💍", price: 300, category: "luxury", description: "Forever commitment" },
-  { id: "gift-17", name: "Luxury Car", emoji: "🏎️", price: 400, category: "vip", description: "Dream ride" },
+  { id: "gift-14", name: "Yacht Party", emoji: "â›µ", price: 250, category: "vip", description: "Luxury yacht experience" },
+  { id: "gift-15", name: "Private Jet", emoji: "âœˆï¸", price: 500, category: "vip", description: "First-class travel" },
+  { id: "gift-16", name: "Diamond Ring", emoji: "ðŸ’", price: 300, category: "luxury", description: "Forever commitment" },
+  { id: "gift-17", name: "Luxury Car", emoji: "ðŸŽï¸", price: 400, category: "vip", description: "Dream ride" },
   
   // Tier 5: $1000+
-  { id: "gift-18", name: "Rolex Watch", emoji: "⌚✨", price: 1000, category: "ultra_luxury", description: "Ultimate timepiece" },
-  { id: "gift-19", name: "Lamborghini", emoji: "🏎️💎", price: 2500, category: "ultra_luxury", description: "Ultimate luxury car" },
-  { id: "gift-20", name: "Island Paradise", emoji: "🏝️✨", price: 5000, category: "ultra_luxury", description: "Own an island" },
+  { id: "gift-18", name: "Rolex Watch", emoji: "âŒšâœ¨", price: 1000, category: "ultra_luxury", description: "Ultimate timepiece" },
+  { id: "gift-19", name: "Lamborghini", emoji: "ðŸŽï¸ðŸ’Ž", price: 2500, category: "ultra_luxury", description: "Ultimate luxury car" },
+  { id: "gift-20", name: "Island Paradise", emoji: "ðŸï¸âœ¨", price: 5000, category: "ultra_luxury", description: "Own an island" },
 ];
 
 // ============ SPENDER REWARDS TIERS ============
@@ -151,7 +151,7 @@ export const SPENDER_REWARDS = [
     minSpent: 0,
     maxSpent: 499,
     benefits: ["5% cashback on gifts", "Monthly bonus 50 credits"],
-    badge: "🥉",
+    badge: "ðŸ¥‰",
   },
   {
     tier: "silver",
@@ -159,7 +159,7 @@ export const SPENDER_REWARDS = [
     minSpent: 500,
     maxSpent: 1499,
     benefits: ["10% cashback on gifts", "Monthly bonus 150 credits", "Priority support"],
-    badge: "🥈",
+    badge: "ðŸ¥ˆ",
   },
   {
     tier: "gold",
@@ -167,7 +167,7 @@ export const SPENDER_REWARDS = [
     minSpent: 1500,
     maxSpent: 4999,
     benefits: ["15% cashback on gifts", "Monthly bonus 300 credits", "Exclusive creator access", "VIP badge"],
-    badge: "🥇",
+    badge: "ðŸ¥‡",
   },
   {
     tier: "platinum",
@@ -175,7 +175,7 @@ export const SPENDER_REWARDS = [
     minSpent: 5000,
     maxSpent: 9999,
     benefits: ["20% cashback on gifts", "Monthly bonus 500 credits", "Concierge service", "Exclusive events"],
-    badge: "💎",
+    badge: "ðŸ’Ž",
   },
   {
     tier: "diamond",
@@ -183,16 +183,16 @@ export const SPENDER_REWARDS = [
     minSpent: 10000,
     maxSpent: Infinity,
     benefits: ["25% cashback on gifts", "Monthly bonus 1000 credits", "Lifetime VIP status", "Personal account manager"],
-    badge: "💠✨",
+    badge: "ðŸ’ âœ¨",
   },
 ];
 
 // ============ PREMIUM BADGES ============
 export const PREMIUM_BADGES = [
-  { id: "verified", name: "Verified", icon: "✓", price: 9.99, description: "Verified profile" },
-  { id: "pro", name: "Pro Creator", icon: "⭐", price: 19.99, description: "Professional creator badge" },
-  { id: "elite", name: "Elite", icon: "👑", price: 49.99, description: "Elite status badge" },
-  { id: "vip", name: "VIP", icon: "💎", price: 99.99, description: "VIP exclusive badge" },
+  { id: "verified", name: "Verified", icon: "âœ“", price: 9.99, description: "Verified profile" },
+  { id: "pro", name: "Pro Creator", icon: "â­", price: 19.99, description: "Professional creator badge" },
+  { id: "elite", name: "Elite", icon: "ðŸ‘‘", price: 49.99, description: "Elite status badge" },
+  { id: "vip", name: "VIP", icon: "ðŸ’Ž", price: 99.99, description: "VIP exclusive badge" },
 ];
 
 // ============ PRIVATE SESSIONS ============
@@ -220,7 +220,7 @@ export const MOCK_PROFILES = [
     isCreator: true,
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=luna&backgroundColor=b6e3f4",
     coverUrl: "https://picsum.photos/seed/luna-cover/1200/400",
-    tagline: "Your Miami sunshine ☀️ Live every night 9PM EST",
+    tagline: "Your Miami sunshine â˜€ï¸ Live every night 9PM EST",
     bio: "Miami native living my best life. I love the beach, dancing, and deep conversations. I'm here to connect authentically with amazing people. Join my streams for the ultimate vibe!",
     viewerCount: 1247,
     tier: "established",
@@ -231,14 +231,14 @@ export const MOCK_PROFILES = [
     hobbies: ["Salsa dancing", "Yoga", "Cooking", "Reading"],
     lookingFor: "Someone who matches my energy and loves to have fun.",
     relationshipGoals: "Open to everything from casual connections to something deeper.",
-    liveSchedule: "Mon, Wed, Fri — 9PM–11PM EST | Sat — 8PM–Midnight EST",
+    liveSchedule: "Mon, Wed, Fri â€” 9PMâ€“11PM EST | Sat â€” 8PMâ€“Midnight EST",
     sexualPreferences: { orientation: "Bisexual", lockedDetails: "Unlock to view intimate preferences" },
     followersCount: 12847,
     likesCount: 89234,
     joinedDate: "2023-03-15",
     badges: [
-      { id: "hot-creator", name: "Hot Creator", icon: "🔥", color: "#f97316", description: "Trending creator" },
-      { id: "top-creator", name: "Top Creator", icon: "🏆", color: "#eab308", description: "Top performer" },
+      { id: "hot-creator", name: "Hot Creator", icon: "ðŸ”¥", color: "#f97316", description: "Trending creator" },
+      { id: "top-creator", name: "Top Creator", icon: "ðŸ†", color: "#eab308", description: "Top performer" },
     ],
     mediaItems: [
       { id: "profile-1-photo-1", type: "photo", thumbnailUrl: "https://picsum.photos/seed/luna-p1/400/500", isLocked: true, creditCost: 50, title: "Exclusive Photo 1" },
@@ -265,7 +265,7 @@ export const MOCK_PROFILES = [
     isCreator: true,
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=alexstorm&backgroundColor=c0aede",
     coverUrl: "https://picsum.photos/seed/alex-cover/1200/400",
-    tagline: "NYC nightlife & deep conversations 🌆",
+    tagline: "NYC nightlife & deep conversations ðŸŒ†",
     bio: "NYC guy who loves good food, great conversation and making genuine connections. Real talks only.",
     viewerCount: 892,
     tier: "rising",
@@ -276,13 +276,13 @@ export const MOCK_PROFILES = [
     hobbies: ["Boxing", "DJing", "Photography", "Cooking"],
     lookingFor: "Authentic connections with people who know what they want.",
     relationshipGoals: "Open to exploration.",
-    liveSchedule: "Tue, Thu — 10PM–Midnight EST | Fri–Sat — 11PM–2AM EST",
+    liveSchedule: "Tue, Thu â€” 10PMâ€“Midnight EST | Friâ€“Sat â€” 11PMâ€“2AM EST",
     sexualPreferences: { orientation: "Straight", lockedDetails: "Unlock to view preferences" },
     followersCount: 7234,
     likesCount: 45678,
     joinedDate: "2023-06-20",
     badges: [
-      { id: "rising-star", name: "Rising Star", icon: "⭐", color: "#a78bfa", description: "Fast-growing creator" },
+      { id: "rising-star", name: "Rising Star", icon: "â­", color: "#a78bfa", description: "Fast-growing creator" },
     ],
     mediaItems: [
       { id: "profile-2-photo-1", type: "photo", thumbnailUrl: "https://picsum.photos/seed/alex-p1/400/500", isLocked: true, creditCost: 40, title: "Exclusive Photo" },
@@ -306,7 +306,7 @@ export const MOCK_PROFILES = [
     isCreator: true,
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=jade&backgroundColor=ffd5dc",
     coverUrl: "https://picsum.photos/seed/jade-cover/1200/400",
-    tagline: "LA girl, creative soul 🎨",
+    tagline: "LA girl, creative soul ðŸŽ¨",
     bio: "Artist and creator sharing my world with you. Let's vibe and connect on a deeper level.",
     viewerCount: 0,
     tier: "rising",
@@ -317,7 +317,7 @@ export const MOCK_PROFILES = [
     hobbies: ["Painting", "Photography", "Meditation", "Cooking"],
     lookingFor: "Creative minds and genuine souls.",
     relationshipGoals: "Looking for meaningful connections.",
-    liveSchedule: "Wed, Fri, Sun — 8PM–10PM PST",
+    liveSchedule: "Wed, Fri, Sun â€” 8PMâ€“10PM PST",
     sexualPreferences: { orientation: "Pansexual", lockedDetails: "Unlock to view preferences" },
     followersCount: 5432,
     likesCount: 34567,
@@ -337,7 +337,7 @@ export const MOCK_LIVE_FEEDS = [
   {
     id: "live-1",
     creatorId: "profile-1",
-    title: "Luna's Evening Vibes 🌙",
+    title: "Luna's Evening Vibes ðŸŒ™",
     category: "Dating & Connection",
     thumbnailUrl: "https://picsum.photos/seed/live-luna/800/600",
     viewerCount: 1247,
@@ -384,7 +384,7 @@ export const MOCK_MESSAGES = [
     senderName: "You",
     recipientId: "profile-1",
     recipientName: "Luna Rose",
-    content: "Hey Luna! Your stream was amazing last night 🔥",
+    content: "Hey Luna! Your stream was amazing last night ðŸ”¥",
     timestamp: new Date(Date.now() - 2 * 60000),
     isRead: true,
   },
@@ -394,7 +394,7 @@ export const MOCK_MESSAGES = [
     senderName: "Luna Rose",
     recipientId: "user-1",
     recipientName: "You",
-    content: "Thanks so much! 💕 Hope to see you again soon",
+    content: "Thanks so much! ðŸ’• Hope to see you again soon",
     timestamp: new Date(Date.now() - 60000),
     isRead: true,
   },
@@ -448,11 +448,11 @@ export const MOCK_CREATOR_STATS = {
 
 // ============ MONETIZATION SUMMARY ============
 export const MONETIZATION_OPPORTUNITIES = {
-  vipSubscriptions: "8 tiers from $4.99–$249.99/month",
-  creditPackages: "9 packages from $4.99–$299.99 with bulk discounts",
-  gifts: "20+ gift options from $1–$5000",
-  spenderRewards: "5 tiers with 5–25% cashback",
-  premiumBadges: "4 badges from $9.99–$99.99",
+  vipSubscriptions: "8 tiers from $4.99â€“$249.99/month",
+  creditPackages: "9 packages from $4.99â€“$299.99 with bulk discounts",
+  gifts: "20+ gift options from $1â€“$5000",
+  spenderRewards: "5 tiers with 5â€“25% cashback",
+  premiumBadges: "4 badges from $9.99â€“$99.99",
   privateSessions: "Per-minute billing, max 1/user/month, 10/creator/month",
   customVideoMessages: "Creator-specific pricing",
   exclusiveContent: "Photo/video unlocks via credits",

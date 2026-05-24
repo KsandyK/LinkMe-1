@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Home Page
+ * LINKME â€” Home Page
  * Velvet Dark Design System
  * Hero section, featured creators, live feeds, and platform features.
  */
@@ -8,7 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { Radio, Users, Zap, Shield, Crown, ChevronRight, Eye } from "lucide-react";
 
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-hero-bg-TidpZ9vPtwVzH6Bn4KTMHy.webp";
+const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-hero-bg-TidpZ9vPtwVzH6Bn4KTMHy.webp";
 
 function ProfileCard({ profile }: { profile: typeof MOCK_PROFILES[0] }) {
   return (
@@ -36,7 +36,7 @@ function ProfileCard({ profile }: { profile: typeof MOCK_PROFILES[0] }) {
             <h3 className="font-bold text-sm text-white">{profile.displayName}</h3>
             <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'DM Mono', monospace" }}>{profile.age}</span>
           </div>
-          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {profile.location}</p>
+          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>ðŸ“ {profile.location}</p>
           <p className="text-xs line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>{profile.tagline}</p>
           <div className="flex gap-1 flex-wrap mb-2">
             {profile.badges.slice(0, 2).map(badge => (
@@ -47,7 +47,7 @@ function ProfileCard({ profile }: { profile: typeof MOCK_PROFILES[0] }) {
           </div>
           <div className="rounded-lg py-1.5 text-center text-xs font-bold text-white transition-all duration-200"
             style={{ background: profile.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-            {profile.isLive ? "🔴 Join Live" : "View Profile"}
+            {profile.isLive ? "ðŸ”´ Join Live" : "View Profile"}
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ minHeight: "480px" }}>
         <div className="absolute inset-0">
-          <img src={HERO_BG} alt="VibeLink" className="w-full h-full object-cover" />
+          <img src={HERO_BG} alt="LINKME" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(9,9,26,0.92) 0%, rgba(9,9,26,0.6) 50%, rgba(9,9,26,0.85) 100%)" }} />
         </div>
         <div className="relative z-10 container py-16 md:py-24">
@@ -201,7 +201,7 @@ export default function Home() {
       {/* Platform Features */}
       <section className="py-12" style={{ background: "rgba(20,184,166,0.03)", borderTop: "1px solid rgba(20,184,166,0.08)" }}>
         <div className="container">
-          <h2 className="vl-section-title text-center mb-8">Why VibeLink</h2>
+          <h2 className="vl-section-title text-center mb-8">Why LinkMe</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { icon: Shield, title: "Verified Creators", desc: "Every creator is age-verified and identity-confirmed before going live.", color: "#14b8a6" },

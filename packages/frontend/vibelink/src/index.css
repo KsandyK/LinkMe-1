@@ -1,5 +1,5 @@
 /*
- * VIBELINK — Global Styles
+ * LINKME â€” Global Styles
  * Design System: Velvet Dark
  * Deep navy/midnight base, teal primary (#14b8a6), rose-gold accent (#e8a87c)
  * Fonts: Cormorant Garamond (display) + DM Sans (body) + DM Mono (numbers)
@@ -159,7 +159,7 @@
     min-width: 0;
   }
 
-  /* ===== VIBELINK DESIGN SYSTEM ===== */
+  /* ===== LINKME DESIGN SYSTEM ===== */
 
   /* Card */
   .vl-card {

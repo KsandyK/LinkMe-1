@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Register / Login Page
+ * LINKME â€” Register / Login Page
  * Velvet Dark Design System
  * PII-safe registration with clear data usage disclosure.
  */
@@ -41,8 +41,8 @@ export default function Register() {
         <div className="text-center mb-8">
           <Link href="/">
             <div className="inline-flex items-center gap-2 cursor-pointer">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>💎</div>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.75rem", fontWeight: 700, color: "white" }}>VibeLink</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>ðŸ’Ž</div>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.75rem", fontWeight: 700, color: "white" }}>LINKME</span>
             </div>
           </Link>
         </div>
@@ -103,7 +103,7 @@ export default function Register() {
                     <input type="checkbox" checked={ageConfirm} onChange={e => setAgeConfirm(e.target.checked)} className="sr-only" />
                     <div className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                       style={{ background: ageConfirm ? "linear-gradient(135deg, #14b8a6, #0d9488)" : "rgba(255,255,255,0.05)", border: ageConfirm ? "none" : "1px solid rgba(255,255,255,0.2)" }}>
-                      {ageConfirm && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
+                      {ageConfirm && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>âœ“</span>}
                     </div>
                   </div>
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
@@ -117,7 +117,7 @@ export default function Register() {
                     <input type="checkbox" checked={termsAccept} onChange={e => setTermsAccept(e.target.checked)} className="sr-only" />
                     <div className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                       style={{ background: termsAccept ? "linear-gradient(135deg, #14b8a6, #0d9488)" : "rgba(255,255,255,0.05)", border: termsAccept ? "none" : "1px solid rgba(255,255,255,0.2)" }}>
-                      {termsAccept && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
+                      {termsAccept && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>âœ“</span>}
                     </div>
                   </div>
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>

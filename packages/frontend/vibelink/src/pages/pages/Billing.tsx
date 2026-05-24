@@ -1,5 +1,5 @@
 /**
- * VIBELINK — Billing Page
+ * LINKME â€” Billing Page
  * Velvet Dark Design System
  * PII-safe billing management. No CCBill references.
  * Payment processing via secure PCI DSS Level 1 certified processor.
@@ -52,7 +52,7 @@ export default function Billing() {
         <div className="vl-card p-4 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.25)" }}>
-              <span className="text-lg">⚡</span>
+              <span className="text-lg">âš¡</span>
             </div>
             <div>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Current Balance</p>
@@ -72,7 +72,7 @@ export default function Billing() {
                 "PCI DSS Level 1 certified payment processing",
                 "Full card numbers are never stored on our servers",
                 "All transactions use TLS 1.3 encryption",
-                "Tokenized card storage — only last 4 digits retained",
+                "Tokenized card storage â€” only last 4 digits retained",
                 "Real-time fraud detection and monitoring",
                 "3D Secure authentication on all transactions",
               ].map(item => (
@@ -126,7 +126,7 @@ export default function Billing() {
                 <div className="vl-pii-shield mb-4">
                   <p className="text-xs flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                     <Lock className="w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
-                    Your card details are encrypted and transmitted directly to our PCI DSS Level 1 certified payment processor. VibeLink never stores your full card number.
+                    Your card details are encrypted and transmitted directly to our PCI DSS Level 1 certified payment processor. LINKME never stores your full card number.
                   </p>
                 </div>
 
@@ -156,7 +156,7 @@ export default function Billing() {
                     <div>
                       <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>CVV</label>
                       <div className="relative">
-                        <input type={showCvv ? "text" : "password"} placeholder="•••" value={cardCvv}
+                        <input type={showCvv ? "text" : "password"} placeholder="â€¢â€¢â€¢" value={cardCvv}
                           onChange={e => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                           className="vl-input pr-10" autoComplete="cc-csc" maxLength={4} />
                         <button type="button" onClick={() => setShowCvv(!showCvv)} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -187,7 +187,7 @@ export default function Billing() {
                 ))}
               </div>
               <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
-                All transactions are processed securely. Charges will appear on your statement as <strong style={{ color: "rgba(255,255,255,0.4)" }}>VIBELINK</strong>.
+                All transactions are processed securely. Charges will appear on your statement as <strong style={{ color: "rgba(255,255,255,0.4)" }}>LINKME</strong>.
               </p>
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function Billing() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-white">Transaction History</h2>
               <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
-                📥 Export CSV
+                ðŸ“¥ Export CSV
               </button>
             </div>
             <div className="vl-card overflow-hidden">
@@ -218,10 +218,10 @@ export default function Billing() {
                   </div>
                   <span className="text-xs whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>{tx.date.toLocaleDateString()}</span>
                   <span className={`font-bold text-xs whitespace-nowrap ${tx.type === "credit_purchase" ? "text-green-400" : "text-gray-500"}`}>
-                    {tx.type === "credit_purchase" ? `+Credits` : `—`}
+                    {tx.type === "credit_purchase" ? `+Credits` : `â€”`}
                   </span>
                   <span className="font-bold text-xs whitespace-nowrap text-white">
-                    {tx.amount > 0 ? `$${tx.amount.toFixed(2)}` : "—"}
+                    {tx.amount > 0 ? `$${tx.amount.toFixed(2)}` : "â€”"}
                   </span>
                 </div>
               ))}
@@ -236,10 +236,10 @@ export default function Billing() {
             <div className="vl-card p-5" style={{ borderColor: "rgba(20,184,166,0.2)" }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🔥</span>
+                  <span className="text-2xl">ðŸ”¥</span>
                   <div>
                     <p className="font-bold text-white">Flame Boost</p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>12 profile boosts/month • Active</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>12 profile boosts/month â€¢ Active</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -256,10 +256,10 @@ export default function Billing() {
             <div className="vl-card p-4">
               <p className="font-semibold text-white mb-2 text-sm">Subscription Terms</p>
               <ul className="text-xs space-y-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                <li>• Subscriptions auto-renew monthly unless cancelled at least 24 hours before the renewal date</li>
-                <li>• Cancel anytime — you retain access for the remainder of the paid period</li>
-                <li>• Refunds for subscription fees are not issued for partial months</li>
-                <li>• Subscription charges appear as <strong style={{ color: "rgba(255,255,255,0.6)" }}>VIBELINK</strong> on your statement</li>
+                <li>â€¢ Subscriptions auto-renew monthly unless cancelled at least 24 hours before the renewal date</li>
+                <li>â€¢ Cancel anytime â€” you retain access for the remainder of the paid period</li>
+                <li>â€¢ Refunds for subscription fees are not issued for partial months</li>
+                <li>â€¢ Subscription charges appear as <strong style={{ color: "rgba(255,255,255,0.6)" }}>LINKME</strong> on your statement</li>
               </ul>
             </div>
 

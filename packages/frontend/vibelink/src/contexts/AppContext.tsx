@@ -1,5 +1,5 @@
 /**
- * VIBELINK Ã¢â‚¬â€ App Context
+ * LINKME ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â App Context
  * Velvet Dark Design System
  * Global state: age gate, age verification, credits, unlocked content, PII safety.
  */

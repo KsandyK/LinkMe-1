@@ -1,5 +1,5 @@
 /**
- * VIBELINK — VIP Lounge
+ * LINKME â€” VIP Lounge
  * Velvet Dark Design System
  * 8 subscription tiers with maximized monetization
  */
@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { VIP_TIERS } from "@/lib/mock-data";
 
-const VIP_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/vibelink-vip-banner-Pm74Zr3GYCpBL6NiKnjRtD.webp";
+const VIP_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-vip-banner-Pm74Zr3GYCpBL6NiKnjRtD.webp";
 
 export default function VipLounge() {
   const [, setLocation] = useLocation();
@@ -26,7 +26,7 @@ export default function VipLounge() {
         <img src={VIP_BG} alt="VIP Lounge" className="w-full h-full object-cover absolute inset-0" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(9,9,26,0.5) 0%, rgba(9,9,26,0.95) 100%)" }} />
         <div className="relative z-10 container py-16 text-center">
-          <p className="text-sm font-bold mb-2" style={{ color: "#14b8a6" }}>💎 PREMIUM MEMBERSHIP</p>
+          <p className="text-sm font-bold mb-2" style={{ color: "#14b8a6" }}>ðŸ’Ž PREMIUM MEMBERSHIP</p>
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>VIP Lounge</h1>
           <p style={{ color: "rgba(255,255,255,0.6)" }}>Choose your tier and unlock exclusive benefits, priority matching, and premium features</p>
         </div>
