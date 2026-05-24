@@ -1,22 +1,19 @@
 {
-    "name":  "vibelink-workspace",
-    "version":  "1.0.0",
-    "private":  true,
-    "license":  "MIT",
-    "scripts":  {
-                    "dev":  "concurrently \"pnpm --filter api-server dev\" \"pnpm --filter frontend dev\"",
-                    "dev:api":  "pnpm --filter api-server dev",
-                    "dev:frontend":  "pnpm --filter vibelink dev",
-                    "build":  "pnpm --filter api-server build \u0026\u0026 pnpm --filter frontend build",
-                    "start":  "pnpm --filter api-server start",
-                    "docker:up":  "docker compose up --build",
-                    "docker:down":  "docker compose down",
-                    "clean":  "pnpm store prune \u0026\u0026 pnpm install --ignore-scripts"
-                },
-    "devDependencies":  {
-                            "@rollup/rollup-win32-x64-msvc":  "^4.60.4",
-                            "concurrently":  "^9.2.1",
-                            "cross-env":  "^10.1.0",
-                            "lightningcss-win32-x64-msvc":  "^1.32.0"
-                        }
+  "name": "linkme-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm --filter api build && pnpm --filter web build",
+    "start": "pnpm --filter api start",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "clean": "pnpm store prune && pnpm install --ignore-scripts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
 }

@@ -54,3 +54,17 @@ Thumbs.db
 /dist/
 /vibe3-production-hardened/
 /vibelink-production-complete/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# SQLite database
+*.db
+*.db-journal
+dev.db
+
+# Build outputs
+dist/
+build/

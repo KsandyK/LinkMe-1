@@ -1,72 +1,84 @@
-# vibelink3
+# LinkMe
 
-**A production-ready adult live streaming and interaction platform.**
+A modern, production-ready platform for creators with live streaming, monetization, and community features.
 
-Built with modern TypeScript, pnpm workspaces, and strong focus on **compliance, safety, and creator monetization**.
+## ✨ Features
 
-## ✨ Key Features
-
-- **Age Verification & PII Safety** — Robust compliance engine
-- **Creator Dashboards** — Analytics, earnings, content management
-- **Credits Store & Monetization** — Virtual economy with premium unlocks
+- **Creator Dashboards** — Analytics, earnings, and content management
+- **Credits & Monetization** — Virtual economy with premium features
+- **Live Streaming** — WebRTC-powered real-time video
+- **Age Verification & Compliance** — Strong focus on safety and legal requirements
 - **Real-time Messaging & Interaction**
-- **Live Streaming** (WebRTC ready)
-- **Premium Content Gating**
-- **Admin & Moderation Tools**
 
 ## 🛠 Tech Stack
 
-- **Frontend**: TypeScript, modern React (in artifacts)
-- **Backend**: Node.js + TypeScript (packages/api-server)
-- **Monorepo**: pnpm Workspaces
-- **Shared**: Zod schemas, generated clients, shared libraries
-- **Build**: esbuild / rollup optimized
-
-## 🚀 Quick Start
-
-```bash
-# 1. Install pnpm
-npm install -g pnpm
-
-# 2. Install dependencies
-pnpm install
-
-# 3. Build
-pnpm run build
-```
-
-For local development of specific artifacts:
-```bash
-PORT=3000 BASE_PATH=/ pnpm --filter ./artifacts/vibelink run build
-```
-
-See `CONTRIBUTING.md` for full development workflow.
+- **Frontend**: React 19 + Vite + TypeScript + Tailwind
+- **Backend**: Node.js + TypeScript + Prisma
+- **Monorepo**: pnpm workspaces
+- **API Layer**: Zod schemas + generated clients
 
 ## 📁 Project Structure
 
-- `lib/` — Shared packages (api-zod, db, clients)
-- `packages/api-server/` — Core backend
-- `artifacts/` — Built/demo applications
-- `src/` — Source code
-- `vibe3-production-hardened/` — Production configs
+```
+apps/
+  api/          # Backend API server
+  web/          # Frontend application
 
-## 🔐 Security & Compliance
+packages/
+  api-client-react/   # React API client (generated)
+  api-zod/            # Zod schemas (generated)
+  shared/             # Shared utilities
+```
 
-This project prioritizes:
-- Strict age verification
-- PII protection
-- Data minimization
-- Secure credential handling
+## 🚀 Getting Started
 
-## 💼 Business / Commercial Use
+### Prerequisites
 
-Open for:
-- Commercial licensing
-- White-label / SaaS versions
-- Custom development
+- Node.js 20+
+- pnpm 9+ (`npm install -g pnpm`)
+- PostgreSQL (for Prisma)
 
-Contact for inquiries.
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/KsandyK/LinkMe-1.git
+cd LinkMe-1
+
+# Install dependencies
+pnpm install
+
+# Start development servers
+pnpm dev
+```
+
+### Individual Services
+
+```bash
+# Backend only
+pnpm dev:api
+
+# Frontend only
+pnpm dev:web
+```
+
+### Build for Production
+
+```bash
+pnpm build
+```
+
+## 🔐 Environment Setup
+
+Copy the example files and fill in your values:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+```
+
+Key variables include database URL, JWT secret, and payment provider keys.
 
 ## 📄 License
 
-MIT License (see LICENSE file)
+MIT License

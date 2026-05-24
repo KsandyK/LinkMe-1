@@ -1,16 +1,36 @@
-# Contributing
+# Contributing to LinkMe
 
-Quick guidelines:
+Thank you for your interest in contributing!
 
-- Use `pnpm` for dependency management and workspace commands.
-- Run typechecks and builds before opening PRs:
+## Development Workflow
+
+1. **Branching**
+   - Use feature branches: `feature/xxx`, `fix/xxx`
+   - Keep branches focused and small
+
+2. **Commit Messages**
+   - Follow conventional commits: `feat:`, `fix:`, `chore:`, `docs:`
+
+3. **Code Style**
+   - Run `pnpm lint` and `pnpm typecheck` before pushing
+   - Use TypeScript strictly
+
+4. **Pull Requests**
+   - Link related issues
+   - Include screenshots for UI changes
+   - Request review from maintainers
+
+## Project Structure
+
+See `README.md` for the current layout.
+
+## Testing
 
 ```bash
-pnpm install
-pnpm run build
+pnpm --filter api test
+pnpm --filter web test
 ```
 
-- Keep `artifacts/` contents out of commits unless intentionally updating demo configs.
-- Follow the existing TypeScript and formatting rules. Run `pnpm` scripts for linting if available.
+## Questions?
 
-If you're proposing structural changes (moving sources out of `artifacts/`), open an RFC-style PR describing the migration plan and rollback steps.
+Open an issue or reach out to the maintainers.
