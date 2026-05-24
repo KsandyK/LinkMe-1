@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 
 export default function Rewards() {
   const [tab, setTab] = useState<"credits" | "gifts" | "boosts">("credits");

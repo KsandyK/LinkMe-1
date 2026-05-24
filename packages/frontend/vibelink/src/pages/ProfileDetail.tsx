@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { mockProfiles } from "../lib/mockProfiles";
 import { useApp } from "../context/AppContext";

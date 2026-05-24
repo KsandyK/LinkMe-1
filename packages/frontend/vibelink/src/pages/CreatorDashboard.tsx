@@ -1,4 +1,4 @@
-﻿export default function CreatorDashboard() {
+export default function CreatorDashboard() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <h1 className="text-5xl font-semibold tracking-tight mb-10">Creator Dashboard</h1>

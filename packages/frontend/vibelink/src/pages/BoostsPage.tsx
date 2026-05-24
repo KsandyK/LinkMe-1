@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 
 const BOOST_PACKAGES = [

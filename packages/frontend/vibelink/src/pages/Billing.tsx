@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 
 export default function Billing() {
   const [activeTab, setActiveTab] = useState<"methods" | "history" | "subscriptions">("methods");

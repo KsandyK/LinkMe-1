@@ -1,4 +1,4 @@
-﻿export default function LiveFeeds() {
+export default function LiveFeeds() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       <h1 className="text-4xl font-bold mb-8">Live Feeds</h1>

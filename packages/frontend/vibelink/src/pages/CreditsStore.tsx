@@ -1,4 +1,4 @@
-﻿import { useApp } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
 
 const PACKAGES = [

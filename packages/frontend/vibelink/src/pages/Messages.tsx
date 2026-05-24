@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { mockProfiles } from "../lib/mockProfiles";
 
 export default function Messages() {

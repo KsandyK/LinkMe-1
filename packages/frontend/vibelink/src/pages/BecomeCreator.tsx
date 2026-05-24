@@ -1,4 +1,4 @@
-﻿import { useLocation } from "wouter";
+import { useLocation } from "wouter";
 
 export default function BecomeCreator() {
   const [, setLocation] = useLocation();

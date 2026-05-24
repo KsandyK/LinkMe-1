@@ -1,4 +1,4 @@
-xport const TERMS_OF_SERVICE = `LINKME INC. – TERMS OF SERVICE
+export const TERMS_OF_SERVICE = `LINKME INC. â€“ TERMS OF SERVICE
 Last Updated: May 21, 2026
 
 Welcome to LinkMe. By accessing or using the LinkMe platform, you agree to these Terms of Service. Please read them carefully.
@@ -23,7 +23,7 @@ LinkMe is not liable for any indirect or consequential damages arising from your
 
 By using LinkMe, you agree to these terms in full.`;
 
-export const PRIVACY_POLICY = `LINKME INC. – PRIVACY POLICY
+export const PRIVACY_POLICY = `LINKME INC. â€“ PRIVACY POLICY
 Last Updated: May 21, 2026
 
 LinkMe Inc. ("LinkMe", "we", "us", or "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information.
@@ -53,7 +53,7 @@ We may update this Privacy Policy from time to time. We will notify users of sig
 
 Last Updated: May 21, 2026`;
 
-export const CODE_OF_CONDUCT = `LINKME INC. – CODE OF CONDUCT
+export const CODE_OF_CONDUCT = `LINKME INC. â€“ CODE OF CONDUCT
 Last Updated: May 21, 2026
 
 All users of LinkMe are expected to follow this Code of Conduct:
@@ -67,7 +67,7 @@ All users of LinkMe are expected to follow this Code of Conduct:
 
 Violation of this Code of Conduct may result in account suspension or termination.`;
 
-export const CREATOR_AGREEMENT = `LINKME INC. – CREATOR AGREEMENT & NDA
+export const CREATOR_AGREEMENT = `LINKME INC. â€“ CREATOR AGREEMENT & NDA
 Last Updated: May 21, 2026
 
 This Creator Agreement applies to all creators on LinkMe.
@@ -82,7 +82,7 @@ All creators must provide valid government-issued ID to verify they are 18 or ol
 Creators receive 80% of earnings from their content and live sessions (subject to payment processor fees).
 
 4. Non-Disclosure
-You agree not to disclose confidential information about LinkMe’s platform, features, or business operations.
+You agree not to disclose confidential information about LinkMeâ€™s platform, features, or business operations.
 
 5. Termination
 LinkMe may terminate this agreement and remove creator status at any time for violation of platform rules.
