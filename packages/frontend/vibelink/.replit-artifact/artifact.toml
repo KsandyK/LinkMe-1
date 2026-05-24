@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "VibeLink"
+version = "1.0.0"
+id = "artifacts/vibelink"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24050
+
+[services.development]
+run = "pnpm --filter @workspace/vibelink run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vibelink", "run", "build" ]
+publicDir = "artifacts/vibelink/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24050"
+BASE_PATH = "/"
