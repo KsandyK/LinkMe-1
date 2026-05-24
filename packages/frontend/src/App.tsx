@@ -1,62 +1,57 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React from 'react';
 
-const App = () => {
-  const [balance, setBalance] = useState(0);
-
-  useEffect(() => {
-    fetch('/api/credits/balance')
-      .then(r => r.json())
-      .then(data => setBalance(data.balance || 0))
-      .catch(() => {});
-  }, []);
-
+const Homepage = () => {
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#0a0a0a',
-      color: 'white',
-      fontFamily: 'system-ui, sans-serif',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem'
-    }}>
-      <h1 style={{
-        fontSize: '5rem',
-        fontWeight: 900,
-        background: 'linear-gradient(to right, #a855f7, #ec4899, #22d3ee)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '1rem'
-      }}>
-        VibeLink
-      </h1>
-      <p style={{ fontSize: '1.8rem', color: '#a3a3a3', marginBottom: '3rem' }}>Connect. Live. Vibe.</p>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: 'white', fontFamily: 'system-ui, sans-serif' }}>
+      {/* Top Navigation */}
+      <nav style={{ backgroundColor: '#111111', padding: '1rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #a855f7' }}>
+        <div style={{ fontSize: '2.2rem', fontWeight: 900, background: 'linear-gradient(to right, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          VibeLink
+        </div>
+        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '1.1rem' }}>
+          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>Home</a>
+          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>Creators</a>
+          <a href="#" style={{ color: '#22d3ee', textDecoration: 'none' }}>Live <span style={{ background: '#ef4444', color: 'white', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '9999px' }}>LIVE</span></a>
+          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>Messages</a>
+          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>Credits</a>
+          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>VIP</a>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ backgroundColor: '#1a1a1a', padding: '8px 20px', borderRadius: '9999px', fontSize: '1rem' }}>💎 250</div>
+          <button style={{ backgroundColor: '#22d3ee', color: '#000', padding: '8px 24px', borderRadius: '9999px', fontWeight: 700 }}>Verify Age</button>
+          <div style={{ width: 40, height: 40, backgroundColor: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>U</div>
+        </div>
+      </nav>
 
-      <div style={{
-        backgroundColor: '#1a1a1a',
-        padding: '2rem 4rem',
-        borderRadius: '9999px',
-        border: '3px solid #a855f7',
-        fontSize: '3rem',
-        fontWeight: 700,
-        marginBottom: '4rem'
-      }}>
-        💎 {balance} credits
+      {/* Hero */}
+      <div style={{ height: '70vh', background: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url("https://picsum.photos/id/1015/2000/1200") center/cover', display: 'flex', alignItems: 'center', padding: '0 4rem' }}>
+        <div style={{ maxWidth: '700px' }}>
+          <h1 style={{ fontSize: '4.5rem', lineHeight: '1.1', fontWeight: 900 }}>
+            Connect. <span style={{ color: '#22d3ee' }}>Live.</span> Vibe.
+          </h1>
+          <p style={{ fontSize: '1.6rem', marginTop: '1rem', color: '#d1d5db' }}>
+            The premium hybrid dating and live interaction platform.<br />
+            Discover genuine connections with creators who match your vibe.
+          </p>
+          <div style={{ marginTop: '3rem', display: 'flex', gap: '1.5rem' }}>
+            <button style={{ backgroundColor: '#22d3ee', color: '#000', padding: '1rem 2.5rem', borderRadius: '9999px', fontSize: '1.2rem', fontWeight: 700 }}>Browse Profiles</button>
+            <button style={{ backgroundColor: '#ec4899', color: 'white', padding: '1rem 2.5rem', borderRadius: '9999px', fontSize: '1.2rem', fontWeight: 700 }}>Watch Live</button>
+          </div>
+        </div>
       </div>
 
-      <a href="/credits" style={{
-        backgroundColor: '#22d3ee',
-        color: '#000',
-        padding: '1rem 3rem',
-        borderRadius: '9999px',
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        textDecoration: 'none'
-      }}>
-        Go to Credits Store
-      </a>
+      {/* Live Now Section */}
+      <div style={{ padding: '3rem 4rem' }}>
+        <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Live Now</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ backgroundColor: '#1a1a1a', borderRadius: '16px', overflow: 'hidden' }}>
+            <div style={{ height: '180px', background: '#334155', position: 'relative' }}>
+              <span style={{ position: 'absolute', top: 12, left: 12, background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '9999px', fontSize: '0.8rem' }}>LIVE</span>
+            </div>
+            <div style={{ padding: '1rem' }}>Luna's Evening Vibes</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
