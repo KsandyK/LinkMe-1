@@ -11,7 +11,8 @@
   "dependencies": {
     "@tailwindcss/vite": "catalog:",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@tailwindcss/oxide-win32-x64-msvc": "^4.3.0",

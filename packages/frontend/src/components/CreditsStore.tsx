@@ -33,7 +33,7 @@ const CreditsStore = () => {
       });
       const data = await res.json();
       if (data.success) {
-        setMessage(\✅ \ credits purchased!\);
+        setMessage('✅ Purchase successful!');
         fetchBalance();
       }
     } catch (err) {
@@ -44,11 +44,11 @@ const CreditsStore = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: 'white', padding: '3rem' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: 'white', padding: '3rem', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '3rem', textAlign: 'center', marginBottom: '2rem' }}>Credits Store</h1>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', backgroundColor: '#1a1a1a', padding: '1rem 3rem', borderRadius: '9999px', fontSize: '2rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', backgroundColor: '#1a1a1a', padding: '1rem 3rem', borderRadius: '9999px', fontSize: '2.5rem' }}>
             💎 <strong>{balance}</strong> credits
           </div>
         </div>
@@ -62,10 +62,11 @@ const CreditsStore = () => {
               textAlign: 'center',
               border: '2px solid #a855f7'
             }}>
-              <div style={{ fontSize: '4rem', fontWeight: 800, color: '#c026d3' }}>{pkg.amount}</div>
-              <div style={{ color: '#a3a3a3', marginBottom: '1rem' }}>credits</div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>\</div>
-              <div style={{ color: '#ec4899', margin: '0.5rem 0' }}>{pkg.label}</div>
+              <div style={{ fontSize: '3.5rem', fontWeight: 800, color: '#c026d3' }}>{pkg.amount}</div>
+              <div style={{ color: '#a3a3a3' }}>credits</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, margin: '1rem 0' }}>\</div>
+              <div style={{ color: '#ec4899' }}>{pkg.label}</div>
+
               <button
                 onClick={() => handleBuy(pkg.amount)}
                 disabled={loading}
@@ -73,7 +74,7 @@ const CreditsStore = () => {
                   marginTop: '2rem',
                   width: '100%',
                   padding: '1rem',
-                  fontSize: '1.2rem',
+                  fontSize: '1.3rem',
                   fontWeight: 700,
                   background: 'linear-gradient(to right, #a855f7, #ec4899)',
                   color: 'white',
