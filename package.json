@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "concurrently \"pnpm --filter api-server dev\" \"pnpm --filter frontend dev\"",
         "dev:api": "pnpm --filter api-server dev",
-        "dev:frontend": "pnpm --filter frontend dev",
+        "dev:frontend": "pnpm --filter vibelink dev",
         "build": "pnpm --filter api-server build && pnpm --filter frontend build",
         "start": "pnpm --filter api-server start",
         "docker:up": "docker compose up --build",
@@ -23,3 +23,4 @@
         "patchedDependencies": {}
     }
 }
+

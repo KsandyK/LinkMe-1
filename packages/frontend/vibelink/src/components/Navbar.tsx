@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -29,9 +29,10 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <Link href="/become-creator" className="px-5 py-2 text-sm rounded-full border border-white/60 hover:bg-white hover:text-black transition-all">Become a Creator</Link>
-          <Link href="/account" className="text-sm text-white/80 hover:text-white">Account</Link>
+          <Link href="/login" className="text-sm text-white/80 hover:text-white">Login</Link>
         </div>
       </div>
     </nav>
   );
 }
+
