@@ -1,5 +1,5 @@
 /**
- * VIBELINK â€” App Context
+ * VIBELINK Ã¢â‚¬â€ App Context
  * Velvet Dark Design System
  * Global state: age gate, age verification, credits, unlocked content, PII safety.
  */
@@ -49,7 +49,7 @@ const STORAGE_KEYS = {
 
 function safeGet<T>(key: string, fallback: T): T {
   try {
-    const val = sessionStorage.getItem(key);
+    const val = localStorage.getItem(key);
     if (val === null) return fallback;
     return JSON.parse(val) as T;
   } catch {
@@ -59,7 +59,7 @@ function safeGet<T>(key: string, fallback: T): T {
 
 function safeSet(key: string, value: unknown) {
   try {
-    sessionStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(key, JSON.stringify(value));
   } catch {
     // Storage not available
   }
