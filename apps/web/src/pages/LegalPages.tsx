@@ -1,5 +1,5 @@
 /**
- * LINKME Ã¢â‚¬â€ Legal Pages
+ * LINKME — Legal Pages
  * Comprehensive legal documents with Terms of Service, Privacy Policy, Creator Agreement, Code of Conduct
  * No CCBill references. No AI watermarks.
  */
@@ -24,7 +24,7 @@ Legal Department: legal@LINKME.com
 
 ---
 
-## IMPORTANT LEGAL NOTICE Ã¢â‚¬â€ READ CAREFULLY
+## IMPORTANT LEGAL NOTICE — READ CAREFULLY
 
 LINKME is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.
 
@@ -129,7 +129,7 @@ LINKME is an adult platform restricted to users 18 years of age or older. By acc
 
 6.2 **Creator Content:** Creators retain copyright in their original content. Purchasing or unlocking access to content grants you a personal, non-exclusive, non-transferable, revocable license to view that content within the Platform only.
 
-6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. Ã‚Â§ 504, plus attorney's fees.
+6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
 
 6.4 **DMCA:** If you believe content infringes your copyright, send a DMCA notice to: dmca@LINKME.com. Repeat infringers' accounts will be terminated.
 
@@ -167,7 +167,7 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 ---
 
-Ã‚Â© 2026 LINKME INC. All rights reserved.
+© 2026 LINKME INC. All rights reserved.
     `,
   },
   privacy: {
@@ -299,7 +299,7 @@ Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-Ã‚Â© 2026 LINKME INC. All rights reserved.
+© 2026 LINKME INC. All rights reserved.
     `,
   },
   creator: {
@@ -313,17 +313,17 @@ Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-## LEGALLY BINDING AGREEMENT Ã¢â‚¬â€ READ EVERY SECTION
+## LEGALLY BINDING AGREEMENT — READ EVERY SECTION
 
 This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and LINKME INC., a Delaware corporation ("Company," "LINKME," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
 
 ---
 
-## PART I Ã¢â‚¬â€ CREATOR SERVICES AGREEMENT
+## PART I — CREATOR SERVICES AGREEMENT
 
 ---
 
-## 1. CREATOR STATUS Ã¢â‚¬â€ INDEPENDENT CONTRACTOR
+## 1. CREATOR STATUS — INDEPENDENT CONTRACTOR
 
 1.1 You are an independent contractor, not an employee, agent, joint venture partner, or franchisee of LINKME INC. This Agreement does not create any employment relationship.
 
@@ -344,18 +344,18 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 
 2.1 **Revenue Tiers:** Your creator revenue share is determined by your verified monthly gross platform earnings:
 
-- **Starter Tier** ($0Ã¢â‚¬â€œ$2,500/mo gross): Creator 75% | Platform 25%
-- **Rising Tier** ($2,501Ã¢â‚¬â€œ$5,000/mo gross): Creator 78% | Platform 22%
-- **Established Tier** ($5,001Ã¢â‚¬â€œ$15,000/mo gross): Creator 80% | Platform 20%
-- **Elite Tier** ($15,001Ã¢â‚¬â€œ$25,000/mo gross): Creator 83% | Platform 17%
-- **Partner Tier** ($25,001Ã¢â‚¬â€œ$75,000/mo gross): Creator 90% | Platform 10%
+- **Starter Tier** ($0–$2,500/mo gross): Creator 75% | Platform 25%
+- **Rising Tier** ($2,501–$5,000/mo gross): Creator 78% | Platform 22%
+- **Established Tier** ($5,001–$15,000/mo gross): Creator 80% | Platform 20%
+- **Elite Tier** ($15,001–$25,000/mo gross): Creator 83% | Platform 17%
+- **Partner Tier** ($25,001–$75,000/mo gross): Creator 90% | Platform 10%
 - **Top Partner Tier** ($75,001+/mo gross): Creator 95% | Platform 5%
 
 ### IMPORTANT PROCESSING FEE DISCLAIMER
 
-All revenue share percentages above are calculated on GROSS transaction revenue BEFORE the deduction of third-party vendor payment processing fees. Payment processors charge approximately 3%Ã¢â‚¬â€œ5% per transaction. These processing fees are deducted from gross revenue PRIOR to calculating creator payouts.
+All revenue share percentages above are calculated on GROSS transaction revenue BEFORE the deduction of third-party vendor payment processing fees. Payment processors charge approximately 3%–5% per transaction. These processing fees are deducted from gross revenue PRIOR to calculating creator payouts.
 
-**EXAMPLE:** On a $100 transaction Ã¢â‚¬â€ Processing fee (~4%) = $4.00. Net after processing = $96.00. Creator at 80% tier receives: $96.00 Ãƒâ€” 80% = $76.80. Platform keeps: $96.00 Ãƒâ€” 20% = $19.20.
+**EXAMPLE:** On a $100 transaction — Processing fee (~4%) = $4.00. Net after processing = $96.00. Creator at 80% tier receives: $96.00 × 80% = $76.80. Platform keeps: $96.00 × 20% = $19.20.
 
 2.2 **Additional Deductions:**
 - Chargeback amounts and associated fees
@@ -366,7 +366,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 2.4 **Payment Methods:** Bank ACH transfer (US), international wire transfer ($25 wire fee), or check.
 
-2.5 **Processing Time:** Funds typically clear in 3Ã¢â‚¬â€œ7 business days. International transfers may take 5Ã¢â‚¬â€œ10 business days.
+2.5 **Processing Time:** Funds typically clear in 3–7 business days. International transfers may take 5–10 business days.
 
 2.6 **Chargebacks & Reversals:** If a user initiates a chargeback, the full creator payout portion will be reversed from your next payout. Additionally, a $25 chargeback administration fee will be deducted.
 
@@ -393,13 +393,13 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 - Creator Content does not infringe any third-party rights
 - You have obtained all necessary releases and consents from all individuals depicted
 - All individuals depicted are verifiably 18 years of age or older
-- You have maintained all records required by 18 U.S.C. Ã‚Â§ 2257
+- You have maintained all records required by 18 U.S.C. § 2257
 
 ---
 
-## 4. AGE VERIFICATION & Ã‚Â§ 2257 RECORD-KEEPING (MANDATORY)
+## 4. AGE VERIFICATION & § 2257 RECORD-KEEPING (MANDATORY)
 
-4.1 Compliance with 18 U.S.C. Ã‚Â§ 2257 is MANDATORY for all Creators producing sexually explicit content.
+4.1 Compliance with 18 U.S.C. § 2257 is MANDATORY for all Creators producing sexually explicit content.
 
 4.2 You must maintain records verifying the age (18+) of every individual depicted in sexually explicit content, including yourself. Required documentation:
 - Government-issued photo ID showing legal name and date of birth
@@ -420,7 +420,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 - Explicit language in appropriate contexts
 
 **NEVER PERMITTED:**
-- Any sexual content involving minors (CSAM) Ã¢â‚¬â€ reported to NCMEC immediately
+- Any sexual content involving minors (CSAM) — reported to NCMEC immediately
 - Non-consensual content of any kind
 - Content depicting real violence, harm, or abuse
 - Bestiality or content involving animals
@@ -441,7 +441,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 ---
 
-## PART II Ã¢â‚¬â€ NON-DISCLOSURE AGREEMENT
+## PART II — NON-DISCLOSURE AGREEMENT
 
 ---
 
@@ -465,7 +465,7 @@ This Agreement is governed by the laws of the State of Delaware, without regard 
 
 ---
 
-Ã‚Â© 2026 LINKME INC. All rights reserved.
+© 2026 LINKME INC. All rights reserved.
     `,
   },
   conduct: {
@@ -526,7 +526,7 @@ All users and creators agree to:
 - Do not share anyone's personal information without their consent
 - Do not attempt to "doxx" anyone on or off-platform
 - Do not share screenshots or recordings outside the platform without consent
-- Creators' real identities are protected Ã¢â‚¬â€ do not attempt to identify them
+- Creators' real identities are protected — do not attempt to identify them
 
 ### 2.6 Content Standards
 - Do not upload content involving minors in any sexual context
@@ -608,7 +608,7 @@ Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
 
-Ã‚Â© 2026 LINKME INC. All rights reserved.
+© 2026 LINKME INC. All rights reserved.
     `,
   },
 };
@@ -697,7 +697,7 @@ export default function LegalPages() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-gray-400 text-sm">
-          <p>Ã‚Â© 2026 LINKME INC. All rights reserved.</p>
+          <p>© 2026 LINKME INC. All rights reserved.</p>
           <p className="mt-2">
             For legal inquiries, contact: <span className="text-teal-400">legal@LINKME.com</span>
           </p>

@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/contexts/AppContext";
 
 const BOOST_PACKAGES = [
-  { id: "spark", name: "Spark", emoji: "âœ¨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
-  { id: "flame", name: "Flame", emoji: "ðŸ”¥", boosts: 12, price: 19.99, features: ["12 profile boosts/month", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"], popular: true, color: "#14B8A6" },
-  { id: "inferno", name: "Inferno", emoji: "ðŸ’¥", boosts: 20, price: 34.99, features: ["20 profile boosts/month", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"], popular: false, color: "#f97316" },
-  { id: "legend", name: "Legend", emoji: "ðŸ‘‘", boosts: 35, price: 59.99, features: ["35 boosts/month (MAX)", "Homepage shoutout", "Featured in newsletters", "VIP badge on profile", "Dedicated account manager", "Custom boost scheduling", "Revenue analytics"], popular: false, color: "#f59e0b" },
+  { id: "spark", name: "Spark", emoji: "✨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
+  { id: "flame", name: "Flame", emoji: "🔥", boosts: 12, price: 19.99, features: ["12 profile boosts/month", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"], popular: true, color: "#14B8A6" },
+  { id: "inferno", name: "Inferno", emoji: "💥", boosts: 20, price: 34.99, features: ["20 profile boosts/month", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"], popular: false, color: "#f97316" },
+  { id: "legend", name: "Legend", emoji: "👑", boosts: 35, price: 59.99, features: ["35 boosts/month (MAX)", "Homepage shoutout", "Featured in newsletters", "VIP badge on profile", "Dedicated account manager", "Custom boost scheduling", "Revenue analytics"], popular: false, color: "#f59e0b" },
 ];
 
 const MEMBERSHIP_PLANS = [
   {
     id: "free",
     name: "Free",
-    emoji: "ðŸŒŸ",
+    emoji: "🌟",
     price: 0,
     billingPeriod: "Free forever",
     credits: 0,
@@ -31,7 +31,7 @@ const MEMBERSHIP_PLANS = [
   {
     id: "fan",
     name: "Fan",
-    emoji: "â¤ï¸",
+    emoji: "❤️",
     price: 4.99,
     billingPeriod: "per month",
     credits: 50,
@@ -51,7 +51,7 @@ const MEMBERSHIP_PLANS = [
   {
     id: "supporter",
     name: "Supporter",
-    emoji: "ðŸ”¥",
+    emoji: "🔥",
     price: 9.99,
     billingPeriod: "per month",
     credits: 100,
@@ -72,7 +72,7 @@ const MEMBERSHIP_PLANS = [
   {
     id: "superfan",
     name: "Super Fan",
-    emoji: "ðŸ’Ž",
+    emoji: "💎",
     price: 14.99,
     billingPeriod: "per month",
     credits: 150,
@@ -94,7 +94,7 @@ const MEMBERSHIP_PLANS = [
   {
     id: "allaccess",
     name: "All-Access",
-    emoji: "ðŸ†",
+    emoji: "🏆",
     price: 24.99,
     billingPeriod: "per month",
     credits: 250,
@@ -116,7 +116,7 @@ const MEMBERSHIP_PLANS = [
   {
     id: "creatorpass",
     name: "Creator Pass",
-    emoji: "ðŸ‘‘",
+    emoji: "👑",
     price: 49.99,
     billingPeriod: "per month",
     credits: 500,
@@ -155,7 +155,7 @@ export default function BoostsPage() {
     setTimeout(() => {
       setLoadingBoost(null);
       setActiveBoost(pkg.id);
-      spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost â€” ${pkg.boosts} boosts/month`);
+      spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
     }, 800);
   };
 
@@ -166,7 +166,7 @@ export default function BoostsPage() {
       setLoadingMembership(null);
       setActiveMembership(plan.id);
       const price = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
-      spendCredits(Math.round(price * 10), `${plan.name} Membership â€” $${price.toFixed(2)}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
+      spendCredits(Math.round(price * 10), `${plan.name} Membership — $${price.toFixed(2)}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
     }, 800);
   };
 
@@ -179,8 +179,8 @@ export default function BoostsPage() {
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border mb-8">
           {[
-            { id: "memberships" as const, label: "Membership Plans", emoji: "ðŸ’Ž" },
-            { id: "boosts" as const, label: "Profile Boosts", emoji: "ðŸš€" },
+            { id: "memberships" as const, label: "Membership Plans", emoji: "💎" },
+            { id: "boosts" as const, label: "Profile Boosts", emoji: "🚀" },
           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id)}
               className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
@@ -238,13 +238,13 @@ export default function BoostsPage() {
                     <ul className="space-y-1.5 flex-1 mb-4">
                       {plan.features.map(f => (
                         <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                          <span className="mt-0.5 font-bold" style={{ color: plan.color }}>âœ“</span>
+                          <span className="mt-0.5 font-bold" style={{ color: plan.color }}>✓</span>
                           {f}
                         </li>
                       ))}
                       {plan.notIncluded.map(f => (
                         <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground opacity-40">
-                          <span className="mt-0.5">âœ—</span>
+                          <span className="mt-0.5">✗</span>
                           {f}
                         </li>
                       ))}
@@ -257,9 +257,9 @@ export default function BoostsPage() {
                         ? { background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }
                         : { background: plan.color, color: plan.color === "#f59e0b" ? "#000" : "#fff" }}>
                       {loadingMembership === plan.id
-                        ? "Processingâ€¦"
+                        ? "Processing…"
                         : activeMembership === plan.id
-                          ? `âœ“ Active Plan`
+                          ? `✓ Active Plan`
                           : plan.id === "free"
                             ? "Current (Free)"
                             : plan.cta}
@@ -271,7 +271,7 @@ export default function BoostsPage() {
 
             <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">
               <p className="text-muted-foreground text-sm">
-                ðŸ”’ Memberships billed monthly via <strong className="text-foreground">CCBill</strong>. Cancel anytime. Statement shows "CCBILL*LinkMe".
+                🔒 Memberships billed monthly via <strong className="text-foreground">CCBill</strong>. Cancel anytime. Statement shows "CCBILL*LinkMe".
               </p>
             </div>
           </>
@@ -296,7 +296,7 @@ export default function BoostsPage() {
                   <ul className="space-y-2 flex-1 mb-5">
                     {pkg.features.map(f => (
                       <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="text-primary mt-0.5">âœ“</span>{f}
+                        <span className="text-primary mt-0.5">✓</span>{f}
                       </li>
                     ))}
                   </ul>
@@ -309,10 +309,10 @@ export default function BoostsPage() {
                       color: activeBoost === pkg.id ? "hsl(var(--muted-foreground))" : "#fff",
                     }}>
                     {loadingBoost === pkg.id
-                      ? "Processingâ€¦"
+                      ? "Processing…"
                       : activeBoost === pkg.id
-                        ? `âœ“ Active â€” ${pkg.boosts} boosts/mo`
-                        : `Subscribe â€” $${pkg.price}/mo`}
+                        ? `✓ Active — ${pkg.boosts} boosts/mo`
+                        : `Subscribe — $${pkg.price}/mo`}
                   </button>
                 </div>
               ))}
@@ -322,9 +322,9 @@ export default function BoostsPage() {
               <h2 className="text-lg font-bold text-foreground mb-4">How Boosts Work</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { step: "1", icon: "ðŸš€", title: "Activate a Boost", desc: "Use one of your monthly boosts to push your profile to the top of search results and feeds." },
-                  { step: "2", icon: "ðŸ‘", title: "Get Discovered", desc: "Your profile is featured prominently to users browsing in your category and location." },
-                  { step: "3", icon: "â¤ï¸", title: "Gain Followers", desc: "More visibility means more followers, messages, and connection opportunities." },
+                  { step: "1", icon: "🚀", title: "Activate a Boost", desc: "Use one of your monthly boosts to push your profile to the top of search results and feeds." },
+                  { step: "2", icon: "👁", title: "Get Discovered", desc: "Your profile is featured prominently to users browsing in your category and location." },
+                  { step: "3", icon: "❤️", title: "Gain Followers", desc: "More visibility means more followers, messages, and connection opportunities." },
                 ].map(step => (
                   <div key={step.step} className="text-center p-4">
                     <div className="w-10 h-10 rounded-full border-2 border-primary text-primary font-bold text-lg flex items-center justify-center mx-auto mb-3">{step.step}</div>

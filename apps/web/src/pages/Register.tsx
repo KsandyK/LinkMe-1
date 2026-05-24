@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/contexts/AppContext";
 
 type Step = "account" | "profile" | "preferences" | "done";
 
@@ -28,7 +28,6 @@ export default function Register() {
     confirmPassword: "",
     displayName: "",
     age: "",
-    gender: "",
     location: "",
     bio: "",
     interests: [] as string[],
@@ -66,7 +65,6 @@ export default function Register() {
     if (!form.displayName.trim()) errs.displayName = "Display name is required";
     if (!form.age || parseInt(form.age) < 18) errs.age = "You must be 18 or older";
     if (parseInt(form.age) > 99) errs.age = "Please enter a valid age";
-    if (!form.gender) errs.gender = "Please select your gender";
     return errs;
   };
 
@@ -83,7 +81,7 @@ export default function Register() {
       setStep("preferences");
     } else if (step === "preferences") {
       setStep("done");
-      addCredits(200, "Welcome bonus â€” new member reward!");
+      addCredits(200, "Welcome bonus — new member reward!");
     }
   };
 
@@ -99,21 +97,21 @@ export default function Register() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <div className="text-7xl mb-6">ðŸŽ‰</div>
+          <div className="text-7xl mb-6">🎉</div>
           <h1 className="text-3xl font-black text-foreground mb-3">Welcome to LinkMe!</h1>
           <p className="text-muted-foreground mb-2">
             Your account <span className="text-primary font-bold">@{form.username}</span> is ready.
           </p>
           <div className="my-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
-            <p className="text-primary font-bold text-lg">+200 Welcome Credits! ðŸŽ</p>
+            <p className="text-primary font-bold text-lg">+200 Welcome Credits! 🎁</p>
             <p className="text-muted-foreground text-sm mt-1">Added to your account as a new member bonus</p>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {[
-              { icon: "ðŸ‘¤", label: "Browse Profiles", href: "/profiles" },
-              { icon: "ðŸ“º", label: "Watch Live", href: "/live" },
-              { icon: "ðŸ’¬", label: "Send Messages", href: "/messages" },
-              { icon: "ðŸ’°", label: "Get Credits", href: "/credits" },
+              { icon: "👤", label: "Browse Profiles", href: "/profiles" },
+              { icon: "📺", label: "Watch Live", href: "/live" },
+              { icon: "💬", label: "Send Messages", href: "/messages" },
+              { icon: "💰", label: "Get Credits", href: "/credits" },
             ].map(l => (
               <Link key={l.href} href={l.href}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-primary transition-colors">
@@ -124,7 +122,7 @@ export default function Register() {
           </div>
           <Link href="/" className="block w-full py-3 rounded-xl text-white font-semibold text-sm"
             style={{ background: "#14B8A6" }}>
-            Start Exploring â†’
+            Start Exploring →
           </Link>
           <p className="mt-4 text-xs text-muted-foreground">
             Want to earn from content?{" "}
@@ -140,9 +138,9 @@ export default function Register() {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">ðŸ’Ž</div>
+          <div className="text-4xl mb-2">💎</div>
           <h1 className="text-3xl font-black text-foreground">
-            <span style={{ color: "#14B8A6" }}>Vibe</span>Link
+            <span style={{ color: "#14B8A6" }}>Link</span>Me
           </h1>
           <p className="text-muted-foreground text-sm mt-1">Create your free member account</p>
         </div>
@@ -157,7 +155,7 @@ export default function Register() {
                     ? "text-white border-primary"
                     : "text-muted-foreground border-border"
                 }`} style={currentStepIdx >= i ? { background: "#14B8A6", borderColor: "#14B8A6" } : {}}>
-                  {currentStepIdx > i ? "âœ“" : s.num}
+                  {currentStepIdx > i ? "✓" : s.num}
                 </div>
                 <span className={`text-xs mt-1 ${currentStepIdx >= i ? "text-primary" : "text-muted-foreground"}`}>
                   {s.label}
@@ -177,7 +175,7 @@ export default function Register() {
               <h2 className="text-xl font-bold text-foreground mb-4">Create Account</h2>
 
               <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-                ðŸ”ž LinkMe is for adults 18+ only. You must confirm your age below.
+                🔞 LinkMe is for adults 18+ only. You must confirm your age below.
               </div>
 
               <Field label="Email Address" error={errors.email}>
@@ -249,24 +247,11 @@ export default function Register() {
                   className="w-full px-4 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary" />
               </Field>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Age" error={errors.age}>
-                  <input value={form.age} onChange={e => setForm(f => ({ ...f, age: e.target.value.replace(/\D/g, "") }))}
-                    placeholder="Your age" type="number" min="18" max="99"
-                    className="w-full px-4 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary" />
-                </Field>
-
-                <Field label="Gender" error={errors.gender}>
-                  <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary">
-                    <option value="">Select...</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Non-binary</option>
-                    <option>Prefer not to say</option>
-                  </select>
-                </Field>
-              </div>
+              <Field label="Age" error={errors.age}>
+                <input value={form.age} onChange={e => setForm(f => ({ ...f, age: e.target.value.replace(/\D/g, "") }))}
+                  placeholder="Your age" type="number" min="18" max="99"
+                  className="w-full px-4 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary" />
+              </Field>
 
               <Field label="Location (optional)">
                 <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
@@ -324,7 +309,7 @@ export default function Register() {
               </div>
 
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                <p className="text-primary font-semibold text-sm">ðŸŽ Welcome Bonus</p>
+                <p className="text-primary font-semibold text-sm">🎁 Welcome Bonus</p>
                 <p className="text-muted-foreground text-xs mt-1">
                   Complete registration and receive <strong className="text-foreground">200 free credits</strong> to start exploring!
                 </p>
@@ -338,13 +323,13 @@ export default function Register() {
               <button
                 onClick={() => setStep(step === "preferences" ? "profile" : "account")}
                 className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground transition-colors">
-                â† Back
+                ← Back
               </button>
             )}
             <button onClick={handleNext}
               className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
               style={{ background: "#14B8A6" }}>
-              {step === "preferences" ? "Create Account ðŸŽ‰" : "Continue â†’"}
+              {step === "preferences" ? "Create Account 🎉" : "Continue →"}
             </button>
           </div>
         </div>
@@ -355,7 +340,7 @@ export default function Register() {
         </p>
         <p className="text-center mt-2 text-xs text-muted-foreground">
           Want to earn as a creator?{" "}
-          <Link href="/become-creator" className="text-primary hover:underline">Creator registration â†’</Link>
+          <Link href="/become-creator" className="text-primary hover:underline">Creator registration →</Link>
         </p>
       </div>
     </div>

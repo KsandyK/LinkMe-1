@@ -1,5 +1,5 @@
 /**
- * LINKME â€” App Router
+ * LINKME — App Router
  * Velvet Dark Design System
  * All routes, providers, age gate, and navigation.
  */

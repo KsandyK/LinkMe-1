@@ -1,5 +1,5 @@
 /**
- * LINKME Ã¢â‚¬â€ AgeGate Component
+ * LINKME — AgeGate Component
  * Velvet Dark Design System
  * Full-screen +18 acknowledgement landing page with legal compliance.
  * Must be accepted before any site content is shown.
@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 
-const AGE_GATE_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-age-gate-bg-CBMZMrcGskdmGvkrriSpfG.webp";
+const AGE_GATE_BG = "https://images.unsplash.com/photo-1557683311-eac922347aa1?auto=format&w=1920&q=80";
 
 export function AgeGate() {
   const { ageGateAccepted, setAgeGateAccepted } = useApp();
@@ -63,9 +63,9 @@ export function AgeGate() {
             {/* Warning */}
             <div className="rounded-xl p-4 mb-6" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
               <div className="flex items-start gap-3">
-                <span className="text-xl mt-0.5">Ã¢Å¡Â Ã¯Â¸Â</span>
+                <span className="text-xl mt-0.5">⚠️</span>
                 <div>
-                  <p style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.25rem" }}>ADULT CONTENT Ã¢â‚¬â€ 18+ ONLY</p>
+                  <p style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.25rem" }}>ADULT CONTENT — 18+ ONLY</p>
                   <p style={{ color: "rgba(252,165,165,0.75)", fontSize: "0.8rem", lineHeight: 1.5 }}>
                     This website contains sexually explicit material, adult content, and mature themes intended exclusively for adults aged 18 years or older. Access by minors is strictly prohibited.
                   </p>
@@ -81,9 +81,9 @@ export function AgeGate() {
             {/* Compliance badges */}
             <div className="grid grid-cols-3 gap-2 mb-6">
               {[
-                { icon: "Ã°Å¸â€â€™", label: "SSL Secured" },
-                { icon: "Ã¢Å“â€œ", label: "2257 Compliant" },
-                { icon: "Ã°Å¸â€ºÂ¡Ã¯Â¸Â", label: "COPPA Compliant" },
+                { icon: "🔒", label: "SSL Secured" },
+                { icon: "✓", label: "2257 Compliant" },
+                { icon: "🛡️", label: "COPPA Compliant" },
               ].map(b => (
                 <div key={b.label} className="rounded-lg p-2 text-center" style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.15)" }}>
                   <div style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>{b.icon}</div>
@@ -109,7 +109,7 @@ export function AgeGate() {
                     boxShadow: checked ? "0 0 10px rgba(20,184,166,0.4)" : "none",
                   }}
                 >
-                  {checked && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>Ã¢Å“â€œ</span>}
+                  {checked && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
                 </div>
               </div>
               <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.8rem", lineHeight: 1.5 }}>
@@ -131,7 +131,7 @@ export function AgeGate() {
                 className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
               >
-                I am under 18 Ã¢â‚¬â€ Leave
+                I am under 18 — Leave
               </button>
               <button
                 onClick={handleEnter}
@@ -143,7 +143,7 @@ export function AgeGate() {
                   boxShadow: checked ? "0 4px 20px rgba(20,184,166,0.35)" : "none",
                 }}
               >
-                I am 18+ Ã¢â‚¬â€ Enter Site
+                I am 18+ — Enter Site
               </button>
             </div>
 

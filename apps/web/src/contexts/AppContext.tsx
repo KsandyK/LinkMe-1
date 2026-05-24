@@ -1,5 +1,5 @@
 /**
- * LINKME ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â App Context
+ * LINKME — App Context
  * Velvet Dark Design System
  * Global state: age gate, age verification, credits, unlocked content, PII safety.
  */

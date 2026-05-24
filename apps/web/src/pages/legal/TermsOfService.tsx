@@ -1,4 +1,4 @@
-﻿import { LegalDownloadBar } from "@/components/LegalDownloadBar";
+import { LegalDownloadBar } from "@/components/LegalDownloadBar";
 import { TERMS_OF_SERVICE } from "@/lib/legal-content";
 
 export default function TermsOfService() {
@@ -6,7 +6,7 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-background py-10 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <div className="text-4xl mb-3">ðŸ“œ</div>
+          <div className="text-4xl mb-3">📜</div>
           <h1 className="text-3xl font-black text-foreground mb-1">Terms of Service</h1>
           <p className="text-muted-foreground text-sm">Last updated: March 27, 2026 | Effective: March 27, 2026 | Version 2.0</p>
         </div>
@@ -16,7 +16,7 @@ export default function TermsOfService() {
         <div className="space-y-4 text-muted-foreground text-sm leading-relaxed">
 
           <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5">
-            <p className="text-destructive font-bold text-sm">âš ï¸ IMPORTANT LEGAL NOTICE â€” READ CAREFULLY</p>
+            <p className="text-destructive font-bold text-sm">⚠️ IMPORTANT LEGAL NOTICE — READ CAREFULLY</p>
             <p className="mt-2 text-sm">LinkMe is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.</p>
           </div>
 
@@ -38,9 +38,9 @@ export default function TermsOfService() {
               content: `2.1 Minimum Age: You MUST be at least 18 years of age to use this Service. No exceptions.
 
 2.2 You represent and warrant under penalty of perjury that:
-â€¢ You are 18 years of age or older
-â€¢ You are legally permitted to access adult content in your jurisdiction
-â€¢ You are not accessing this Service from a jurisdiction where adult content is prohibited
+• You are 18 years of age or older
+• You are legally permitted to access adult content in your jurisdiction
+• You are not accessing this Service from a jurisdiction where adult content is prohibited
 
 2.3 Minors: If LinkMe discovers or has reason to believe any user is under 18, we will immediately terminate their account, report the matter to relevant authorities, and preserve all relevant evidence for law enforcement. Attempts to circumvent age verification may constitute criminal fraud.
 
@@ -49,13 +49,13 @@ export default function TermsOfService() {
             {
               title: "3. Description of Service & No Guarantee",
               content: `3.1 LinkMe is a premium hybrid adult dating and live interaction platform providing:
-â€¢ Live streaming rooms and interactive broadcasts
-â€¢ Creator profiles with optional locked/premium content
-â€¢ Virtual gift and tipping systems
-â€¢ Credit-based messaging and interaction
-â€¢ VIP Lounge exclusive sessions
-â€¢ Profile boost and visibility features
-â€¢ Membership subscription plans
+• Live streaming rooms and interactive broadcasts
+• Creator profiles with optional locked/premium content
+• Virtual gift and tipping systems
+• Credit-based messaging and interaction
+• VIP Lounge exclusive sessions
+• Profile boost and visibility features
+• Membership subscription plans
 
 3.2 THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE." LinkMe MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
 
@@ -68,18 +68,18 @@ export default function TermsOfService() {
               content: `4.1 Credits are a virtual currency with no cash value, not exchangeable for real currency, and non-transferable between accounts. Credits are a limited license to access features on the Platform.
 
 4.2 All credit and subscription purchases are FINAL AND NON-REFUNDABLE, except:
-â€¢ Where required by applicable consumer protection law
-â€¢ At LinkMe's sole discretion in cases of demonstrable technical error
+• Where required by applicable consumer protection law
+• At LinkMe's sole discretion in cases of demonstrable technical error
 
 4.3 Credits do not expire while your account remains in good standing. Upon account termination for cause, all unused credits are forfeited without compensation.
 
 4.4 Pricing is in USD and subject to change with 7 days' notice for subscriptions. We reserve the right to modify credit-to-dollar ratios at any time.
 
 4.5 Chargebacks & Disputes: Initiating a chargeback or payment dispute without first exhausting LinkMe's internal dispute resolution process (support@LinkMe.com) constitutes a breach of these Terms. In such cases:
-â€¢ Your account will be immediately suspended pending investigation
-â€¢ You will be liable for the disputed amount plus a $50 processing fee
-â€¢ LinkMe reserves the right to pursue collection through any lawful means
-â€¢ Accounts with fraudulent chargebacks may be permanently banned
+• Your account will be immediately suspended pending investigation
+• You will be liable for the disputed amount plus a $50 processing fee
+• LinkMe reserves the right to pursue collection through any lawful means
+• Accounts with fraudulent chargebacks may be permanently banned
 
 4.6 Bonus Credits: Bonus credits issued through membership plans, promotions, or referrals are revocable at LinkMe's discretion and are the last credits spent from your balance.
 
@@ -89,19 +89,19 @@ export default function TermsOfService() {
               title: "5. User Conduct & Prohibited Activities",
               content: `5.1 You agree NOT to, and represent that you will not:
 
-â€¢ Access or use the Service if under 18 years of age
-â€¢ Harass, stalk, threaten, intimidate, or harm any user, creator, or LinkMe employee
-â€¢ Attempt to arrange in-person meetings with creators through the platform
-â€¢ Screenshot, record, download, copy, or distribute any content from the platform without explicit written permission
-â€¢ Use bots, scripts, crawlers, scrapers, or automated tools to interact with the platform
-â€¢ Reverse engineer, decompile, or attempt to extract source code from the platform
-â€¢ Impersonate any person, entity, or LinkMe staff member
-â€¢ Create multiple accounts to evade suspension or restrictions
-â€¢ Use VPN, proxy, or other tools to circumvent geo-restrictions or age verification
-â€¢ Upload, transmit, or share malware, viruses, or harmful code
-â€¢ Engage in any activity that interferes with platform operations or other users' enjoyment
-â€¢ Attempt to manipulate credit systems, exploit bugs, or conduct fraud
-â€¢ Use the platform to facilitate prostitution, trafficking, or any illegal exchange of services
+• Access or use the Service if under 18 years of age
+• Harass, stalk, threaten, intimidate, or harm any user, creator, or LinkMe employee
+• Attempt to arrange in-person meetings with creators through the platform
+• Screenshot, record, download, copy, or distribute any content from the platform without explicit written permission
+• Use bots, scripts, crawlers, scrapers, or automated tools to interact with the platform
+• Reverse engineer, decompile, or attempt to extract source code from the platform
+• Impersonate any person, entity, or LinkMe staff member
+• Create multiple accounts to evade suspension or restrictions
+• Use VPN, proxy, or other tools to circumvent geo-restrictions or age verification
+• Upload, transmit, or share malware, viruses, or harmful code
+• Engage in any activity that interferes with platform operations or other users' enjoyment
+• Attempt to manipulate credit systems, exploit bugs, or conduct fraud
+• Use the platform to facilitate prostitution, trafficking, or any illegal exchange of services
 
 5.2 Enforcement: Violations may result in: content removal, account suspension, permanent ban, forfeiture of credits without refund, and/or referral to law enforcement. LinkMe is the sole arbiter of violations and its decisions are final.`,
             },
@@ -111,7 +111,7 @@ export default function TermsOfService() {
 
 6.2 Creator Content: Creators retain copyright in their original content. Purchasing or unlocking access to content grants you a personal, non-exclusive, non-transferable, revocable license to view that content within the Platform only.
 
-6.3 Prohibited Content Actions: You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. Â§ 504, plus attorney's fees.
+6.3 Prohibited Content Actions: You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
 
 6.4 DMCA: If you believe content infringes your copyright, send a DMCA notice to: dmca@LinkMe.com. Repeat infringers' accounts will be terminated.
 
@@ -121,10 +121,10 @@ export default function TermsOfService() {
               title: "7. Privacy & Data",
               content: `Your use of the Service is governed by our Privacy Policy, incorporated herein by reference. You consent to our data practices including:
 
-â€¢ Collection of account, usage, and device data
-â€¢ Payment processing through CCBill (subject to CCBill's privacy policy)
-â€¢ Use of cookies and tracking technologies
-â€¢ Storage and processing of data in the United States
+• Collection of account, usage, and device data
+• Payment processing through CCBill (subject to CCBill's privacy policy)
+• Use of cookies and tracking technologies
+• Storage and processing of data in the United States
 
 Billing Discretion: All charges appear as "CCBILL*LinkMe" or similar neutral descriptor on your bank statement. We never use explicit descriptors in billing.`,
             },
@@ -134,10 +134,10 @@ Billing Discretion: All charges appear as "CCBILL*LinkMe" or similar neutral des
 
 THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE. LinkMe EXPRESSLY DISCLAIMS ALL WARRANTIES INCLUDING:
 
-â€¢ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-â€¢ WARRANTIES THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE
-â€¢ WARRANTIES AS TO THE ACCURACY, RELIABILITY, OR COMPLETENESS OF ANY CONTENT
-â€¢ WARRANTIES THAT DEFECTS WILL BE CORRECTED
+• IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+• WARRANTIES THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE
+• WARRANTIES AS TO THE ACCURACY, RELIABILITY, OR COMPLETENESS OF ANY CONTENT
+• WARRANTIES THAT DEFECTS WILL BE CORRECTED
 
 YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
             },
@@ -194,7 +194,7 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 13.4 Assignment: You may not assign your rights or obligations under these Terms. LinkMe may freely assign its rights.
 
 13.5 Contact:
-LinkMe Inc. â€” Legal Department
+LinkMe Inc. — Legal Department
 legal@LinkMe.com
 1234 Platform Way, Wilmington, DE 19801, USA`,
             },

@@ -1,5 +1,5 @@
 /**
- * LINKME Ã¢â‚¬â€ Age Verification Page
+ * LINKME — Age Verification Page
  * Velvet Dark Design System
  * Full age verification flow with DOB entry, ID upload, and PII safety notices.
  * No CCBill references. No AI watermarks.
@@ -9,7 +9,7 @@ import { useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { Shield, Lock, CheckCircle, AlertTriangle, Upload, Eye, EyeOff, ChevronRight } from "lucide-react";
 
-const VERIFY_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-verify-bg-c43C2oaUJmVUL7HgU3tmc7.webp";
+const VERIFY_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
 type VerifyStep = "intro" | "dob" | "id-upload" | "review" | "complete";
 
@@ -42,8 +42,8 @@ export default function AgeVerification() {
   const validateDob = () => {
     const m = parseInt(dob.month), d = parseInt(dob.day), y = parseInt(dob.year);
     if (!m || !d || !y) { setDobError("Please enter your complete date of birth."); return false; }
-    if (m < 1 || m > 12) { setDobError("Please enter a valid month (1Ã¢â‚¬â€œ12)."); return false; }
-    if (d < 1 || d > 31) { setDobError("Please enter a valid day (1Ã¢â‚¬â€œ31)."); return false; }
+    if (m < 1 || m > 12) { setDobError("Please enter a valid month (1–12)."); return false; }
+    if (d < 1 || d > 31) { setDobError("Please enter a valid day (1–31)."); return false; }
     if (y < 1900 || y > new Date().getFullYear()) { setDobError("Please enter a valid year."); return false; }
     const birthDate = new Date(y, m - 1, d);
     const today = new Date();
@@ -115,7 +115,7 @@ export default function AgeVerification() {
                       color: isDone ? "white" : isActive ? "#14b8a6" : "rgba(255,255,255,0.3)",
                     }}
                   >
-                    {isDone ? "Ã¢Å“â€œ" : i + 1}
+                    {isDone ? "✓" : i + 1}
                   </div>
                   <span className="hidden sm:block text-xs font-medium" style={{ color: isActive ? "#14b8a6" : isDone ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.25)" }}>{s.label}</span>
                 </div>
@@ -146,10 +146,10 @@ export default function AgeVerification() {
 
             <div className="space-y-3 mb-6">
               {[
-                { icon: "Ã°Å¸â€â€™", title: "End-to-End Encrypted", desc: "Your ID documents are encrypted immediately upon upload and deleted after verification." },
-                { icon: "Ã°Å¸â€ºÂ¡Ã¯Â¸Â", title: "Privacy Protected", desc: "We collect only the minimum data required for age verification. No marketing use." },
-                { icon: "Ã¢Å¡Â¡", title: "Fast Process", desc: "Verification typically completes within 2Ã¢â‚¬â€œ5 minutes." },
-                { icon: "Ã¢Å“â€œ", title: "One-Time Only", desc: "You only need to verify once. Your verified status persists across sessions." },
+                { icon: "🔒", title: "End-to-End Encrypted", desc: "Your ID documents are encrypted immediately upon upload and deleted after verification." },
+                { icon: "🛡️", title: "Privacy Protected", desc: "We collect only the minimum data required for age verification. No marketing use." },
+                { icon: "⚡", title: "Fast Process", desc: "Verification typically completes within 2–5 minutes." },
+                { icon: "✓", title: "One-Time Only", desc: "You only need to verify once. Your verified status persists across sessions." },
               ].map(item => (
                 <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <span className="text-lg flex-shrink-0">{item.icon}</span>
@@ -236,9 +236,9 @@ export default function AgeVerification() {
               <label className="block text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>ID Type</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: "passport", label: "Passport", icon: "Ã°Å¸â€ºâ€š" },
-                  { value: "drivers-license", label: "Driver's License", icon: "Ã°Å¸ÂªÂª" },
-                  { value: "national-id", label: "National ID", icon: "Ã°Å¸â€ â€" },
+                  { value: "passport", label: "Passport", icon: "🛂" },
+                  { value: "drivers-license", label: "Driver's License", icon: "🪪" },
+                  { value: "national-id", label: "National ID", icon: "🆔" },
                 ].map(t => (
                   <button key={t.value} onClick={() => setIdType(t.value)}
                     className="p-3 rounded-xl text-center transition-all duration-200"
@@ -261,11 +261,11 @@ export default function AgeVerification() {
                 <div>
                   <p className="font-bold text-xs mb-1" style={{ color: "#5eead4" }}>PII Security Guarantee</p>
                   <ul className="text-xs space-y-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    <li>Ã¢â‚¬Â¢ Documents are encrypted with AES-256 before transmission</li>
-                    <li>Ã¢â‚¬Â¢ Raw images are permanently deleted after verification (within 24 hours)</li>
-                    <li>Ã¢â‚¬Â¢ Only your age confirmation result is stored Ã¢â‚¬â€ not your ID details</li>
-                    <li>Ã¢â‚¬Â¢ Compliant with GDPR Article 9 (biometric/identity data)</li>
-                    <li>Ã¢â‚¬Â¢ We never sell or share your identity documents</li>
+                    <li>• Documents are encrypted with AES-256 before transmission</li>
+                    <li>• Raw images are permanently deleted after verification (within 24 hours)</li>
+                    <li>• Only your age confirmation result is stored — not your ID details</li>
+                    <li>• Compliant with GDPR Article 9 (biometric/identity data)</li>
+                    <li>• We never sell or share your identity documents</li>
                   </ul>
                 </div>
               </div>
@@ -292,7 +292,7 @@ export default function AgeVerification() {
                     <>
                       <Upload className="w-8 h-8" style={{ color: "rgba(255,255,255,0.25)" }} />
                       <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Click to upload front of ID</span>
-                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>JPG, PNG, or PDF Ã¢â‚¬â€ Max 10MB</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>JPG, PNG, or PDF — Max 10MB</span>
                     </>
                   )}
                 </button>
@@ -334,7 +334,7 @@ export default function AgeVerification() {
                     border: piiConsent ? "none" : "1px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  {piiConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>Ã¢Å“â€œ</span>}
+                  {piiConsent && <span style={{ color: "white", fontSize: "0.7rem", fontWeight: 900 }}>✓</span>}
                 </div>
               </div>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
@@ -377,9 +377,9 @@ export default function AgeVerification() {
             <div className="vl-success-box mb-6 text-left">
               <p className="text-xs font-semibold mb-2" style={{ color: "#5eead4" }}>What happens to your data:</p>
               <ul className="text-xs space-y-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                <li>Ã¢Å“â€œ Your ID documents have been scheduled for deletion within 24 hours</li>
-                <li>Ã¢Å“â€œ Only your verified age status is retained in our system</li>
-                <li>Ã¢Å“â€œ You will not need to re-verify unless required by law</li>
+                <li>✓ Your ID documents have been scheduled for deletion within 24 hours</li>
+                <li>✓ Only your verified age status is retained in our system</li>
+                <li>✓ You will not need to re-verify unless required by law</li>
               </ul>
             </div>
             <button onClick={() => navigate("/")} className="vl-btn-primary w-full py-3">

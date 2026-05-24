@@ -1,15 +1,15 @@
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/contexts/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
 
 const PACKAGES = [
-  { id: "starter", name: "Starter", credits: 100, bonusCredits: 0, price: 9.99, popular: false, emoji: "âœ¨" },
-  { id: "popular", name: "Popular", credits: 300, bonusCredits: 30, price: 24.99, popular: true, savings: "Save 17%", emoji: "ðŸ”¥" },
-  { id: "value", name: "Value", credits: 600, bonusCredits: 90, price: 44.99, popular: false, savings: "Save 25%", emoji: "ðŸ’Ž" },
-  { id: "premium", name: "Premium", credits: 1250, bonusCredits: 250, price: 84.99, popular: false, savings: "Save 32%", emoji: "â­" },
-  { id: "elite", name: "Elite", credits: 2500, bonusCredits: 600, price: 149.99, popular: false, savings: "Save 40%", emoji: "ðŸ‘‘" },
-  { id: "ultimate", name: "Ultimate", credits: 5000, bonusCredits: 1500, price: 274.99, popular: false, savings: "Save 45%", emoji: "ðŸš€" },
-  { id: "vip", name: "VIP", credits: 10000, bonusCredits: 4000, price: 499.99, popular: false, savings: "Save 50%", emoji: "ðŸ’«" },
-  { id: "diamond", name: "Diamond", credits: 25000, bonusCredits: 12500, price: 999.99, popular: false, savings: "Save 57%", emoji: "ðŸŒŸ" },
+  { id: "starter", name: "Starter", credits: 100, bonusCredits: 0, price: 9.99, popular: false, emoji: "✨" },
+  { id: "popular", name: "Popular", credits: 300, bonusCredits: 30, price: 24.99, popular: true, savings: "Save 17%", emoji: "🔥" },
+  { id: "value", name: "Value", credits: 600, bonusCredits: 90, price: 44.99, popular: false, savings: "Save 25%", emoji: "💎" },
+  { id: "premium", name: "Premium", credits: 1250, bonusCredits: 250, price: 84.99, popular: false, savings: "Save 32%", emoji: "⭐" },
+  { id: "elite", name: "Elite", credits: 2500, bonusCredits: 600, price: 149.99, popular: false, savings: "Save 40%", emoji: "👑" },
+  { id: "ultimate", name: "Ultimate", credits: 5000, bonusCredits: 1500, price: 274.99, popular: false, savings: "Save 45%", emoji: "🚀" },
+  { id: "vip", name: "VIP", credits: 10000, bonusCredits: 4000, price: 499.99, popular: false, savings: "Save 50%", emoji: "💫" },
+  { id: "diamond", name: "Diamond", credits: 25000, bonusCredits: 12500, price: 999.99, popular: false, savings: "Save 57%", emoji: "🌟" },
 ];
 
 export default function CreditsStore() {
@@ -31,7 +31,7 @@ export default function CreditsStore() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Credits Store</h1>
           <div className="flex items-center gap-2 px-5 py-3 rounded-xl border border-primary/30 bg-primary/10">
-            <span className="text-2xl">ðŸ’°</span>
+            <span className="text-2xl">💰</span>
             <div>
               <p className="text-2xl font-bold text-primary">{credits.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground">Current Balance</p>
@@ -64,8 +64,8 @@ export default function CreditsStore() {
           <div className="grid grid-cols-3 gap-3 mt-4">
             {[
               { label: "Bonus Credits", value: `+${currentTier.bonusCredits}%` },
-              { label: "Discount", value: currentTier.discount ? `${currentTier.discount}%` : "â€”" },
-              { label: "Boosts/Month", value: currentTier.boosts || "â€”" },
+              { label: "Discount", value: currentTier.discount ? `${currentTier.discount}%` : "—" },
+              { label: "Boosts/Month", value: currentTier.boosts || "—" },
             ].map(b => (
               <div key={b.label} className="p-3 rounded-lg bg-background border border-border text-center">
                 <p className="font-bold text-primary">{b.value}</p>
@@ -78,7 +78,7 @@ export default function CreditsStore() {
         {/* Packages */}
         <h2 className="text-xl font-bold text-foreground mb-4">Choose a Package</h2>
         <p className="text-muted-foreground text-sm mb-6">
-          ðŸ”’ All purchases are processed securely via CCBill. No adult transactions on your statement.
+          🔒 All purchases are processed securely via CCBill. No adult transactions on your statement.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PACKAGES.map(pkg => (
@@ -113,7 +113,7 @@ export default function CreditsStore() {
 
         <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">
           <p className="text-muted-foreground text-sm">
-            ðŸ”’ Secure payment powered by <strong>CCBill</strong> â€” the industry standard for adult content billing.
+            🔒 Secure payment powered by <strong>CCBill</strong> — the industry standard for adult content billing.
             All transactions are discreet and encrypted.
           </p>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/contexts/AppContext";
 import { MOCK_GIFTS, MOCK_PROFILES } from "@/lib/mock-data";
 
 export default function GiftsStore() {
@@ -66,7 +66,7 @@ export default function GiftsStore() {
             }`}>
               {sentGift === gift.id && (
                 <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-primary/20 z-10">
-                  <p className="text-primary font-bold text-lg">Sent! ðŸŽ‰</p>
+                  <p className="text-primary font-bold text-lg">Sent! 🎉</p>
                 </div>
               )}
               <div className="text-4xl text-center mb-2">{gift.emoji}</div>
