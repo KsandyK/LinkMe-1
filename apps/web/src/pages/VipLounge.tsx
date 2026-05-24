@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { Crown, Star, Zap, Gift, Shield, Sparkles } from "lucide-react";
+import { Crown, Star, Zap, Gift, Shield, Sparkles, Check } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 const PERKS = [
@@ -13,8 +14,10 @@ const PERKS = [
 
 const TIERS = [
   {
+    id: "vip",
     name: "VIP",
     price: "$29",
+    cost: 290,
     period: "/month",
     color: "#14b8a6",
     features: ["Priority chat", "20% discount", "VIP badge", "Exclusive content"],
@@ -22,8 +25,10 @@ const TIERS = [
     popular: false,
   },
   {
+    id: "elite",
     name: "VIP Elite",
     price: "$69",
+    cost: 690,
     period: "/month",
     color: "#8b5cf6",
     features: ["All VIP perks", "VIP streams access", "30% discount", "Dedicated support", "Weekly creator picks"],
@@ -31,8 +36,10 @@ const TIERS = [
     popular: true,
   },
   {
+    id: "diamond",
     name: "VIP Diamond",
     price: "$149",
+    cost: 1490,
     period: "/month",
     color: "#e8a87c",
     features: ["All Elite perks", "1-on-1 creator calls", "50% discount", "Monthly credit bonus", "Diamond profile badge"],
@@ -42,7 +49,22 @@ const TIERS = [
 ];
 
 export default function VipLounge() {
-  const { credits } = useApp();
+  const { credits, spendCredits, showToast } = useApp();
+  const [activeTier, setActiveTier] = useState<string | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSubscribe = (tier: typeof TIERS[0]) => {
+    if (activeTier === tier.id) return;
+    setLoading(tier.id);
+    setTimeout(() => {
+      const ok = spendCredits(tier.cost, `${tier.name} subscription — ${tier.price}/month`);
+      if (ok) {
+        setActiveTier(tier.id);
+        showToast({ title: `🎉 Welcome to ${tier.name}!`, description: `Your ${tier.name} membership is now active.` });
+      }
+      setLoading(null);
+    }, 700);
+  };
 
   return (
     <div className="min-h-screen py-10">
@@ -57,6 +79,13 @@ export default function VipLounge() {
           <p className="text-lg max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.5)" }}>
             Unlock the full LinkMe experience with exclusive access for dedicated fans
           </p>
+          {activeTier && (
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-bold"
+              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
+              <Check className="w-4 h-4" />
+              {TIERS.find(t => t.id === activeTier)?.name} Active
+            </div>
+          )}
         </div>
 
         {/* Perks grid */}
@@ -65,7 +94,7 @@ export default function VipLounge() {
             <div key={perk.title} className="vl-card p-5">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3"
                 style={{ background: "rgba(20,184,166,0.12)" }}>
-                <perk.icon className="w-4.5 h-4.5" style={{ color: "#14b8a6" }} />
+                <perk.icon className="w-5 h-5" style={{ color: "#14b8a6" }} />
               </div>
               <h3 className="text-sm font-semibold text-white mb-1">{perk.title}</h3>
               <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{perk.desc}</p>
@@ -76,42 +105,70 @@ export default function VipLounge() {
         {/* Pricing tiers */}
         <h2 className="vl-section-title mb-6">Choose Your Tier</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
-          {TIERS.map(tier => (
-            <div key={tier.name} className="vl-card p-6 relative"
-              style={tier.popular ? { border: "1px solid rgba(139,92,246,0.4)" } : {}}>
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white"
-                  style={{ background: "#8b5cf6" }}>
-                  MOST POPULAR
+          {TIERS.map(tier => {
+            const isActive = activeTier === tier.id;
+            const isLoading = loading === tier.id;
+            return (
+              <div key={tier.id} className="vl-card p-6 relative flex flex-col"
+                style={tier.popular
+                  ? { border: `1px solid rgba(139,92,246,0.4)` }
+                  : isActive
+                    ? { border: `1px solid ${tier.color}60` }
+                    : {}
+                }>
+                {tier.popular && !isActive && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white"
+                    style={{ background: "#8b5cf6" }}>
+                    MOST POPULAR
+                  </div>
+                )}
+                {isActive && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1"
+                    style={{ background: tier.color }}>
+                    <Check className="w-3 h-3" /> Active Plan
+                  </div>
+                )}
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-white mb-1">{tier.name}</h3>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-3xl font-black" style={{ color: tier.color }}>{tier.price}</span>
+                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{tier.period}</span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>{tier.cost} credits/month</p>
                 </div>
-              )}
-              <div className="mb-4">
-                <h3 className="text-base font-bold text-white mb-1">{tier.name}</h3>
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-3xl font-black" style={{ color: tier.color }}>{tier.price}</span>
-                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{tier.period}</span>
-                </div>
+                <ul className="space-y-2 mb-6 flex-1">
+                  {tier.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>
+                      <span style={{ color: tier.color }}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleSubscribe(tier)}
+                  disabled={isActive || isLoading}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-default"
+                  style={{
+                    background: isActive
+                      ? `${tier.color}40`
+                      : isLoading
+                        ? `${tier.color}60`
+                        : tier.color,
+                    opacity: isActive ? 0.8 : 1,
+                  }}>
+                  {isLoading ? "Processing…" : isActive ? `✓ ${tier.name} Active` : tier.cta}
+                </button>
               </div>
-              <ul className="space-y-2 mb-6">
-                {tier.features.map(f => (
-                  <li key={f} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>
-                    <span style={{ color: tier.color }}>✓</span> {f}
-                  </li>
-                ))}
-              </ul>
-              <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-                style={{ background: tier.color }}>
-                {tier.cta}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Credits balance callout */}
         <div className="vl-card p-5 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-white mb-0.5">Your Current Balance</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>Use credits for tips, gifts, and unlocking content</p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Credits are used for subscriptions, tips, gifts, and unlocking content
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">

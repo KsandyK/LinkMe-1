@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle } from "lucide-react";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
@@ -10,8 +10,26 @@ const TABS = [
 ] as const;
 type Tab = typeof TABS[number]["id"];
 
+function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="relative w-full max-w-md rounded-2xl p-6"
+        style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 25px 60px rgba(0,0,0,0.7)" }}>
+        <button onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-lg transition-all hover:bg-white/10"
+          style={{ color: "rgba(255,255,255,0.4)" }}>
+          <X className="w-4 h-4" />
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Account() {
-  const { credits, ageVerificationStatus } = useApp();
+  const { credits, ageVerificationStatus, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [displayName, setDisplayName] = useState("Member");
   const [username, setUsername] = useState("member_user");
@@ -19,16 +37,84 @@ export default function Account() {
   const [saved, setSaved] = useState(false);
   const [notifs, setNotifs] = useState({ messages: true, liveAlerts: true, promotions: false, security: true });
 
+  // Security sub-states
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+  const [twoFALoading, setTwoFALoading] = useState(false);
+  const [pwChanged, setPwChanged] = useState(false);
+
+  // Danger zone modals
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deactivated, setDeactivated] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
   const handleSave = () => {
     setSaved(true);
+    showToast({ title: "Profile saved", description: "Your changes have been updated." });
     setTimeout(() => setSaved(false), 2000);
   };
+
+  const handleEnable2FA = () => {
+    setTwoFALoading(true);
+    setTimeout(() => {
+      setTwoFALoading(false);
+      setTwoFAEnabled(true);
+      showToast({ title: "2FA Enabled", description: "Two-factor authentication is now active on your account." });
+    }, 900);
+  };
+
+  const handleChangePassword = () => {
+    setPwChanged(true);
+    showToast({ title: "Password email sent", description: "Check your inbox for a reset link." });
+    setTimeout(() => setPwChanged(false), 3000);
+  };
+
+  const handleSignOutAll = () => {
+    showToast({ title: "Signed out everywhere", description: "All other sessions have been terminated." });
+  };
+
+  const handleDeactivate = () => {
+    setDeactivated(true);
+    setShowDeactivate(false);
+    showToast({ title: "Account deactivated", description: "Your account has been deactivated. You can reactivate by logging in again." });
+  };
+
+  const handleDelete = () => {
+    if (deleteConfirm !== "DELETE") return;
+    setDeleted(true);
+    setShowDelete(false);
+    showToast({ title: "Account deleted", description: "Your account and all data have been permanently removed.", variant: "destructive" });
+  };
+
+  if (deleted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-8">
+        <div className="vl-card p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <AlertTriangle className="w-8 h-8" style={{ color: "#f87171" }} />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Account Deleted</h2>
+          <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
+            Your account and all associated data have been permanently removed from LinkMe.
+          </p>
+          <Link href="/">
+            <button className="vl-btn-primary px-6 py-2.5 text-sm">Return to Home</button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-8">
       <div className="container max-w-4xl">
         <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
-        <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.4)" }}>Manage your profile, security, and preferences</p>
+        <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Manage your profile, security, and preferences
+          {deactivated && <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold" style={{ background: "rgba(234,179,8,0.1)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.2)" }}>Deactivated</span>}
+        </p>
 
         {/* Credits + Verification bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -43,7 +129,8 @@ export default function Account() {
               </div>
             </div>
             <Link href="/credits">
-              <button className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+              <button className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
                 Buy More
               </button>
             </Link>
@@ -55,19 +142,20 @@ export default function Account() {
                 style={{ background: ageVerificationStatus === "verified" ? "rgba(20,184,166,0.12)" : "rgba(234,179,8,0.1)" }}>
                 {ageVerificationStatus === "verified"
                   ? <CheckCircle className="w-5 h-5" style={{ color: "#14b8a6" }} />
-                  : <Shield className="w-5 h-5" style={{ color: "#fbbf24" }} />
-                }
+                  : <Shield className="w-5 h-5" style={{ color: "#fbbf24" }} />}
               </div>
               <div>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Age Verification</p>
-                <p className="text-sm font-semibold" style={{ color: ageVerificationStatus === "verified" ? "#14b8a6" : "#fbbf24" }}>
+                <p className="text-sm font-semibold"
+                  style={{ color: ageVerificationStatus === "verified" ? "#14b8a6" : "#fbbf24" }}>
                   {ageVerificationStatus === "verified" ? "Verified ✓" : "Not Verified"}
                 </p>
               </div>
             </div>
             {ageVerificationStatus !== "verified" && (
               <Link href="/verify-age">
-                <button className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
+                <button className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                  style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
                   Verify Now
                 </button>
               </Link>
@@ -83,8 +171,7 @@ export default function Account() {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left"
                 style={activeTab === tab.id
                   ? { background: "rgba(20,184,166,0.1)", color: "#14b8a6" }
-                  : { color: "rgba(255,255,255,0.5)" }
-                }>
+                  : { color: "rgba(255,255,255,0.5)" }}>
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
                 {activeTab === tab.id && <ChevronRight className="w-3.5 h-3.5 ml-auto" />}
@@ -94,16 +181,16 @@ export default function Account() {
 
           {/* Tab content */}
           <div className="lg:col-span-3 vl-card p-6">
+
+            {/* Profile tab */}
             {activeTab === "profile" && (
               <div className="space-y-5">
                 <h2 className="text-base font-bold text-white">Profile Information</h2>
-
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Display Name</label>
                   <input value={displayName} onChange={e => setDisplayName(e.target.value)}
                     className="vl-input" placeholder="Your display name" />
                 </div>
-
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Username</label>
                   <div className="relative">
@@ -112,27 +199,24 @@ export default function Account() {
                       className="vl-input pl-7" placeholder="your_username" />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
-                  <input value="user@example.com" disabled
-                    className="vl-input opacity-50 cursor-not-allowed" />
+                  <input value="user@example.com" disabled className="vl-input opacity-50 cursor-not-allowed" />
                   <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Contact support to change your email</p>
                 </div>
-
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Bio</label>
                   <textarea value={bio} onChange={e => setBio(e.target.value)}
                     rows={3} placeholder="Tell creators a little about yourself..."
                     className="vl-input resize-none" />
                 </div>
-
                 <button onClick={handleSave} className="vl-btn-primary px-6 py-2.5 text-sm">
                   {saved ? "✓ Saved!" : "Save Changes"}
                 </button>
               </div>
             )}
 
+            {/* Security tab */}
             {activeTab === "security" && (
               <div className="space-y-5">
                 <h2 className="text-base font-bold text-white">Security Settings</h2>
@@ -141,11 +225,14 @@ export default function Account() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white">Password</p>
-                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Last changed: Never</p>
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        {pwChanged ? "Reset email sent ✓" : "Last changed: Never"}
+                      </p>
                     </div>
-                    <button className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:bg-white/5"
+                    <button onClick={handleChangePassword}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:bg-white/5"
                       style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-                      Change Password
+                      {pwChanged ? "Email Sent ✓" : "Change Password"}
                     </button>
                   </div>
                 </div>
@@ -154,9 +241,16 @@ export default function Account() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white">Two-Factor Authentication</p>
-                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Add an extra layer of security</p>
+                      <p className="text-xs mt-0.5" style={{ color: twoFAEnabled ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
+                        {twoFAEnabled ? "Enabled — your account is protected" : "Add an extra layer of security"}
+                      </p>
                     </div>
-                    <button className="vl-btn-primary px-3 py-1.5 text-xs">Enable 2FA</button>
+                    <button
+                      onClick={handleEnable2FA}
+                      disabled={twoFAEnabled || twoFALoading}
+                      className="vl-btn-primary px-3 py-1.5 text-xs disabled:opacity-60 disabled:cursor-default">
+                      {twoFALoading ? "Enabling…" : twoFAEnabled ? "✓ Enabled" : "Enable 2FA"}
+                    </button>
                   </div>
                 </div>
 
@@ -166,7 +260,8 @@ export default function Account() {
                       <p className="text-sm font-semibold text-white">Active Sessions</p>
                       <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>1 active session — this device</p>
                     </div>
-                    <button className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                    <button onClick={handleSignOutAll}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
                       style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", background: "rgba(239,68,68,0.05)" }}>
                       Sign Out All
                     </button>
@@ -175,6 +270,7 @@ export default function Account() {
               </div>
             )}
 
+            {/* Notifications tab */}
             {activeTab === "notifications" && (
               <div className="space-y-5">
                 <h2 className="text-base font-bold text-white">Notification Preferences</h2>
@@ -184,7 +280,8 @@ export default function Account() {
                   { key: "promotions" as const, label: "Promotions & Offers", desc: "Credit deals and special offers" },
                   { key: "security" as const, label: "Security Alerts", desc: "Login and account activity" },
                 ].map(n => (
-                  <div key={n.key} className="flex items-center justify-between py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                  <div key={n.key} className="flex items-center justify-between py-3 border-b"
+                    style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                     <div>
                       <p className="text-sm font-medium text-white">{n.label}</p>
                       <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{n.desc}</p>
@@ -208,15 +305,96 @@ export default function Account() {
           <h3 className="text-sm font-semibold mb-1" style={{ color: "#f87171" }}>Danger Zone</h3>
           <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>These actions are permanent and cannot be undone.</p>
           <div className="flex flex-wrap gap-3">
-            <button className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
-              Deactivate Account
+            <button
+              onClick={() => setShowDeactivate(true)}
+              disabled={deactivated}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-default"
+              style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+              {deactivated ? "✓ Deactivated" : "Deactivate Account"}
             </button>
-            <button className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+            <button
+              onClick={() => setShowDelete(true)}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-red-500/10"
+              style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
               Delete Account
             </button>
           </div>
         </div>
       </div>
+
+      {/* Deactivate modal */}
+      {showDeactivate && (
+        <Modal onClose={() => setShowDeactivate(false)}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.2)" }}>
+              <AlertTriangle className="w-5 h-5" style={{ color: "#fbbf24" }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Deactivate Account?</h3>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Your account will be hidden until you log back in</p>
+            </div>
+          </div>
+          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
+            Deactivating will hide your profile and pause all subscriptions. You can reactivate at any time by signing in again.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={() => setShowDeactivate(false)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+              Cancel
+            </button>
+            <button onClick={handleDeactivate}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{ background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.3)", color: "#fbbf24" }}>
+              Deactivate
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete modal */}
+      {showDelete && (
+        <Modal onClose={() => { setShowDelete(false); setDeleteConfirm(""); }}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <AlertTriangle className="w-5 h-5" style={{ color: "#f87171" }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Delete Account Permanently?</h3>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>This cannot be undone</p>
+            </div>
+          </div>
+          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
+            All your data, messages, credits, and subscriptions will be permanently deleted. This action is irreversible.
+          </p>
+          <div className="rounded-xl p-3 mb-5" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
+            <p className="text-xs mb-2 font-semibold" style={{ color: "#fca5a5" }}>Type DELETE to confirm</p>
+            <input
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="vl-input text-sm font-mono"
+              style={{ borderColor: deleteConfirm === "DELETE" ? "rgba(239,68,68,0.5)" : undefined }}
+            />
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => { setShowDelete(false); setDeleteConfirm(""); }}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleteConfirm !== "DELETE"}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }}>
+              Delete Forever
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
