@@ -2,7 +2,7 @@
 import Layout from './components/Layout.tsx';
 import Homepage from './components/Homepage.tsx';
 import CreditsStore from './components/CreditsStore.tsx';
-import LiveStream from './components/LiveStream.tsx';
+import CreatorOnboarding from './components/CreatorOnboarding.tsx';
 
 function App() {
   return (
@@ -11,7 +11,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Homepage />} />
           <Route path="credits" element={<CreditsStore />} />
-          <Route path="live" element={<LiveStream />} />
+          <Route path="creator" element={<CreatorOnboarding />} />
         </Route>
       </Routes>
     </Router>
