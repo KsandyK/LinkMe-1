@@ -51,7 +51,7 @@ export function AgeGate() {
             {/* Logo */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-3 mb-3">
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-icon-neUNxmofy3E6uibRvANW8R.webp" alt="LINKME" className="w-10 h-10" />
+                <img src="/vibelink-icon.png" alt="LINKME" className="w-10 h-10" />
                 <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>LINKME</h1>
               </div>
               <p style={{ color: "#14b8a6", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Premium Live Interaction Platform</p>

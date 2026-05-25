@@ -12,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-icon-neUNxmofy3E6uibRvANW8R.webp" alt="LINKME" className="w-6 h-6" />
+              <img src="/vibelink-icon.png" alt="LINKME" className="w-6 h-6" />
               <span className="font-bold text-white">LINKME</span>
             </div>
             <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>

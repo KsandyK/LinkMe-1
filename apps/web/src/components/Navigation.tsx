@@ -26,7 +26,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663496736475/iocsuczeEqfyUdtEzAFeTS/LINKME-icon-neUNxmofy3E6uibRvANW8R.webp" alt="LINKME" className="w-7 h-7" />
+              <img src="/vibelink-icon.png" alt="LINKME" className="w-7 h-7" />
               <span className="font-bold text-lg text-white tracking-tight">LINKME</span>
             </div>
           </Link>
