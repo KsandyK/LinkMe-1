@@ -1,11 +1,21 @@
-import { Router, type IRouter } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { Router } from "express";
+import db from "../lib/db.js";
 
-const router: IRouter = Router();
+const router = Router();
 
+/** GET /healthz — liveness check */
 router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+  res.json({ status: "ok", ts: new Date().toISOString() });
+});
+
+/** GET /readyz — readiness check (verifies DB connectivity) */
+router.get("/readyz", async (_req, res) => {
+  try {
+    await db.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", db: "connected" });
+  } catch {
+    res.status(503).json({ status: "error", db: "unreachable" });
+  }
 });
 
 export default router;

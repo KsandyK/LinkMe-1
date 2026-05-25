@@ -38,7 +38,7 @@ router.get("/livefeeds", optionalAuth, async (req, res) => {
 // ── GET /api/livefeeds/:id ────────────────────────────────────────────────────
 router.get("/livefeeds/:id", optionalAuth, async (req, res) => {
   const feed = await db.liveFeed.findUnique({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     include: {
       creator: {
         include: {
@@ -115,7 +115,7 @@ router.post("/livefeeds", requireAuth, async (req, res) => {
 
 // ── DELETE /api/livefeeds/:id — end a stream ─────────────────────────────────
 router.delete("/livefeeds/:id", requireAuth, async (req, res) => {
-  const feed = await db.liveFeed.findUnique({ where: { id: req.params.id } });
+  const feed = await db.liveFeed.findUnique({ where: { id: String(req.params.id) } });
   if (!feed) {
     res.status(404).json({ error: "Feed not found" });
     return;
@@ -157,7 +157,7 @@ router.post("/livefeeds/:id/chat", requireAuth, async (req, res) => {
     return;
   }
 
-  const feed = await db.liveFeed.findUnique({ where: { id: req.params.id } });
+  const feed = await db.liveFeed.findUnique({ where: { id: String(req.params.id) } });
   if (!feed?.isLive) {
     res.status(404).json({ error: "Stream not found or ended" });
     return;
@@ -201,7 +201,7 @@ router.patch("/livefeeds/:id/sdp", requireAuth, async (req, res) => {
     return;
   }
 
-  const feed = await db.liveFeed.findUnique({ where: { id: req.params.id } });
+  const feed = await db.liveFeed.findUnique({ where: { id: String(req.params.id) } });
   if (!feed?.isLive) {
     res.status(404).json({ error: "Stream not found" });
     return;

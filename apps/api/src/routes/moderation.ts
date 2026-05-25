@@ -113,14 +113,14 @@ router.patch("/moderation/reports/:id", requireModerator, async (req, res) => {
     return;
   }
 
-  const report = await db.moderationReport.findUnique({ where: { id: req.params.id } });
+  const report = await db.moderationReport.findUnique({ where: { id: String(req.params.id) } });
   if (!report) {
     res.status(404).json({ error: "Report not found" });
     return;
   }
 
   const updated = await db.moderationReport.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: {
       status: parsed.data.action as any,
       resolution: parsed.data.resolution,
@@ -171,7 +171,7 @@ router.get("/moderation/flags", requireModerator, async (req, res) => {
 // ── PATCH /api/moderation/flags/:id — mark reviewed ──────────────────────────
 router.patch("/moderation/flags/:id", requireModerator, async (req, res) => {
   const flag = await db.contentFlag.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: { reviewed: true },
   });
   res.json(flag);

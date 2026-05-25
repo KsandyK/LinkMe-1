@@ -12,7 +12,7 @@ const NAV_LINKS = [
 ];
 
 export function Navigation() {
-  const { ageGateAccepted, credits, ageVerificationStatus } = useApp();
+  const { ageGateAccepted, credits, ageVerificationStatus, user, isLoggedIn, logout } = useApp();
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -76,7 +76,9 @@ export function Navigation() {
               <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all hover:bg-white/5">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>U</div>
+                  style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                  {user?.username?.[0]?.toUpperCase() ?? "U"}
+                </div>
                 <ChevronDown className="w-3.5 h-3.5 hidden sm:block" style={{ color: "rgba(255,255,255,0.35)" }} />
               </button>
               {userMenuOpen && (
@@ -98,13 +100,23 @@ export function Navigation() {
                     </Link>
                   ))}
                   <div className="h-px mx-3 my-1" style={{ background: "rgba(255,255,255,0.06)" }} />
-                  <Link href="/register">
-                    <div onClick={() => setUserMenuOpen(false)}
+                  {isLoggedIn ? (
+                    <div
+                      onClick={() => { setUserMenuOpen(false); logout(); }}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
-                      style={{ color: "rgba(255,255,255,0.35)" }}>
+                      style={{ color: "rgba(255,255,255,0.35)" }}
+                    >
                       Sign Out
                     </div>
-                  </Link>
+                  ) : (
+                    <Link href="/register">
+                      <div onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                        style={{ color: "#14b8a6" }}>
+                        Sign In / Register
+                      </div>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

@@ -31,6 +31,7 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import Billing from "./pages/Billing";
 import AgeVerification from "./pages/AgeVerification";
 import LegalPages from "./pages/LegalPages";
+import StreamView from "./pages/StreamView";
 
 function Router() {
   return (
@@ -39,7 +40,7 @@ function Router() {
       <Route path="/profiles" component={Profiles} />
       <Route path="/profile/:id" component={ProfileDetail} />
       <Route path="/live" component={LiveFeeds} />
-      <Route path="/live/:id" component={LiveFeeds} />
+      <Route path="/live/:id" component={StreamView} />
       <Route path="/messages" component={Messages} />
       <Route path="/credits" component={CreditsStore} />
       <Route path="/gifts" component={GiftsStore} />

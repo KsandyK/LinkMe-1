@@ -36,9 +36,11 @@ const RegisterSchema = z.object({
 });
 
 const LoginSchema = z.object({
-  login: z.string().min(1),   // username or email
+  // Accept either `login` (generic) or `username` (from frontend form)
+  login: z.string().min(1).optional(),
+  username: z.string().min(1).optional(),
   password: z.string().min(1),
-});
+}).refine(d => d.login || d.username, { message: "login or username required" });
 
 const RefreshSchema = z.object({
   refreshToken: z.string().min(1),
@@ -125,11 +127,12 @@ router.post("/auth/login", authLimiter, async (req, res) => {
     res.status(400).json({ error: "Validation failed" });
     return;
   }
-  const { login, password } = parsed.data;
+  const identifier = parsed.data.login ?? parsed.data.username ?? "";
+  const { password } = parsed.data;
 
   const user = await db.user.findFirst({
     where: {
-      OR: [{ username: login }, { email: login }],
+      OR: [{ username: identifier }, { email: identifier }],
       isActive: true,
     },
     select: { id: true, username: true, role: true, credits: true, passwordHash: true },

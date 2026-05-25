@@ -1,10 +1,12 @@
 /**
  * LINKME — App Context
  * Velvet Dark Design System
- * Global state: age gate, age verification, credits, unlocked content, PII safety.
+ * Global state: age gate, age verification, credits, unlocked content, auth.
  */
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3000";
 
 type AgeVerificationStatus = "unverified" | "pending" | "verified";
 
@@ -36,6 +38,13 @@ interface AppContextType {
 
   // Toast
   showToast: (opts: ToastOptions) => void;
+
+  // Auth
+  user: { id: string; username: string; role: string } | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -80,6 +89,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return new Set(arr);
   });
   const [unlockedMediaUrls, setUnlockedMediaUrls] = useState<Record<string, string>>({});
+
+  // Auth
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("linkme_token"));
+  const [user, setUser] = useState<{ id: string; username: string; role: string } | null>(() => {
+    try { return JSON.parse(localStorage.getItem("linkme_user") ?? "null"); } catch { return null; }
+  });
+  const syncedRef = useRef(false);
 
   const setAgeGateAccepted = (v: boolean) => {
     setAgeGateAcceptedState(v);
@@ -138,6 +154,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const getMediaUrl = (contentId: string): string | undefined => unlockedMediaUrls[contentId];
 
+  // ── Auth effects ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!token || syncedRef.current) return;
+    syncedRef.current = true;
+    fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.user) {
+          setUser(data.user);
+          localStorage.setItem("linkme_user", JSON.stringify(data.user));
+          if (typeof data.user.credits === "number") {
+            setCredits(data.user.credits);
+            safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
+          }
+        }
+      })
+      .catch(() => null);
+  }, [token]);
+
+  const login = useCallback(async (username: string, password: string) => {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Login failed" }));
+      throw new Error(err.error ?? "Login failed");
+    }
+    const data = await res.json();
+    setToken(data.accessToken);
+    setUser(data.user);
+    if (typeof data.user?.credits === "number") {
+      setCredits(data.user.credits);
+      safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
+    }
+    localStorage.setItem("linkme_token", data.accessToken);
+    localStorage.setItem("linkme_user", JSON.stringify(data.user));
+    syncedRef.current = true;
+  }, []);
+
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("linkme_token");
+    localStorage.removeItem("linkme_user");
+    syncedRef.current = false;
+    fetch(`${API_BASE}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => null);
+  }, []);
+
   const showToast = (opts: ToastOptions) => {
     if (opts.variant === "destructive") {
       toast.error(opts.title, { description: opts.description });
@@ -153,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       credits, addCredits, spendCredits,
       unlockedContent, unlockContent, isUnlocked, getMediaUrl,
       showToast,
+      user, token, isLoggedIn: !!token && !!user, login, logout,
     }}>
       {children}
     </AppContext.Provider>

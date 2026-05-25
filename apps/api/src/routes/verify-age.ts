@@ -167,7 +167,7 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
   const now = new Date();
 
   const record = await db.ageVerification.update({
-    where: { userId: req.params.userId },
+    where: { userId: String(req.params.userId) },
     data:
       action === "approve"
         ? { status: "VERIFIED", verifiedAt: now, reviewedBy: req.user!.sub }
@@ -185,7 +185,7 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
     // setAgeVerificationStatus is managed by the record; no role change needed
     await db.notification.create({
       data: {
-        userId: req.params.userId,
+        userId: String(req.params.userId),
         type: "age_verify_approved",
         title: "Age Verification Approved ✓",
         body: "Your identity has been verified. You now have full access to LinkMe.",
@@ -195,7 +195,7 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
   } else {
     await db.notification.create({
       data: {
-        userId: req.params.userId,
+        userId: String(req.params.userId),
         type: "age_verify_rejected",
         title: "Age Verification Rejected",
         body: reason ?? "Your document was not accepted. Please re-submit.",

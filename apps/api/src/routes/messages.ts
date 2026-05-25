@@ -54,7 +54,7 @@ router.get("/messages/conversations/:id", requireAuth, async (req, res) => {
 
   // Verify participant
   const link = await db.conversationParticipant.findUnique({
-    where: { conversationId_userId: { conversationId: req.params.id, userId: req.user!.sub } },
+    where: { conversationId_userId: { conversationId: String(req.params.id), userId: req.user!.sub } },
   });
   if (!link) {
     res.status(404).json({ error: "Conversation not found" });
@@ -63,7 +63,7 @@ router.get("/messages/conversations/:id", requireAuth, async (req, res) => {
 
   const messages = await db.message.findMany({
     where: {
-      conversationId: req.params.id,
+      conversationId: String(req.params.id),
       ...(before && { createdAt: { lt: new Date(before) } }),
     },
     orderBy: { createdAt: "desc" },
@@ -81,7 +81,7 @@ router.get("/messages/conversations/:id", requireAuth, async (req, res) => {
 
   // Mark read
   await db.conversationParticipant.update({
-    where: { conversationId_userId: { conversationId: req.params.id, userId: req.user!.sub } },
+    where: { conversationId_userId: { conversationId: String(req.params.id), userId: req.user!.sub } },
     data: { lastReadAt: new Date() },
   });
 
@@ -136,7 +136,7 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
   }
 
   const link = await db.conversationParticipant.findUnique({
-    where: { conversationId_userId: { conversationId: req.params.id, userId: req.user!.sub } },
+    where: { conversationId_userId: { conversationId: String(req.params.id), userId: req.user!.sub } },
   });
   if (!link) {
     res.status(404).json({ error: "Conversation not found" });
@@ -145,7 +145,7 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
 
   // Deduct credits if sending to a creator
   const otherLink = await db.conversationParticipant.findFirst({
-    where: { conversationId: req.params.id, userId: { not: req.user!.sub } },
+    where: { conversationId: String(req.params.id), userId: { not: req.user!.sub } },
     include: { user: { include: { creatorProfile: { select: { isApproved: true } } } } },
   });
 
@@ -165,7 +165,7 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
 
   const message = await db.message.create({
     data: {
-      conversationId: req.params.id,
+      conversationId: String(req.params.id),
       senderId: req.user!.sub,
       text: parsed.data.text,
       creditCost,
@@ -182,7 +182,7 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
   });
 
   await db.conversation.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: { updatedAt: new Date() },
   });
 
