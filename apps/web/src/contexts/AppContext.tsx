@@ -161,12 +161,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.user) {
-          setUser(data.user);
-          localStorage.setItem("linkme_user", JSON.stringify(data.user));
-          if (typeof data.user.credits === "number") {
-            setCredits(data.user.credits);
-            safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
+        // /api/auth/me returns the user object directly (not wrapped)
+        if (data?.id) {
+          const u = { id: data.id, username: data.username, role: data.role };
+          setUser(u);
+          localStorage.setItem("linkme_user", JSON.stringify(u));
+          if (typeof data.credits === "number") {
+            setCredits(data.credits);
+            safeSet(STORAGE_KEYS.CREDITS, data.credits);
           }
         }
       })

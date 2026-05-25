@@ -97,7 +97,8 @@ export const auth = {
 
   logout: () => post("/api/auth/logout"),
   logoutAll: () => post("/api/auth/logout-all"),
-  me: () => get<{ user: object }>("/api/auth/me"),
+  /** Returns the user object directly (not wrapped). */
+  me: () => get<{ id: string; username: string; role: string; credits: number; email?: string }>("/api/auth/me"),
 };
 
 // ── Profiles ─────────────────────────────────────────────────────────────────
@@ -136,34 +137,93 @@ export const livefeeds = {
 // ── Messages ──────────────────────────────────────────────────────────────────
 
 export const messages = {
-  conversations: () => get<{ conversations: unknown[] }>("/api/messages/conversations"),
-  getOrCreate: (userId: string) =>
-    post<{ conversation: object; created: boolean }>("/api/messages/conversations", { userId }),
+  /** Returns conversations array directly (not wrapped). */
+  conversations: () => get<ConversationItem[]>("/api/messages/conversations"),
+
+  /** POST /api/messages/conversations — find or create DM with recipientId */
+  getOrCreate: (recipientId: string) =>
+    post<{ id: string; participants: unknown[] }>("/api/messages/conversations", { recipientId }),
+
+  /** Returns messages array directly (not wrapped), oldest-first. */
   history: (convId: string, params?: { limit?: number; before?: string }) => {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
-    return get<{ messages: unknown[]; hasMore: boolean }>(`/api/messages/conversations/${convId}${qs}`);
+    return get<MessageItem[]>(`/api/messages/conversations/${convId}${qs}`);
   },
+
+  /** POST /api/messages/conversations/:id/send — send message in conversation */
   send: (convId: string, text: string) =>
-    post<{ message: object }>(`/api/messages/conversations/${convId}`, { text }),
-  markRead: (convId: string) => post(`/api/messages/conversations/${convId}/read`),
+    post<MessageItem>(`/api/messages/conversations/${convId}/send`, { text }),
 };
+
+// ── Message types ─────────────────────────────────────────────────────────────
+
+export interface MessageSender {
+  id: string;
+  username: string;
+  profile?: { displayName?: string; avatarUrl?: string } | null;
+}
+
+export interface MessageItem {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  text: string;
+  createdAt: string;
+  creditCost: number;
+  sender: MessageSender;
+}
+
+export interface ConversationItem {
+  id: string;
+  updatedAt: string;
+  lastReadAt: string | null;
+  lastMessage: MessageItem | null;
+  otherParticipant: {
+    id: string;
+    username: string;
+    profile?: { displayName?: string; avatarUrl?: string } | null;
+    creatorProfile?: { isLive?: boolean } | null;
+  } | null;
+}
 
 // ── Credits ───────────────────────────────────────────────────────────────────
 
 export const credits = {
   balance: () => get<{ credits: number }>("/api/credits/balance"),
-  packages: () => get<{ packages: unknown[] }>("/api/credits/packages"),
-  buyUrl: (packId: string) =>
-    post<{ url: string }>("/api/credits/buy", { packId }),
+  /** GET /api/credits/packs — returns array of pack objects */
+  packs: () => get<CreditPack[]>("/api/credits/packs"),
+  /** POST /api/credits/purchase — returns CCBill redirect URL */
+  purchase: (packId: string) =>
+    post<{ redirectUrl: string }>("/api/credits/purchase", { packId }),
+  /** GET /api/credits/transactions — returns array directly */
   transactions: (params?: { page?: number; limit?: number }) => {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
-    return get<{ transactions: unknown[]; total: number }>(`/api/credits/transactions${qs}`);
+    return get<CreditTransaction[]>(`/api/credits/transactions${qs}`);
   },
 };
+
+export interface CreditPack {
+  id: string;
+  credits: number;
+  usdCents: number;
+  usd: string;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  usdAmount: number | null;
+  type: string;
+  status: string;
+  paymentMethod: string | null;
+  reference: string | null;
+  createdAt: string;
+}
 
 // ── Gifts ─────────────────────────────────────────────────────────────────────
 

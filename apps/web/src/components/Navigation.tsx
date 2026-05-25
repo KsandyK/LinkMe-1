@@ -109,13 +109,22 @@ export function Navigation() {
                       Sign Out
                     </div>
                   ) : (
-                    <Link href="/register">
-                      <div onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
-                        style={{ color: "#14b8a6" }}>
-                        Sign In / Register
-                      </div>
-                    </Link>
+                    <>
+                      <Link href="/login">
+                        <div onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                          style={{ color: "#14b8a6" }}>
+                          Sign In
+                        </div>
+                      </Link>
+                      <Link href="/register">
+                        <div onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                          style={{ color: "rgba(255,255,255,0.6)" }}>
+                          Register
+                        </div>
+                      </Link>
+                    </>
                   )}
                 </div>
               )}

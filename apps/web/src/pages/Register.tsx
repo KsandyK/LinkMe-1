@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import { auth as authApi } from "@/lib/api";
 
 type Step = "account" | "profile" | "preferences" | "done";
 
@@ -17,9 +18,11 @@ const LOOKING_FOR = [
 ];
 
 export default function Register() {
-  const { addCredits } = useApp();
+  const { login } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("account");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -68,7 +71,7 @@ export default function Register() {
     return errs;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === "account") {
       const errs = validateAccount();
       if (Object.keys(errs).length) { setErrors(errs); return; }
@@ -80,8 +83,23 @@ export default function Register() {
       setErrors({});
       setStep("preferences");
     } else if (step === "preferences") {
-      setStep("done");
-      addCredits(200, "Welcome bonus — new member reward!");
+      // Call real API to create account
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await authApi.register({
+          username: form.username,
+          email: form.email || undefined,
+          password: form.password,
+        });
+        // Log in immediately with the new credentials
+        await login(form.username, form.password);
+        setStep("done");
+      } catch (err: unknown) {
+        setSubmitError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -318,25 +336,32 @@ export default function Register() {
           )}
 
           {/* Nav buttons */}
-          <div className="flex gap-3 mt-6">
+          {submitError && (
+            <div className="mt-4 p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
+              {submitError}
+            </div>
+          )}
+          <div className="flex gap-3 mt-4">
             {step !== "account" && (
               <button
                 onClick={() => setStep(step === "preferences" ? "profile" : "account")}
-                className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground transition-colors">
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground transition-colors disabled:opacity-50">
                 ← Back
               </button>
             )}
             <button onClick={handleNext}
-              className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+              disabled={submitting}
+              className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-70"
               style={{ background: "#14B8A6" }}>
-              {step === "preferences" ? "Create Account 🎉" : "Continue →"}
+              {submitting ? "Creating account…" : step === "preferences" ? "Create Account 🎉" : "Continue →"}
             </button>
           </div>
         </div>
 
         <p className="text-center mt-5 text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/" className="text-primary hover:underline">Sign in</Link>
+          <Link href="/login" className="text-primary hover:underline">Sign in</Link>
         </p>
         <p className="text-center mt-2 text-xs text-muted-foreground">
           Want to earn as a creator?{" "}

@@ -29,10 +29,10 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 }
 
 export default function Account() {
-  const { credits, ageVerificationStatus, showToast } = useApp();
+  const { credits, ageVerificationStatus, showToast, user, logout } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
-  const [displayName, setDisplayName] = useState("Member");
-  const [username, setUsername] = useState("member_user");
+  const [displayName, setDisplayName] = useState(user?.username ?? "Member");
+  const [username, setUsername] = useState(user?.username ?? "member_user");
   const [bio, setBio] = useState("");
   const [saved, setSaved] = useState(false);
   const [notifs, setNotifs] = useState({ messages: true, liveAlerts: true, promotions: false, security: true });
@@ -70,14 +70,22 @@ export default function Account() {
     setTimeout(() => setPwChanged(false), 3000);
   };
 
-  const handleSignOutAll = () => {
-    showToast({ title: "Signed out everywhere", description: "All other sessions have been terminated." });
+  const handleSignOutAll = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/api/auth/logout-all`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("linkme_token") ?? ""}` },
+      });
+    } catch {/* ignore */}
+    logout();
+    showToast({ title: "Signed out everywhere", description: "All sessions have been terminated." });
   };
 
   const handleDeactivate = () => {
     setDeactivated(true);
     setShowDeactivate(false);
     showToast({ title: "Account deactivated", description: "Your account has been deactivated. You can reactivate by logging in again." });
+    setTimeout(() => logout(), 1500);
   };
 
   const handleDelete = () => {
@@ -201,7 +209,7 @@ export default function Account() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
-                  <input value="user@example.com" disabled className="vl-input opacity-50 cursor-not-allowed" />
+                  <input value={(user as any)?.email ?? "—"} disabled className="vl-input opacity-50 cursor-not-allowed" />
                   <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Contact support to change your email</p>
                 </div>
                 <div>
