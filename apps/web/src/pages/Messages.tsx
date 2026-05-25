@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Radio, Smile, MessageCircle, RefreshCw } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { messages as msgApi, ConversationItem, MessageItem } from "@/lib/api";
+import { createMsgSocket, LinkMeSocket } from "@/lib/socket";
 
 const QUICK_REPLIES = ["Hey! 👋", "You're amazing!", "When are you live next?", "❤️"];
 
@@ -31,8 +32,11 @@ export default function Messages() {
   const [loadingConvs, setLoadingConvs] = useState(false);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [sending, setSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const wsRef = useRef<LinkMeSocket | null>(null);
+  const selectedIdRef = useRef<string | null>(null);
 
   const selectedConv = conversations.find(c => c.id === selectedId) ?? null;
 
@@ -55,6 +59,45 @@ export default function Messages() {
     loadConversations();
   }, [loadConversations]);
 
+  // ── WebSocket setup ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isLoggedIn || !token) return;
+
+    const ws = createMsgSocket(token);
+    wsRef.current = ws;
+
+    // Receive new messages in real-time
+    const unsub = ws.on("new_message", (data) => {
+      const msg = data.message as MessageItem;
+      if (!msg) return;
+      // Only append if viewing this conversation and it's not already there
+      if (msg.conversationId === selectedIdRef.current) {
+        setMessages(prev => {
+          // Deduplicate (remove optimistic if id matches or same text+sender+~time)
+          const exists = prev.some(m => m.id === msg.id);
+          if (exists) return prev;
+          return [...prev.filter(m => !m.id.startsWith("opt-")), msg];
+        });
+      }
+      // Refresh conversation list to update last message
+      loadConversations();
+    });
+
+    // Typing indicator
+    const unsubTyping = ws.on("typing_indicator", (data) => {
+      if (data.conversationId === selectedIdRef.current && data.userId !== user?.id) {
+        setIsTyping(Boolean(data.isTyping));
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubTyping();
+      ws.close();
+      wsRef.current = null;
+    };
+  }, [isLoggedIn, token, loadConversations, user?.id]);
+
   // Load messages when conversation selected
   const loadMessages = useCallback(async (convId: string) => {
     setLoadingMsgs(true);
@@ -69,9 +112,19 @@ export default function Messages() {
   }, []);
 
   const selectConversation = (id: string) => {
+    // Leave old conversation WS room
+    if (selectedIdRef.current && wsRef.current) {
+      wsRef.current.send({ type: "leave_conversation" });
+    }
     setSelectedId(id);
+    selectedIdRef.current = id;
     setDraft("");
+    setIsTyping(false);
     loadMessages(id);
+    // Join new conversation WS room
+    if (wsRef.current) {
+      wsRef.current.send({ type: "join_conversation", conversationId: id });
+    }
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
@@ -303,6 +356,19 @@ export default function Messages() {
                         </div>
                       );
                     })
+                  )}
+                  {/* Typing indicator */}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="px-4 py-3 rounded-2xl" style={{ background: "rgba(255,255,255,0.07)", borderBottomLeftRadius: "4px" }}>
+                        <div className="flex gap-1 items-center h-4">
+                          {[0, 1, 2].map(i => (
+                            <span key={i} className="w-1.5 h-1.5 rounded-full"
+                              style={{ background: "rgba(255,255,255,0.5)", animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   )}
                   <div ref={bottomRef} />
                 </div>
