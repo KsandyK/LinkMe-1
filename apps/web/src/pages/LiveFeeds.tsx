@@ -1,7 +1,35 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { livefeeds as liveApi, LiveFeedItem } from "@/lib/api";
+import { MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { Eye, Clock, Crown, Loader2 } from "lucide-react";
+
+// Map mock feeds to LiveFeedItem shape for fallback
+const MOCK_FEED_ITEMS: LiveFeedItem[] = MOCK_LIVE_FEEDS.map(f => ({
+  id: f.id,
+  creatorId: f.hostId ?? f.id,
+  title: f.title,
+  category: f.category ?? null,
+  isVip: f.isVip ?? false,
+  viewerCount: f.viewerCount ?? 0,
+  thumbnailUrl: f.thumbnailUrl ?? null,
+  tags: f.tags ?? [],
+  isLive: true,
+  startedAt: f.startedAt ?? new Date().toISOString(),
+  endedAt: null,
+  creator: {
+    id: f.hostId ?? f.id,
+    userId: f.hostId ?? f.id,
+    user: {
+      id: f.hostId ?? f.id,
+      username: f.hostName ?? "creator",
+      profile: {
+        displayName: f.hostName ?? null,
+        avatarUrl: f.hostAvatarUrl ?? null,
+      },
+    },
+  },
+}));
 
 type Category = "all" | "dating" | "entertainment" | "chat";
 
@@ -22,20 +50,24 @@ export default function LiveFeeds() {
   const [category, setCategory] = useState<Category>("all");
   const [feeds, setFeeds] = useState<LiveFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await liveApi.list({
         category: category !== "all" ? category : undefined,
         limit: 30,
       });
       setFeeds(Array.isArray(data) ? data : []);
+      setUsingFallback(false);
     } catch {
-      setError("Failed to load live streams");
-      setFeeds([]);
+      // API unavailable — use mock data, filter client-side
+      const results = category === "all"
+        ? MOCK_FEED_ITEMS
+        : MOCK_FEED_ITEMS.filter(f => f.category === category);
+      setFeeds(results);
+      setUsingFallback(true);
     } finally {
       setLoading(false);
     }
@@ -43,7 +75,7 @@ export default function LiveFeeds() {
 
   useEffect(() => { load(); }, [load]);
 
-  const displayed = feeds.filter(f => category === "all" || f.category === category);
+  const displayed = feeds;
 
   return (
     <div className="min-h-screen py-8">
@@ -54,6 +86,12 @@ export default function LiveFeeds() {
             <h1 className="text-3xl font-bold text-white mb-1">Live Now</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
               {loading ? "Loading…" : `${displayed.length} creators streaming live`}
+              {usingFallback && !loading && (
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
+                  Demo
+                </span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold"
@@ -83,11 +121,6 @@ export default function LiveFeeds() {
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#14b8a6" }} />
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>{error}</p>
-            <button onClick={load} className="vl-btn-primary px-4 py-2 text-sm">Retry</button>
           </div>
         ) : (
           <>
