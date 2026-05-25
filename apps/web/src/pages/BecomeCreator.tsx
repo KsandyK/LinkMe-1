@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Link } from "wouter";
+import { useApp } from "@/contexts/AppContext";
+import { creator as creatorApi } from "@/lib/api";
 import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
@@ -41,6 +44,32 @@ const PLANS = [
 ];
 
 export default function BecomeCreator() {
+  const { isLoggedIn, ageVerificationStatus, showToast } = useApp();
+  const [showApplyForm, setShowApplyForm] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState(false);
+  const [applyForm, setApplyForm] = useState({ displayName: "", bio: "", subscriptionPrice: 29 });
+  const [applyError, setApplyError] = useState<string | null>(null);
+
+  const handleApply = async () => {
+    if (!applyForm.displayName.trim() || applyForm.bio.length < 20) return;
+    setApplying(true);
+    setApplyError(null);
+    try {
+      await creatorApi.apply({
+        displayName: applyForm.displayName,
+        bio: applyForm.bio,
+        subscriptionPrice: applyForm.subscriptionPrice,
+      });
+      setApplied(true);
+      showToast({ title: "Application submitted!", description: "We'll review your application within 1–2 business days." });
+    } catch (err: unknown) {
+      setApplyError(err instanceof Error ? err.message : "Application failed");
+    } finally {
+      setApplying(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -173,14 +202,99 @@ export default function BecomeCreator() {
       {/* Final CTA */}
       <section className="py-14" style={{ background: "rgba(20,184,166,0.03)", borderTop: "1px solid rgba(20,184,166,0.08)" }}>
         <div className="container max-w-lg mx-auto text-center">
-          <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
-          <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Join thousands of creators already building their income on LinkMe. Setup takes less than 5 minutes.
-          </p>
-          <Link href="/register">
-            <button className="vl-btn-primary px-10 py-3 text-sm">Create Creator Account — Free</button>
-          </Link>
-          <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required · Cancel anytime · Instant payouts</p>
+          {applied ? (
+            <>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: "rgba(20,184,166,0.15)", border: "2px solid #14b8a6" }}>
+                <Check className="w-8 h-8" style={{ color: "#14b8a6" }} />
+              </div>
+              <h2 className="vl-section-title text-2xl mb-3">Application Submitted!</h2>
+              <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                We'll review your application within 1–2 business days. You'll receive a notification when you're approved.
+              </p>
+              <Link href="/creator">
+                <button className="vl-btn-primary px-8 py-3 text-sm">View Creator Dashboard</button>
+              </Link>
+            </>
+          ) : isLoggedIn && !showApplyForm ? (
+            <>
+              <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
+              <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
+                You're logged in! Apply now to start earning as a creator.
+              </p>
+              {ageVerificationStatus !== "verified" && (
+                <div className="mb-5 p-3 rounded-xl text-sm"
+                  style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
+                  Age verification required before applying. <Link href="/verify-age" className="underline ml-1">Verify now →</Link>
+                </div>
+              )}
+              <button
+                onClick={() => setShowApplyForm(true)}
+                disabled={ageVerificationStatus !== "verified"}
+                className="vl-btn-primary px-10 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                Apply as Creator
+              </button>
+              <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90%</p>
+            </>
+          ) : isLoggedIn && showApplyForm ? (
+            <div className="text-left max-w-md mx-auto">
+              <h2 className="vl-section-title text-xl mb-5 text-center">Creator Application</h2>
+              {applyError && (
+                <div className="mb-4 p-3 rounded-lg text-xs" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                  {applyError}
+                </div>
+              )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Creator Display Name</label>
+                  <input value={applyForm.displayName} onChange={e => setApplyForm(f => ({ ...f, displayName: e.target.value }))}
+                    placeholder="Your creator name" className="vl-input w-full" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Bio (min. 20 characters)</label>
+                  <textarea value={applyForm.bio} onChange={e => setApplyForm(f => ({ ...f, bio: e.target.value }))}
+                    rows={4} placeholder="Tell fans about yourself and what kind of content you create..."
+                    className="vl-input w-full resize-none" />
+                  <p className="text-xs mt-1" style={{ color: applyForm.bio.length < 20 ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.3)" }}>
+                    {applyForm.bio.length}/500 characters
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Subscription Price (credits/month)
+                  </label>
+                  <input type="number" min="0" max="10000" value={applyForm.subscriptionPrice}
+                    onChange={e => setApplyForm(f => ({ ...f, subscriptionPrice: Number(e.target.value) }))}
+                    className="vl-input w-full" />
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Set to 0 for a free-to-follow profile</p>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowApplyForm(false)}
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleApply}
+                    disabled={applying || !applyForm.displayName.trim() || applyForm.bio.length < 20}
+                    className="flex-1 py-3 rounded-xl text-sm font-bold text-white vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                    {applying ? "Submitting…" : "Submit Application"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
+              <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Join thousands of creators already building their income on LinkMe. Setup takes less than 5 minutes.
+              </p>
+              <Link href="/register">
+                <button className="vl-btn-primary px-10 py-3 text-sm">Create Creator Account — Free</button>
+              </Link>
+              <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required · Cancel anytime · Instant payouts</p>
+            </>
+          )}
         </div>
       </section>
     </div>

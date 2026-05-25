@@ -1,18 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Zap, Lock, CreditCard, Receipt, Star, ChevronRight } from "lucide-react";
-
-const MOCK_TRANSACTIONS = [
-  { id: "1", desc: "Purchased 500 Credits", date: "May 15, 2026", credits: "+500", amount: "$34.99", type: "credit" },
-  { id: "2", desc: "Platinum VIP Monthly", date: "May 17, 2026", credits: "—", amount: "$39.99", type: "sub" },
-  { id: "3", desc: "Gift — Rose Bouquet to Luna Rose", date: "May 20, 2026", credits: "-75", amount: "—", type: "spend" },
-  { id: "4", desc: "Purchased 250 Credits", date: "May 22, 2026", credits: "+250", amount: "$19.99", type: "credit" },
-];
+import { credits as creditsApi, CreditTransaction } from "@/lib/api";
+import { Zap, Lock, CreditCard, Receipt, Star, ChevronRight, RefreshCw } from "lucide-react";
 
 export default function Billing() {
-  const { credits } = useApp();
+  const { credits, isLoggedIn } = useApp();
   const [activeTab, setActiveTab] = useState<"methods" | "history" | "subscriptions">("methods");
+  const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
+  const [loadingTx, setLoadingTx] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "history" && isLoggedIn) {
+      setLoadingTx(true);
+      creditsApi.transactions({ limit: 25 })
+        .then(data => setTransactions(Array.isArray(data) ? data : []))
+        .catch(() => setTransactions([]))
+        .finally(() => setLoadingTx(false));
+    }
+  }, [activeTab, isLoggedIn]);
 
   return (
     <div className="min-h-screen py-8">
@@ -88,33 +94,57 @@ export default function Billing() {
           <div className="vl-card p-5">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-bold text-white">Transaction History</h3>
-              <button className="text-xs font-semibold" style={{ color: "#14b8a6" }}>Export CSV <ChevronRight className="w-3 h-3 inline" /></button>
+              {loadingTx && <RefreshCw className="w-4 h-4 animate-spin" style={{ color: "rgba(255,255,255,0.3)" }} />}
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                    {["Description", "Date", "Credits", "Amount"].map(h => (
-                      <th key={h} className={`py-2.5 text-xs font-semibold ${h !== "Description" ? "text-right" : "text-left"}`}
-                        style={{ color: "rgba(255,255,255,0.35)" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {MOCK_TRANSACTIONS.map(tx => (
-                    <tr key={tx.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                      <td className="py-3 text-sm text-white">{tx.desc}</td>
-                      <td className="py-3 text-right text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{tx.date}</td>
-                      <td className="py-3 text-right text-xs font-mono"
-                        style={{ color: tx.credits.startsWith("+") ? "#14b8a6" : tx.credits === "—" ? "rgba(255,255,255,0.3)" : "#f87171" }}>
-                        {tx.credits}
-                      </td>
-                      <td className="py-3 text-right text-xs font-mono text-white">{tx.amount}</td>
+            {!isLoggedIn ? (
+              <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Sign in to view your transaction history.
+              </p>
+            ) : loadingTx ? (
+              <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>Loading transactions…</p>
+            ) : transactions.length === 0 ? (
+              <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>No transactions yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      {["Description", "Date", "Credits", "Status"].map(h => (
+                        <th key={h} className={`py-2.5 text-xs font-semibold ${h !== "Description" ? "text-right" : "text-left"}`}
+                          style={{ color: "rgba(255,255,255,0.35)" }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {transactions.map(tx => {
+                      const isCredit = tx.amount > 0;
+                      const typeLabel = tx.type.replace(/_/g, " ").toLowerCase();
+                      return (
+                        <tr key={tx.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                          <td className="py-3 text-sm text-white capitalize">{typeLabel}</td>
+                          <td className="py-3 text-right text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                            {new Date(tx.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 text-right text-xs font-mono"
+                            style={{ color: isCredit ? "#14b8a6" : "#f87171" }}>
+                            {isCredit ? "+" : ""}{tx.amount.toLocaleString()}
+                          </td>
+                          <td className="py-3 text-right">
+                            <span className="text-xs px-2 py-0.5 rounded-full"
+                              style={{
+                                background: tx.status === "COMPLETED" ? "rgba(20,184,166,0.1)" : "rgba(234,179,8,0.1)",
+                                color: tx.status === "COMPLETED" ? "#14b8a6" : "#fbbf24",
+                              }}>
+                              {tx.status.toLowerCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
