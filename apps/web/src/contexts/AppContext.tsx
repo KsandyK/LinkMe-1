@@ -156,12 +156,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getMediaUrl = (contentId: string): string | undefined => unlockedMediaUrls[contentId];
 
   // ── Auth effects ────────────────────────────────────────────────────────────
+  // On mount, verify persisted token with the backend (3s timeout — demo sessions
+  // skip this entirely via syncedRef.current = true set during login).
   useEffect(() => {
     if (!token || syncedRef.current) return;
     syncedRef.current = true;
-    fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    fetch(`${API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
+        clearTimeout(timer);
         // /api/auth/me returns the user object directly (not wrapped)
         if (data?.id) {
           const u = { id: data.id, username: data.username, role: data.role };
@@ -173,17 +181,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
       })
-      .catch(() => null);
+      .catch(() => { clearTimeout(timer); });
   }, [token]);
 
   const login = useCallback(async (username: string, password: string) => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-        credentials: "include",
-      });
+      // Race the API call against a 4-second timeout so a hung Vite proxy
+      // doesn't block indefinitely — falls through to demo mode on timeout.
+      const timeout = new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("timeout")), 4000)
+      );
+      const res = await Promise.race([
+        fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+          credentials: "include",
+        }),
+        timeout,
+      ]);
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Login failed" }));
         throw new Error(err.error ?? "Login failed");
@@ -199,7 +215,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("linkme_user", JSON.stringify(data.user));
       syncedRef.current = true;
     } catch {
-      // Any error (network, HTTP 502/503) → API server not running → demo mode
+      // Any error (network, HTTP 502/503, timeout) → API offline → demo mode
       const demoUser = { id: `demo-${username}`, username, role: "USER" };
       const demoToken = `demo-token-${Date.now()}`;
       setToken(demoToken);
