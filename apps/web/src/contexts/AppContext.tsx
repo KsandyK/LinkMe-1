@@ -176,26 +176,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const login = useCallback(async (username: string, password: string) => {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      credentials: "include",
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Login failed" }));
-      throw new Error(err.error ?? "Login failed");
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Login failed" }));
+        throw new Error(err.error ?? "Login failed");
+      }
+      const data = await res.json();
+      setToken(data.accessToken);
+      setUser(data.user);
+      if (typeof data.user?.credits === "number") {
+        setCredits(data.user.credits);
+        safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
+      }
+      localStorage.setItem("linkme_token", data.accessToken);
+      localStorage.setItem("linkme_user", JSON.stringify(data.user));
+      syncedRef.current = true;
+    } catch (err) {
+      // TypeError = network error = API server not running → demo mode
+      if (err instanceof TypeError) {
+        const demoUser = { id: `demo-${username}`, username, role: "USER" };
+        const demoToken = `demo-token-${Date.now()}`;
+        setToken(demoToken);
+        setUser(demoUser);
+        localStorage.setItem("linkme_token", demoToken);
+        localStorage.setItem("linkme_user", JSON.stringify(demoUser));
+        syncedRef.current = true;
+        toast.info("Demo mode active", { description: "API server offline — browsing locally. Start the backend for full functionality." });
+        return;
+      }
+      throw err;
     }
-    const data = await res.json();
-    setToken(data.accessToken);
-    setUser(data.user);
-    if (typeof data.user?.credits === "number") {
-      setCredits(data.user.credits);
-      safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
-    }
-    localStorage.setItem("linkme_token", data.accessToken);
-    localStorage.setItem("linkme_user", JSON.stringify(data.user));
-    syncedRef.current = true;
   }, []);
 
   const logout = useCallback(() => {
