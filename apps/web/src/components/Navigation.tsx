@@ -21,8 +21,8 @@ export function Navigation() {
     setUserMenuOpen(false);
     logout();
     showToast({ title: "Signed out", description: "You have been signed out successfully." });
-    // Hard navigation to guarantee all in-memory state is reset
-    window.location.href = "/";
+    // Hard navigation to register screen — guarantees all in-memory state is reset
+    window.location.href = "/register";
   };
 
   if (!ageGateAccepted) return null;

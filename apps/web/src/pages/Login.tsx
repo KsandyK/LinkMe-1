@@ -37,7 +37,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">💎</div>
+          <img src="/vibelink-icon.png" alt="LinkMe" className="w-14 h-14 mx-auto mb-3" />
           <h1 className="text-3xl font-black text-foreground">
             <span style={{ color: "#14B8A6" }}>Link</span>Me
           </h1>
