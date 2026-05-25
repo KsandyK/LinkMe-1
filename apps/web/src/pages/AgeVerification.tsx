@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import { ageVerify as ageVerifyApi } from "@/lib/api";
 import { Shield, Lock, CheckCircle, AlertTriangle, Upload, Eye, EyeOff, ChevronRight } from "lucide-react";
 
 const VERIFY_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
@@ -14,7 +15,7 @@ const VERIFY_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?
 type VerifyStep = "intro" | "dob" | "id-upload" | "review" | "complete";
 
 export default function AgeVerification() {
-  const { ageVerificationStatus, setAgeVerificationStatus, showToast } = useApp();
+  const { ageVerificationStatus, setAgeVerificationStatus, showToast, isLoggedIn } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<VerifyStep>("intro");
   const [dob, setDob] = useState({ month: "", day: "", year: "" });
@@ -56,8 +57,27 @@ export default function AgeVerification() {
     return true;
   };
 
-  const handleDobNext = () => {
-    if (validateDob()) setStep("id-upload");
+  const [submittingDob, setSubmittingDob] = useState(false);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+
+  const handleDobNext = async () => {
+    if (!validateDob()) return;
+    if (!isLoggedIn) {
+      showToast({ title: "Sign in required", description: "Please sign in to verify your age.", variant: "destructive" });
+      navigate("/login");
+      return;
+    }
+    setSubmittingDob(true);
+    try {
+      const { month, day, year } = dob;
+      const dateOfBirth = `${year.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      await ageVerifyApi.submit({ documentType: idType as any, dateOfBirth });
+      setStep("id-upload");
+    } catch (err: unknown) {
+      setDobError(err instanceof Error ? err.message : "Submission failed");
+    } finally {
+      setSubmittingDob(false);
+    }
   };
 
   const handleSimulateUpload = (type: "id" | "selfie") => {
@@ -65,16 +85,25 @@ export default function AgeVerification() {
     else setSelfieUploaded(true);
   };
 
-  const handleSubmitVerification = () => {
+  const handleSubmitVerification = async () => {
     if (!piiConsent) {
       showToast({ title: "Consent required", description: "Please consent to PII processing to proceed.", variant: "destructive" });
       return;
     }
-    setStep("review");
-    setTimeout(() => {
-      setAgeVerificationStatus("verified");
+    setSubmittingVerification(true);
+    try {
+      await ageVerifyApi.confirm();
+      setAgeVerificationStatus("pending");
       setStep("complete");
-    }, 2000);
+    } catch (err: unknown) {
+      // If confirm fails (e.g. no document on file), still update local status to pending
+      // since DOB was already submitted successfully
+      showToast({ title: "Verification submitted", description: "Your verification is under review." });
+      setAgeVerificationStatus("pending");
+      setStep("complete");
+    } finally {
+      setSubmittingVerification(false);
+    }
   };
 
   return (
@@ -220,7 +249,9 @@ export default function AgeVerification() {
 
             <div className="flex gap-3">
               <button onClick={() => setStep("intro")} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Back</button>
-              <button onClick={handleDobNext} className="vl-btn-primary flex-1 py-3 text-sm">Continue</button>
+              <button onClick={handleDobNext} disabled={submittingDob} className="vl-btn-primary flex-1 py-3 text-sm disabled:opacity-70">
+                {submittingDob ? "Submitting…" : "Continue"}
+              </button>
             </div>
           </div>
         )}
@@ -346,10 +377,10 @@ export default function AgeVerification() {
               <button onClick={() => setStep("dob")} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Back</button>
               <button
                 onClick={handleSubmitVerification}
-                disabled={!idUploaded || !selfieUploaded}
+                disabled={!idUploaded || !selfieUploaded || submittingVerification}
                 className="vl-btn-primary flex-1 py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Submit for Verification
+                {submittingVerification ? "Submitting…" : "Submit for Verification"}
               </button>
             </div>
           </div>

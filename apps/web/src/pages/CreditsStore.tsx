@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
+import { credits as creditsApi } from "@/lib/api";
 
 const PACKAGES = [
   { id: "starter", name: "Starter", credits: 100, bonusCredits: 0, price: 9.99, popular: false, emoji: "✨" },
@@ -13,15 +15,34 @@ const PACKAGES = [
 ];
 
 export default function CreditsStore() {
-  const { credits, addCredits } = useApp();
+  const { credits, addCredits, isLoggedIn, showToast } = useApp();
+  const [purchasing, setPurchasing] = useState<string | null>(null);
   const currentTier = CUSTOMER_TIERS.find(t => credits * 0.01 >= t.minSpend && credits * 0.01 <= t.maxSpend) || CUSTOMER_TIERS[0];
   const nextTier = CUSTOMER_TIERS[CUSTOMER_TIERS.indexOf(currentTier) + 1];
   const monthlySpend = 734;
   const progress = nextTier ? Math.min((monthlySpend / nextTier.minSpend) * 100, 100) : 100;
 
-  const handlePurchase = (pkg: typeof PACKAGES[0]) => {
-    const total = pkg.credits + pkg.bonusCredits;
-    addCredits(total, `Purchased ${pkg.name} package (${pkg.credits} + ${pkg.bonusCredits} bonus credits)`);
+  const handlePurchase = async (pkg: typeof PACKAGES[0]) => {
+    if (!isLoggedIn) {
+      // Demo mode — add credits locally
+      const total = pkg.credits + pkg.bonusCredits;
+      addCredits(total, `Purchased ${pkg.name} package (${pkg.credits} + ${pkg.bonusCredits} bonus credits)`);
+      return;
+    }
+    setPurchasing(pkg.id);
+    try {
+      const { redirectUrl } = await creditsApi.purchase(pkg.id);
+      // Redirect to CCBill payment page
+      window.location.href = redirectUrl;
+    } catch (err: unknown) {
+      // Fallback: add credits locally (useful during dev without CCBill configured)
+      const msg = err instanceof Error ? err.message : "Purchase failed";
+      showToast({ title: "Payment redirect failed", description: msg + " — adding credits locally for demo.", variant: "destructive" });
+      const total = pkg.credits + pkg.bonusCredits;
+      addCredits(total, `[Demo] ${pkg.name} package`);
+    } finally {
+      setPurchasing(null);
+    }
   };
 
   return (
@@ -103,9 +124,10 @@ export default function CreditsStore() {
               </p>
               <p className="text-xl font-bold text-foreground mb-3">${pkg.price}</p>
               <button onClick={() => handlePurchase(pkg)}
-                className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90"
+                disabled={purchasing === pkg.id}
+                className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-70"
                 style={{ background: "#14B8A6" }}>
-                Purchase
+                {purchasing === pkg.id ? "Redirecting…" : "Purchase"}
               </button>
             </div>
           ))}

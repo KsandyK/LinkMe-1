@@ -252,14 +252,23 @@ export const creator = {
 };
 
 // ── Age Verification ──────────────────────────────────────────────────────────
+// Routes: GET/POST /api/age-verify/*
 
 export const ageVerify = {
-  status: () => get<{ status: string }>("/api/verify-age/status"),
-  submitDob: (dob: string) => post<{ status: string }>("/api/verify-age/dob", { dob }),
-  uploadUrl: (contentType: string) =>
-    post<{ uploadUrl: string; key: string }>("/api/verify-age/upload-url", { contentType }),
-  confirm: (s3Key: string, documentType: string) =>
-    post<{ status: string }>("/api/verify-age/confirm", { s3Key, documentType }),
+  /** GET /api/age-verify/status */
+  status: () => get<{ status: string; rejectedReason?: string }>("/api/age-verify/status"),
+
+  /** POST /api/age-verify/submit — body: { documentType, dateOfBirth: "YYYY-MM-DD" } */
+  submit: (data: { documentType: "passport" | "drivers_license" | "national_id"; dateOfBirth: string }) =>
+    post<{ verificationId: string; status: string; message: string }>("/api/age-verify/submit", data),
+
+  /** POST /api/age-verify/upload-url — returns presigned S3 URL + key */
+  uploadUrl: () =>
+    post<{ uploadUrl: string; s3Key: string; expiresIn: number; fields: Record<string, string> }>("/api/age-verify/upload-url"),
+
+  /** POST /api/age-verify/confirm — called after S3 upload completes */
+  confirm: () =>
+    post<{ status: string; message: string }>("/api/age-verify/confirm"),
 };
 
 // ── Moderation ────────────────────────────────────────────────────────────────
