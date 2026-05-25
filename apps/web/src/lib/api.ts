@@ -104,14 +104,18 @@ export const auth = {
 // ── Profiles ─────────────────────────────────────────────────────────────────
 
 export const profiles = {
-  list: (params?: { search?: string; role?: string; page?: number; limit?: number }) => {
+  /** GET /api/profiles — returns { profiles, total, page, limit } */
+  list: (params?: { search?: string; live?: string; page?: number; limit?: number }) => {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
-    return get<{ profiles: unknown[]; total: number; page: number; pages: number }>(`/api/profiles${qs}`);
+    return get<{ profiles: unknown[]; total: number; page: number; limit: number }>(`/api/profiles${qs}`);
   },
-  get: (id: string) => get<{ profile: object }>(`/api/profiles/${id}`),
-  update: (id: string, data: object) => patch(`/api/profiles/${id}`, data),
+  /** GET /api/profiles/:id — returns creator profile directly (not wrapped) */
+  get: (userId: string) => get<object>(`/api/profiles/${userId}`),
+  /** PATCH /api/profiles/me */
+  updateMe: (data: { displayName?: string; bio?: string; avatarUrl?: string; coverUrl?: string; location?: string }) =>
+    patch<object>("/api/profiles/me", data),
 };
 
 // ── Live feeds ────────────────────────────────────────────────────────────────
@@ -227,28 +231,46 @@ export interface CreditTransaction {
 
 // ── Gifts ─────────────────────────────────────────────────────────────────────
 
+export interface GiftItem {
+  id: string;
+  name: string;
+  emoji: string;
+  creditCost: number;
+  category: string;
+}
+
 export const gifts = {
-  catalogue: () => get<{ gifts: unknown[] }>("/api/gifts/catalogue"),
-  send: (data: { toUserId: string; giftType: string; message?: string }) =>
-    post<{ gift: object; credits: number }>("/api/gifts/send", data),
-  received: () => get<{ gifts: unknown[] }>("/api/gifts/received"),
+  /** GET /api/gifts — returns array of available gifts */
+  catalogue: () => get<GiftItem[]>("/api/gifts"),
+  /** POST /api/gifts/send */
+  send: (data: { giftId: string; recipientId: string; feedId?: string }) =>
+    post<{ id: string; name: string; emoji: string; creditCost: number }>("/api/gifts/send", data),
+  /** GET /api/gifts/received — returns array directly */
+  received: () => get<unknown[]>("/api/gifts/received"),
 };
 
 // ── Boosts ────────────────────────────────────────────────────────────────────
 
 export const boosts = {
-  packages: () => get<{ packages: unknown[] }>("/api/boosts/packages"),
-  buy: (packageId: string) => post<{ purchase: object; credits: number }>("/api/boosts/buy", { packageId }),
-  active: () => get<{ purchase: object | null }>("/api/boosts/active"),
-  use: () => post<{ boostsUsed: number; boostsTotal: number }>("/api/boosts/use"),
+  /** GET /api/boosts/packages — returns array of packages */
+  packages: () => get<unknown[]>("/api/boosts/packages"),
+  /** POST /api/boosts/subscribe — purchase boost package */
+  subscribe: (packageId: string) => post<unknown>("/api/boosts/subscribe", { packageId }),
+  /** GET /api/boosts/active — returns active boost purchase or null */
+  active: () => get<unknown | null>("/api/boosts/active"),
 };
 
 // ── Creator ───────────────────────────────────────────────────────────────────
 
 export const creator = {
   dashboard: () => get<object>("/api/creator/dashboard"),
-  apply: () => post("/api/creator/apply"),
-  settings: (data: object) => patch("/api/creator/settings", data),
+  /** POST /api/creator/apply — requires age verification */
+  apply: (data: { displayName: string; bio: string; subscriptionPrice: number }) =>
+    post<{ creatorProfile: object; message: string }>("/api/creator/apply", data),
+  settings: (data: { subscriptionPrice?: number; tipMenuItems?: unknown[] }) =>
+    patch<object>("/api/creator/settings", data),
+  earnings: (period?: "7d" | "30d" | "90d") =>
+    get<{ transactions: unknown[]; period: string; since: string }>(`/api/creator/earnings${period ? `?period=${period}` : ""}`),
 };
 
 // ── Age Verification ──────────────────────────────────────────────────────────
