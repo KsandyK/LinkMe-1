@@ -10,7 +10,7 @@ import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from 
 import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
-  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2,
+  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -46,6 +46,19 @@ export default function StreamView() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<LinkMeSocket | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const giftDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close gift dropdown on outside click
+  useEffect(() => {
+    if (!showGifts) return;
+    const handler = (e: MouseEvent) => {
+      if (giftDropdownRef.current && !giftDropdownRef.current.contains(e.target as Node)) {
+        setShowGifts(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showGifts]);
 
   // Load feed from API
   useEffect(() => {
@@ -222,12 +235,15 @@ export default function StreamView() {
     <div className="min-h-screen flex flex-col" style={{ background: "#09091a" }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        {/* Left: back */}
         <Link href="/live">
           <button className="flex items-center gap-1.5 text-sm transition-colors hover:text-white"
             style={{ color: "rgba(255,255,255,0.5)" }}>
             <ChevronLeft className="w-4 h-4" /> Back to Live
           </button>
         </Link>
+
+        {/* Center: LIVE + viewer count */}
         <div className="flex items-center gap-2">
           <span className="vl-badge-live flex items-center gap-1 text-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
@@ -237,9 +253,93 @@ export default function StreamView() {
             <Eye className="w-3 h-3" /> {viewerCount.toLocaleString()}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono"
-          style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
-          <Zap className="w-3 h-3" /> {credits.toLocaleString()}
+
+        {/* Right: gift dropdown + credits */}
+        <div className="flex items-center gap-2">
+          {/* Gift dropdown */}
+          <div className="relative" ref={giftDropdownRef}>
+            <button
+              onClick={() => setShowGifts(g => !g)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={{
+                background: showGifts ? "rgba(232,168,124,0.18)" : "rgba(232,168,124,0.08)",
+                border: `1px solid ${showGifts ? "rgba(232,168,124,0.45)" : "rgba(232,168,124,0.2)"}`,
+                color: "#e8a87c",
+              }}
+            >
+              <Gift className="w-3.5 h-3.5" />
+              Send Gift
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showGifts ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Dropdown panel */}
+            {showGifts && (
+              <div
+                className="absolute right-0 top-full mt-2 z-50 rounded-xl overflow-hidden"
+                style={{
+                  background: "rgba(13,13,30,0.97)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+                  minWidth: "340px",
+                }}
+              >
+                {/* Dropdown header */}
+                <div className="flex items-center justify-between px-4 py-2.5"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Gift className="w-3.5 h-3.5" style={{ color: "#e8a87c" }} />
+                    Send a Gift
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>
+                    ⚡ {credits.toLocaleString()} credits
+                  </span>
+                </div>
+
+                {/* Gift grid */}
+                <div className="flex gap-2 p-3 overflow-x-auto">
+                  {quickGifts.map(gift => (
+                    <button
+                      key={gift.id}
+                      onClick={() => { sendGift(gift); setShowGifts(false); }}
+                      disabled={!isLoggedIn && credits < gift.creditCost}
+                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                        border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                        minWidth: "68px",
+                      }}
+                    >
+                      <span className="text-2xl leading-none">{gift.emoji}</span>
+                      <span className="text-xs text-white font-semibold mt-1">{gift.name}</span>
+                      <span className="text-xs" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
+                    </button>
+                  ))}
+
+                  {/* More gifts link */}
+                  <Link href="/gifts">
+                    <button
+                      onClick={() => setShowGifts(false)}
+                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105"
+                      style={{
+                        background: "rgba(20,184,166,0.06)",
+                        border: "1px solid rgba(20,184,166,0.2)",
+                        minWidth: "68px",
+                      }}>
+                      <span className="text-2xl leading-none">🎁</span>
+                      <span className="text-xs font-semibold mt-1" style={{ color: "#14b8a6" }}>More</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Gifts</span>
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Credits balance */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono"
+            style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+            <Zap className="w-3 h-3" /> {credits.toLocaleString()}
+          </div>
         </div>
       </div>
 
@@ -312,51 +412,6 @@ export default function StreamView() {
             </div>
           </div>
 
-          {/* Gift panel */}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(9,9,26,0.95)" }}>
-            <button
-              onClick={() => setShowGifts(g => !g)}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-all hover:bg-white/5"
-              style={{ color: "rgba(255,255,255,0.7)" }}
-            >
-              <span className="flex items-center gap-2">
-                <Gift className="w-4 h-4" style={{ color: "#e8a87c" }} />
-                Send a Gift
-              </span>
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                {showGifts ? "▲ Hide" : "▼ Show"} • {credits.toLocaleString()} credits
-              </span>
-            </button>
-
-            {showGifts && quickGifts.length > 0 && (
-              <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
-                {quickGifts.map(gift => (
-                  <button
-                    key={gift.id}
-                    onClick={() => sendGift(gift)}
-                    disabled={credits < gift.creditCost && !isLoggedIn}
-                    className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-center flex-shrink-0 transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{
-                      background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.04)",
-                      border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    <span className="text-2xl">{gift.emoji}</span>
-                    <span className="text-xs text-white font-medium">{gift.name}</span>
-                    <span className="text-xs" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
-                  </button>
-                ))}
-                <Link href="/gifts">
-                  <button className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl flex-shrink-0 transition-all hover:scale-105"
-                    style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.2)" }}>
-                    <span className="text-2xl">🎁</span>
-                    <span className="text-xs font-medium" style={{ color: "#14b8a6" }}>More</span>
-                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Gifts</span>
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ── Chat sidebar ─────────────────────────────────────────────────── */}
