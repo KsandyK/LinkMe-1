@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "@/contexts/AppContext";
+import { boosts as boostsApi } from "@/lib/api";
 
 const BOOST_PACKAGES = [
   { id: "spark", name: "Spark", emoji: "✨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
@@ -141,7 +142,7 @@ const MEMBERSHIP_PLANS = [
 ];
 
 export default function BoostsPage() {
-  const { spendCredits } = useApp();
+  const { spendCredits, isLoggedIn, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"boosts" | "memberships">("memberships");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [activeMembership, setActiveMembership] = useState<string>("free");
@@ -149,14 +150,37 @@ export default function BoostsPage() {
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
 
-  const handleSubscribeBoost = (pkg: typeof BOOST_PACKAGES[0]) => {
+  // Load active boost on mount
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    boostsApi.active()
+      .then((data: any) => {
+        if (data?.package) setActiveBoost(data.package);
+      })
+      .catch(() => null);
+  }, [isLoggedIn]);
+
+  const handleSubscribeBoost = async (pkg: typeof BOOST_PACKAGES[0]) => {
     if (activeBoost === pkg.id) return;
     setLoadingBoost(pkg.id);
-    setTimeout(() => {
-      setLoadingBoost(null);
-      setActiveBoost(pkg.id);
+    if (isLoggedIn) {
+      try {
+        await boostsApi.subscribe(pkg.id);
+        setActiveBoost(pkg.id);
+        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month for 30 days` });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to subscribe";
+        showToast({ title: "Subscription failed", description: msg, variant: "destructive" });
+        // Fallback: local demo
+        spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
+        setActiveBoost(pkg.id);
+      }
+    } else {
+      // Demo mode
       spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
-    }, 800);
+      setActiveBoost(pkg.id);
+    }
+    setLoadingBoost(null);
   };
 
   const handleSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {

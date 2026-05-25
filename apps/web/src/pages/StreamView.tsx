@@ -1,22 +1,16 @@
 /**
  * LINKME — Stream Viewer Page
  * Velvet Dark Design System
- *
- * Individual live-stream view with:
- *   - Video area (WebRTC — connects via WS signaling)
- *   - Real-time chat sidebar (WS or mock fallback)
- *   - Viewer count, gift panel, tip button
- *   - Back to grid link
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useParams } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
+import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from "@/lib/api";
 import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
-  Volume2, VolumeX, Maximize2, Crown, Radio,
+  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -30,34 +24,20 @@ interface ChatMsg {
   createdAt: string;
 }
 
-// ── Quick-tip gift set (shown inline) ─────────────────────────────────────────
-
-const QUICK_GIFTS = MOCK_GIFTS.filter(g =>
-  ["rose", "kiss", "fire", "champagne", "crown"].includes(g.id)
-);
-
-// ── Fake chat messages to seed the view while WS connects ─────────────────────
-
-function seedMessages(hostName: string): ChatMsg[] {
-  return [
-    { id: "s1", userId: "u1", username: "StargazerKai", text: "omg just tuned in 🔥", creditTip: 0, createdAt: new Date(Date.now() - 120_000).toISOString() },
-    { id: "s2", userId: "u2", username: "NightOwl99", text: `${hostName} you're the best!!`, creditTip: 0, createdAt: new Date(Date.now() - 90_000).toISOString() },
-    { id: "s3", userId: "u3", username: "VibeChecker", text: "stream quality is 🔥🔥🔥", creditTip: 50, createdAt: new Date(Date.now() - 60_000).toISOString() },
-    { id: "s4", userId: "u4", username: "LoungeQueen", text: "sending love from London 💜", creditTip: 0, createdAt: new Date(Date.now() - 30_000).toISOString() },
-  ];
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function StreamView() {
   const { id } = useParams<{ id: string }>();
-  const { credits, spendCredits, token, user } = useApp();
+  const { credits, spendCredits, token, user, isLoggedIn, showToast } = useApp();
 
-  const feed = MOCK_LIVE_FEEDS.find(f => f.id === id);
+  const [feed, setFeed] = useState<LiveFeedItem | null>(null);
+  const [loadingFeed, setLoadingFeed] = useState(true);
+  const [feedNotFound, setFeedNotFound] = useState(false);
+  const [quickGifts, setQuickGifts] = useState<GiftItem[]>([]);
 
-  const [msgs, setMsgs] = useState<ChatMsg[]>(feed ? seedMessages(feed.hostName) : []);
+  const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
-  const [viewerCount, setViewerCount] = useState(feed?.viewerCount ?? 0);
+  const [viewerCount, setViewerCount] = useState(0);
   const [muted, setMuted] = useState(true);
   const [showGifts, setShowGifts] = useState(false);
   const [sentGift, setSentGift] = useState<string | null>(null);
@@ -66,6 +46,29 @@ export default function StreamView() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<LinkMeSocket | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Load feed from API
+  useEffect(() => {
+    if (!id) return;
+    setLoadingFeed(true);
+    liveApi.get(id)
+      .then(data => {
+        setFeed(data);
+        setViewerCount(data.viewerCount);
+      })
+      .catch(() => setFeedNotFound(true))
+      .finally(() => setLoadingFeed(false));
+  }, [id]);
+
+  // Load gift catalogue (take 5 for quick gifts)
+  useEffect(() => {
+    giftsApi.catalogue()
+      .then(data => {
+        const quick = Array.isArray(data) ? data.slice(0, 5) : [];
+        setQuickGifts(quick);
+      })
+      .catch(() => setQuickGifts([]));
+  }, []);
 
   // Scroll chat to bottom on new messages
   useEffect(() => {
@@ -76,12 +79,11 @@ export default function StreamView() {
   useEffect(() => {
     if (!id) return;
     const accessToken = token ?? localStorage.getItem("linkme_token");
-    if (!accessToken) return; // guest — WS not available, mock chat only
+    if (!accessToken) return; // guest — WS not available
 
     const ws = createLiveSocket(accessToken);
     wsRef.current = ws;
 
-    // Join feed room
     ws.on("auth_ok", () => {
       ws.send({ type: "join_feed", feedId: id });
     });
@@ -116,7 +118,6 @@ export default function StreamView() {
     if (wsRef.current?.isOpen) {
       wsRef.current.send({ type: "chat", text, creditTip: 0 });
     } else {
-      // Optimistic fallback (guest / no WS)
       setMsgs(prev => [...prev, {
         id: String(Date.now()),
         userId: user?.id ?? "guest",
@@ -129,29 +130,55 @@ export default function StreamView() {
   }, [draft, user]);
 
   // ── Send gift / tip ─────────────────────────────────────────────────────────
-  const sendGift = useCallback((gift: typeof QUICK_GIFTS[0]) => {
-    const ok = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} tip to ${feed?.hostName}`);
-    if (!ok) return;
-    setSentGift(gift.id);
-    setTimeout(() => setSentGift(null), 1500);
+  const sendGift = useCallback(async (gift: GiftItem) => {
+    if (!feed) return;
 
-    const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
-    if (wsRef.current?.isOpen) {
-      wsRef.current.send({ type: "chat", text, creditTip: gift.creditCost });
+    if (isLoggedIn) {
+      // Real API call
+      try {
+        await giftsApi.send({ giftId: gift.id, recipientId: feed.creator.userId, feedId: feed.id });
+        setSentGift(gift.id);
+        setTimeout(() => setSentGift(null), 1500);
+        const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
+        if (wsRef.current?.isOpen) {
+          wsRef.current.send({ type: "chat", text, creditTip: gift.creditCost });
+        } else {
+          setMsgs(prev => [...prev, {
+            id: String(Date.now()), userId: user?.id ?? "me",
+            username: user?.username ?? "You", text,
+            creditTip: gift.creditCost, createdAt: new Date().toISOString(),
+          }]);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Gift failed";
+        showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+      }
     } else {
+      // Demo fallback
+      const hostName = feed.creator?.user?.profile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+      const ok = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} tip to ${hostName}`);
+      if (!ok) return;
+      setSentGift(gift.id);
+      setTimeout(() => setSentGift(null), 1500);
+      const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
       setMsgs(prev => [...prev, {
-        id: String(Date.now()),
-        userId: user?.id ?? "me",
-        username: user?.username ?? "You",
-        text,
-        creditTip: gift.creditCost,
-        createdAt: new Date().toISOString(),
+        id: String(Date.now()), userId: user?.id ?? "me",
+        username: user?.username ?? "You", text,
+        creditTip: gift.creditCost, createdAt: new Date().toISOString(),
       }]);
     }
-  }, [spendCredits, feed, user]);
+  }, [feed, isLoggedIn, spendCredits, user, showToast]);
 
-  // ── 404 ─────────────────────────────────────────────────────────────────────
-  if (!feed) {
+  // ── Loading / 404 ────────────────────────────────────────────────────────────
+  if (loadingFeed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#14b8a6" }} />
+      </div>
+    );
+  }
+
+  if (feedNotFound || !feed) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -165,6 +192,13 @@ export default function StreamView() {
     );
   }
 
+  const hostProfile = feed.creator?.user?.profile;
+  const hostName = hostProfile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+  const hostAvatar = hostProfile?.avatarUrl
+    ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${feed.creator?.user?.username ?? feed.id}`;
+  const thumbnail = feed.thumbnailUrl
+    ?? `https://picsum.photos/seed/${feed.id}-thumb/1280/720`;
+
   // ── Stream ended screen ──────────────────────────────────────────────────────
   if (streamEnded) {
     return (
@@ -173,7 +207,7 @@ export default function StreamView() {
           <div className="text-5xl mb-4">📺</div>
           <p className="text-xl font-bold text-white mb-2">Stream Ended</p>
           <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
-            {feed.hostName} has ended the stream.
+            {hostName} has ended the stream.
           </p>
           <Link href="/live">
             <button className="vl-btn-primary px-6 py-2.5 text-sm">Browse Other Streams</button>
@@ -215,9 +249,8 @@ export default function StreamView() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Video area */}
           <div className="relative flex-1 bg-black flex items-center justify-center" style={{ minHeight: 0 }}>
-            {/* Thumbnail as placeholder until WebRTC connects */}
             <img
-              src={feed.thumbnailUrl}
+              src={thumbnail}
               alt={feed.title}
               className="absolute inset-0 w-full h-full object-cover"
               style={{ opacity: 0.6 }}
@@ -231,23 +264,21 @@ export default function StreamView() {
               style={{ display: "none" }}
             />
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.8) 0%, transparent 50%, rgba(9,9,26,0.4) 100%)" }} />
 
             {/* Stream info overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="flex items-end justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={feed.hostAvatarUrl} alt={feed.hostName}
+                  <img src={hostAvatar} alt={hostName}
                     className="w-12 h-12 rounded-full border-2 object-cover"
                     style={{ borderColor: "#14b8a6" }} />
                   <div>
-                    <p className="font-bold text-white text-sm">{feed.hostName}</p>
+                    <p className="font-bold text-white text-sm">{hostName}</p>
                     <p className="text-xs line-clamp-1" style={{ color: "rgba(255,255,255,0.6)" }}>{feed.title}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Mute toggle */}
                   <button
                     onClick={() => setMuted(m => !m)}
                     className="p-2 rounded-lg transition-all hover:bg-white/10"
@@ -281,7 +312,7 @@ export default function StreamView() {
             </div>
           </div>
 
-          {/* Gift panel (expandable) */}
+          {/* Gift panel */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(9,9,26,0.95)" }}>
             <button
               onClick={() => setShowGifts(g => !g)}
@@ -297,13 +328,13 @@ export default function StreamView() {
               </span>
             </button>
 
-            {showGifts && (
+            {showGifts && quickGifts.length > 0 && (
               <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
-                {QUICK_GIFTS.map(gift => (
+                {quickGifts.map(gift => (
                   <button
                     key={gift.id}
                     onClick={() => sendGift(gift)}
-                    disabled={credits < gift.creditCost}
+                    disabled={credits < gift.creditCost && !isLoggedIn}
                     className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-center flex-shrink-0 transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
                       background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.04)",
@@ -330,7 +361,6 @@ export default function StreamView() {
 
         {/* ── Chat sidebar ─────────────────────────────────────────────────── */}
         <div className="flex flex-col w-80 flex-shrink-0" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", background: "rgba(9,9,26,0.98)" }}>
-          {/* Chat header */}
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
             <Users className="w-4 h-4" style={{ color: "rgba(255,255,255,0.35)" }} />
             <span className="text-sm font-semibold text-white">Live Chat</span>
@@ -339,8 +369,12 @@ export default function StreamView() {
             </span>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2" style={{ minHeight: 0 }}>
+            {msgs.length === 0 && (
+              <p className="text-xs text-center py-8" style={{ color: "rgba(255,255,255,0.25)" }}>
+                Chat is live — say something!
+              </p>
+            )}
             {msgs.map(msg => (
               <div key={msg.id} className="flex gap-2">
                 <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
@@ -368,7 +402,6 @@ export default function StreamView() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Chat input */}
           <div className="px-3 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <div className="flex gap-2">
               <input

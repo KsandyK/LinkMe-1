@@ -109,26 +109,81 @@ export const profiles = {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
-    return get<{ profiles: unknown[]; total: number; page: number; limit: number }>(`/api/profiles${qs}`);
+    return get<{ profiles: CreatorProfileItem[]; total: number; page: number; limit: number }>(`/api/profiles${qs}`);
   },
-  /** GET /api/profiles/:id — returns creator profile directly (not wrapped) */
-  get: (userId: string) => get<object>(`/api/profiles/${userId}`),
+  /** GET /api/profiles/:id — returns creator profile directly (not wrapped). :id is the userId */
+  get: (userId: string) => get<CreatorProfileItem>(`/api/profiles/${userId}`),
   /** PATCH /api/profiles/me */
   updateMe: (data: { displayName?: string; bio?: string; avatarUrl?: string; coverUrl?: string; location?: string }) =>
     patch<object>("/api/profiles/me", data),
 };
 
+// ── Profile types ─────────────────────────────────────────────────────────────
+
+export interface UserProfileSnippet {
+  displayName: string | null;
+  avatarUrl: string | null;
+  coverUrl?: string | null;
+  location?: string | null;
+  isVerified?: boolean;
+}
+
+export interface CreatorProfileItem {
+  id: string;                    // creatorProfile.id
+  userId: string;
+  isLive: boolean;
+  isApproved: boolean;
+  subscriberCount: number;
+  totalEarnings: number;
+  monthlyEarnings: number;
+  bio: string | null;
+  subscriptionPrice: number;
+  user: {
+    id: string;
+    username: string;
+    profile: UserProfileSnippet | null;
+  };
+}
+
+// ── Live feed types ───────────────────────────────────────────────────────────
+
+export interface LiveFeedItem {
+  id: string;
+  creatorId: string;
+  title: string;
+  category: string | null;
+  isVip: boolean;
+  viewerCount: number;
+  thumbnailUrl: string | null;
+  tags: string[];
+  isLive: boolean;
+  startedAt: string;
+  endedAt: string | null;
+  creator: {
+    id: string;
+    userId: string;
+    user: {
+      id: string;
+      username: string;
+      profile: { displayName: string | null; avatarUrl: string | null } | null;
+    };
+  };
+}
+
 // ── Live feeds ────────────────────────────────────────────────────────────────
 
 export const livefeeds = {
-  list: (params?: { page?: number; limit?: number }) => {
+  /** GET /api/livefeeds — returns array directly */
+  list: (params?: { page?: number; limit?: number; category?: string }) => {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
-    return get<{ feeds: unknown[]; total: number }>(`/api/livefeeds${qs}`);
+    return get<LiveFeedItem[]>(`/api/livefeeds${qs}`);
   },
-  get: (id: string) => get<{ feed: object }>(`/api/livefeeds/${id}`),
-  create: (data: { title: string; description?: string }) => post<{ feed: object }>("/api/livefeeds", data),
+  /** GET /api/livefeeds/:id — returns feed object directly */
+  get: (id: string) => get<LiveFeedItem>(`/api/livefeeds/${id}`),
+  create: (data: { title: string; category: string; isVip?: boolean; thumbnailUrl?: string; tags?: string[] }) =>
+    post<LiveFeedItem>("/api/livefeeds", data),
   end: (id: string) => post(`/api/livefeeds/${id}/end`),
   chat: (id: string, params?: { limit?: number; before?: string }) => {
     const qs = params ? "?" + new URLSearchParams(
@@ -262,8 +317,23 @@ export const boosts = {
 
 // ── Creator ───────────────────────────────────────────────────────────────────
 
+export interface CreatorDashboardData {
+  profile: CreatorProfileItem;
+  stats: { totalEarnings: number; monthlyEarnings: number; subscriberCount: number };
+  recentTips: Array<{ amount: number; createdAt: string; metadata: unknown }>;
+  recentSubs: Array<{
+    id: string;
+    createdAt: string;
+    subscriber: { username: string; profile: { displayName: string | null } | null };
+  }>;
+  liveFeeds: Array<{
+    id: string; title: string; viewerCount: number; peakViewers: number;
+    startedAt: string; endedAt: string | null; isLive: boolean;
+  }>;
+}
+
 export const creator = {
-  dashboard: () => get<object>("/api/creator/dashboard"),
+  dashboard: () => get<CreatorDashboardData>("/api/creator/dashboard"),
   /** POST /api/creator/apply — requires age verification */
   apply: (data: { displayName: string; bio: string; subscriptionPrice: number }) =>
     post<{ creatorProfile: object; message: string }>("/api/creator/apply", data),

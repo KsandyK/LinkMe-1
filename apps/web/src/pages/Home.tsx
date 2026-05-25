@@ -1,44 +1,44 @@
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
-import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Users } from "lucide-react";
+import { profiles as profilesApi, livefeeds as liveApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
+import { Radio, Zap, Shield, Crown, ChevronRight, Eye } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
-function ProfileCard({ profile }: { profile: typeof MOCK_PROFILES[0] }) {
+function CreatorCard({ creator }: { creator: CreatorProfileItem }) {
+  const p = creator.user.profile;
+  const displayName = p?.displayName ?? creator.user.username;
+  const avatarUrl = p?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.user.username}`;
+  const coverUrl = p?.coverUrl ?? `https://picsum.photos/seed/${creator.user.username}-cover/600/200`;
+  const location = p?.location ?? "";
+
   return (
-    <Link href={`/profile/${profile.id}`}>
+    <Link href={`/profile/${creator.userId}`}>
       <div className="vl-card overflow-hidden cursor-pointer group">
         <div className="relative h-36 overflow-hidden">
-          <img src={profile.coverUrl} alt={profile.displayName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={coverUrl} alt={displayName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
-          {profile.isLive && (
+          {creator.isLive && (
             <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
               LIVE
             </div>
           )}
-          <img src={profile.avatarUrl} alt={profile.displayName}
+          <img src={avatarUrl} alt={displayName}
             className="absolute bottom-0 translate-y-1/2 left-3 w-12 h-12 rounded-full border-2 object-cover z-10"
             style={{ borderColor: "#14b8a6" }} />
         </div>
         <div className="p-3 pt-8">
           <div className="flex items-start justify-between mb-1">
-            <h3 className="font-bold text-sm text-white">{profile.displayName}</h3>
-            <span className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{profile.age}</span>
+            <h3 className="font-bold text-sm text-white">{displayName}</h3>
+            {p?.isVerified && <span className="text-xs" style={{ color: "#14b8a6" }}>✓</span>}
           </div>
-          <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {profile.location}</p>
-          <p className="text-xs line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>{profile.tagline}</p>
-          <div className="flex gap-1 flex-wrap mb-3">
-            {profile.badges.slice(0, 2).map(badge => (
-              <span key={badge.id} className="text-xs px-2 py-0.5 rounded-full" style={{ border: "1px solid rgba(255,255,255,0.08)", color: badge.color, fontSize: "0.65rem" }}>
-                {badge.icon} {badge.name}
-              </span>
-            ))}
-          </div>
+          {location && <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {location}</p>}
+          {creator.bio && <p className="text-xs line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>{creator.bio}</p>}
           <div className="rounded-lg py-2 text-center text-xs font-bold text-white transition-all duration-200"
-            style={{ background: profile.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-            {profile.isLive ? "● Join Live" : "View Profile"}
+            style={{ background: creator.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+            {creator.isLive ? "● Join Live" : "View Profile"}
           </div>
         </div>
       </div>
@@ -48,8 +48,24 @@ function ProfileCard({ profile }: { profile: typeof MOCK_PROFILES[0] }) {
 
 export default function Home() {
   const { ageVerificationStatus } = useApp();
-  const liveProfiles = MOCK_PROFILES.filter(p => p.isLive);
-  const featuredProfiles = MOCK_PROFILES.slice(0, 6);
+  const [liveFeeds, setLiveFeeds] = useState<LiveFeedItem[]>([]);
+  const [featuredCreators, setFeaturedCreators] = useState<CreatorProfileItem[]>([]);
+  const [liveCount, setLiveCount] = useState(0);
+
+  useEffect(() => {
+    // Load live feeds and featured creators in parallel
+    liveApi.list({ limit: 4 })
+      .then(data => {
+        const feeds = Array.isArray(data) ? data : [];
+        setLiveFeeds(feeds);
+        setLiveCount(feeds.length);
+      })
+      .catch(() => setLiveFeeds([]));
+
+    profilesApi.list({ limit: 6 })
+      .then(data => setFeaturedCreators(data.profiles ?? []))
+      .catch(() => setFeaturedCreators([]));
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -63,7 +79,7 @@ export default function Home() {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6", letterSpacing: "0.08em" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
-              {liveProfiles.length} CREATORS LIVE NOW
+              {liveCount > 0 ? `${liveCount} CREATORS LIVE NOW` : "LIVE STREAMING NOW"}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
               Connect. <span style={{ color: "#14b8a6" }}>Live.</span> Vibe.
@@ -85,7 +101,7 @@ export default function Home() {
             <div className="flex flex-wrap gap-8 mt-7">
               {[
                 { label: "Active Creators", value: "2,400+" },
-                { label: "Live Right Now", value: `${liveProfiles.length}` },
+                { label: "Live Right Now", value: liveCount > 0 ? liveCount.toString() : "—" },
                 { label: "Members", value: "180K+" },
               ].map(s => (
                 <div key={s.label}>
@@ -120,48 +136,56 @@ export default function Home() {
       )}
 
       {/* Live Now */}
-      <section className="py-10">
-        <div className="container">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <h2 className="vl-section-title">Live Now</h2>
+      {liveFeeds.length > 0 && (
+        <section className="py-10">
+          <div className="container">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <h2 className="vl-section-title">Live Now</h2>
+              </div>
+              <Link href="/live">
+                <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>View All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
+              </Link>
             </div>
-            <Link href="/live">
-              <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>View All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {MOCK_LIVE_FEEDS.map((feed) => {
-              const profile = MOCK_PROFILES.find(p => p.id === feed.hostId);
-              return (
-                <Link key={feed.id} href={`/live/${feed.id}`}>
-                  <div className="vl-card overflow-hidden cursor-pointer group">
-                    <div className="relative">
-                      <img src={feed.thumbnailUrl} alt={feed.title} className="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.8) 0%, transparent 60%)" }} />
-                      <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
-                        LIVE
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {liveFeeds.map(feed => {
+                const hostProfile = feed.creator?.user?.profile;
+                const hostName = hostProfile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+                const thumbnail = feed.thumbnailUrl ?? `https://picsum.photos/seed/${feed.id}-thumb/400/300`;
+                return (
+                  <Link key={feed.id} href={`/live/${feed.id}`}>
+                    <div className="vl-card overflow-hidden cursor-pointer group">
+                      <div className="relative">
+                        <img src={thumbnail} alt={feed.title} className="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.8) 0%, transparent 60%)" }} />
+                        <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
+                          LIVE
+                        </div>
+                        <div className="absolute top-2 right-2 flex items-center gap-1 rounded px-2 py-0.5 text-xs" style={{ background: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.8)" }}>
+                          <Eye className="w-3 h-3" /> {feed.viewerCount.toLocaleString()}
+                        </div>
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <p className="text-white text-xs font-semibold line-clamp-1">{feed.title}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{hostName}</p>
+                        </div>
                       </div>
-                      <div className="absolute top-2 right-2 flex items-center gap-1 rounded px-2 py-0.5 text-xs" style={{ background: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.8)" }}>
-                        <Eye className="w-3 h-3" /> {feed.viewerCount.toLocaleString()}
-                      </div>
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-xs font-semibold line-clamp-1">{feed.title}</p>
-                        {profile && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{profile.displayName}</p>}
+                      <div className="px-3 py-2">
+                        {feed.category && (
+                          <span className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                            {feed.category}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="px-3 py-2">
-                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>{feed.category}</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured Creators */}
       <section className="py-10" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
@@ -172,11 +196,21 @@ export default function Home() {
               <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>Browse All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featuredProfiles.map(profile => (
-              <ProfileCard key={profile.id} profile={profile} />
-            ))}
-          </div>
+          {featuredCreators.length === 0 ? (
+            <div className="text-center py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p className="text-lg font-medium mb-2">No creators yet</p>
+              <p className="text-sm mb-4">Be the first to join as a creator!</p>
+              <Link href="/become-creator">
+                <button className="vl-btn-primary px-6 py-2.5 text-sm">Apply as Creator</button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {featuredCreators.map(creator => (
+                <CreatorCard key={creator.id} creator={creator} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

@@ -1,23 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap } from "lucide-react";
-
-const MOCK_EARNINGS = [
-  { month: "Jan", amount: 2400 },
-  { month: "Feb", amount: 3100 },
-  { month: "Mar", amount: 2800 },
-  { month: "Apr", amount: 4200 },
-  { month: "May", amount: 3920 },
-];
-
-const RECENT_ACTIVITY = [
-  { type: "tip", fan: "StarGazer99", amount: 50, time: "2m ago" },
-  { type: "sub", fan: "NightOwl_X", amount: 29, time: "14m ago" },
-  { type: "gift", fan: "LuxVibes", amount: 120, time: "31m ago" },
-  { type: "tip", fan: "Anonymous", amount: 10, time: "1h ago" },
-  { type: "sub", fan: "WaveRider22", amount: 29, time: "2h ago" },
-];
+import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle } from "lucide-react";
 
 const QUICK_ACTIONS = [
   { label: "Go Live", icon: Radio, color: "#ef4444", href: "/live" },
@@ -26,14 +11,80 @@ const QUICK_ACTIONS = [
   { label: "Account Settings", icon: Settings, color: "#a78bfa", href: "/account" },
 ];
 
-export default function CreatorDashboard() {
-  const { credits } = useApp();
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans">("overview");
+function centsToDisplay(cents: number) {
+  return `$${(cents / 100).toFixed(2).replace(/\.00$/, "")}`;
+}
 
-  const totalEarnings = 12840;
-  const thisMonth = 3920;
-  const subscribers = 2341;
-  const liveViews = 847;
+export default function CreatorDashboard() {
+  const { credits, isLoggedIn } = useApp();
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans">("overview");
+  const [data, setData] = useState<CreatorDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setLoading(true);
+    creatorApi.dashboard()
+      .then(d => setData(d))
+      .catch(err => setError(err instanceof Error ? err.message : "Failed to load dashboard"))
+      .finally(() => setLoading(false));
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-white mb-2">Sign in to view your dashboard</p>
+          <Link href="/login"><button className="vl-btn-primary px-6 py-2.5 text-sm">Sign In</button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#14b8a6" }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: "#f87171" }} />
+          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>{error}</p>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+            You may need to apply as a creator first.
+          </p>
+          <Link href="/become-creator">
+            <button className="vl-btn-primary px-6 py-2.5 text-sm mt-4">Apply as Creator</button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = data?.stats;
+  const recentActivity = [
+    ...(data?.recentTips ?? []).map(t => ({
+      type: "tip" as const,
+      fan: "Fan",
+      amount: Math.abs(t.amount),
+      time: new Date(t.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    })),
+    ...(data?.recentSubs ?? []).map(s => ({
+      type: "sub" as const,
+      fan: s.subscriber.profile?.displayName ?? s.subscriber.username,
+      amount: 0,
+      time: new Date(s.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    })),
+  ].sort((a, b) => (a.time > b.time ? -1 : 1)).slice(0, 5);
+
+  // Build a simple bar chart from live feeds data
+  const liveHistory = data?.liveFeeds ?? [];
 
   return (
     <div className="min-h-screen py-8">
@@ -44,20 +95,22 @@ export default function CreatorDashboard() {
             <h1 className="text-3xl font-bold text-white mb-1">Creator Dashboard</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Welcome back — here's how you're doing</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
-            style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
-            <Radio className="w-4 h-4" />
-            Go Live
-          </button>
+          <Link href="/live">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
+              style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
+              <Radio className="w-4 h-4" />
+              Go Live
+            </button>
+          </Link>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
           {[
-            { icon: DollarSign, label: "Total Earnings", value: `$${totalEarnings.toLocaleString()}`, color: "#14b8a6" },
-            { icon: TrendingUp, label: "This Month", value: `$${thisMonth.toLocaleString()}`, color: "#e8a87c" },
-            { icon: Users, label: "Subscribers", value: subscribers.toLocaleString(), color: "#a78bfa" },
-            { icon: Eye, label: "Live Views", value: liveViews.toLocaleString(), color: "#f97316" },
+            { icon: DollarSign, label: "Total Earnings", value: centsToDisplay(stats?.totalEarnings ?? 0), color: "#14b8a6" },
+            { icon: TrendingUp, label: "This Month", value: centsToDisplay(stats?.monthlyEarnings ?? 0), color: "#e8a87c" },
+            { icon: Users, label: "Subscribers", value: (stats?.subscriberCount ?? 0).toLocaleString(), color: "#a78bfa" },
+            { icon: Eye, label: "Streams", value: liveHistory.length.toLocaleString(), color: "#f97316" },
           ].map(stat => (
             <div key={stat.label} className="vl-card p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -91,24 +144,30 @@ export default function CreatorDashboard() {
           <div className="lg:col-span-2 space-y-5">
             {activeTab === "overview" && (
               <>
-                {/* Earnings chart (simplified) */}
-                <div className="vl-card p-5">
-                  <h3 className="text-sm font-bold text-white mb-4">Earnings — Last 5 Months</h3>
-                  <div className="flex items-end gap-3 h-32">
-                    {MOCK_EARNINGS.map(e => {
-                      const maxAmt = Math.max(...MOCK_EARNINGS.map(x => x.amount));
-                      const pct = (e.amount / maxAmt) * 100;
-                      return (
-                        <div key={e.month} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>${(e.amount / 1000).toFixed(1)}k</span>
-                          <div className="w-full rounded-t-lg transition-all duration-500"
-                            style={{ height: `${pct}%`, background: "linear-gradient(to top, #0d9488, #14b8a6)" }} />
-                          <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{e.month}</span>
+                {/* Recent live streams */}
+                {liveHistory.length > 0 && (
+                  <div className="vl-card p-5">
+                    <h3 className="text-sm font-bold text-white mb-4">Recent Streams</h3>
+                    <div className="space-y-3">
+                      {liveHistory.map(feed => (
+                        <div key={feed.id} className="flex items-center justify-between py-2 border-b"
+                          style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                          <div>
+                            <p className="text-sm text-white font-medium">{feed.title}</p>
+                            <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                              {new Date(feed.startedAt).toLocaleDateString()}
+                              {feed.isLive ? " · 🔴 Live now" : ""}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold" style={{ color: "#14b8a6" }}>{feed.viewerCount} viewers</p>
+                            <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>peak {feed.peakViewers}</p>
+                          </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Quick actions */}
                 <div className="vl-card p-5">
@@ -144,19 +203,28 @@ export default function CreatorDashboard() {
 
             {activeTab === "fans" && (
               <div className="vl-card p-5">
-                <h3 className="text-sm font-bold text-white mb-4">Top Fans</h3>
-                {["StarGazer99", "LuxVibes", "NightOwl_X", "WaveRider22", "CryptoCat"].map((fan, i) => (
-                  <div key={fan} className="flex items-center justify-between py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                        style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6" }}>
-                        {fan[0]}
+                <h3 className="text-sm font-bold text-white mb-4">Recent Subscribers</h3>
+                {(data?.recentSubs ?? []).length === 0 ? (
+                  <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>No subscribers yet</p>
+                ) : (
+                  (data?.recentSubs ?? []).map((sub, i) => (
+                    <div key={sub.id} className="flex items-center justify-between py-3 border-b"
+                      style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                          style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6" }}>
+                          {(sub.subscriber.profile?.displayName ?? sub.subscriber.username)[0].toUpperCase()}
+                        </div>
+                        <span className="text-sm text-white">
+                          {sub.subscriber.profile?.displayName ?? sub.subscriber.username}
+                        </span>
                       </div>
-                      <span className="text-sm text-white">{fan}</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        {new Date(sub.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>${[240, 185, 130, 95, 60][i]} spent</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -181,26 +249,34 @@ export default function CreatorDashboard() {
             {/* Recent activity */}
             <div className="vl-card p-4">
               <h3 className="text-sm font-bold text-white mb-3">Recent Activity</h3>
-              <div className="space-y-3">
-                {RECENT_ACTIVITY.map((act, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-white">{act.fan}</p>
-                      <p className="text-xs capitalize" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        {act.type === "tip" ? "💸 Tip" : act.type === "sub" ? "⭐ Subscribed" : "🎁 Gift"} · {act.time}
-                      </p>
+              {recentActivity.length === 0 ? (
+                <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.35)" }}>No recent activity</p>
+              ) : (
+                <div className="space-y-3">
+                  {recentActivity.map((act, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-medium text-white">{act.fan}</p>
+                        <p className="text-xs capitalize" style={{ color: "rgba(255,255,255,0.4)" }}>
+                          {act.type === "tip" ? "💸 Tip" : "⭐ Subscribed"} · {act.time}
+                        </p>
+                      </div>
+                      {act.amount > 0 && (
+                        <span className="text-xs font-bold font-mono" style={{ color: "#14b8a6" }}>
+                          +{act.amount}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-xs font-bold font-mono" style={{ color: "#14b8a6" }}>+${act.amount}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Payout */}
             <div className="vl-card p-4">
-              <h3 className="text-sm font-bold text-white mb-1">Next Payout</h3>
-              <p className="text-2xl font-black text-white mb-0.5">$1,247.50</p>
-              <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>Estimated — Jun 1, 2026</p>
+              <h3 className="text-sm font-bold text-white mb-1">Earnings</h3>
+              <p className="text-2xl font-black text-white mb-0.5">{centsToDisplay(stats?.monthlyEarnings ?? 0)}</p>
+              <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>This month</p>
               <Link href="/billing">
                 <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
                   style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
