@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, livefeeds as liveApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
+import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { Radio, Zap, Shield, Crown, ChevronRight, Eye } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
@@ -60,11 +61,62 @@ export default function Home() {
         setLiveFeeds(feeds);
         setLiveCount(feeds.length);
       })
-      .catch(() => setLiveFeeds([]));
+      .catch(() => {
+        // Mock fallback
+        const mockFeeds: LiveFeedItem[] = MOCK_LIVE_FEEDS.slice(0, 4).map(f => ({
+          id: f.id,
+          creatorId: f.hostId ?? f.id,
+          title: f.title,
+          category: f.category ?? null,
+          isVip: f.isVip ?? false,
+          viewerCount: f.viewerCount ?? 0,
+          thumbnailUrl: f.thumbnailUrl ?? null,
+          tags: f.tags ?? [],
+          isLive: true,
+          startedAt: f.startedAt ?? new Date().toISOString(),
+          endedAt: null,
+          creator: {
+            id: f.hostId ?? f.id,
+            userId: f.hostId ?? f.id,
+            user: {
+              id: f.hostId ?? f.id,
+              username: f.hostName ?? "creator",
+              profile: { displayName: f.hostName ?? null, avatarUrl: f.hostAvatarUrl ?? null },
+            },
+          },
+        }));
+        setLiveFeeds(mockFeeds);
+        setLiveCount(mockFeeds.length);
+      });
 
     profilesApi.list({ limit: 6 })
       .then(data => setFeaturedCreators(data.profiles ?? []))
-      .catch(() => setFeaturedCreators([]));
+      .catch(() => {
+        // Mock fallback
+        const mockCreators: CreatorProfileItem[] = MOCK_PROFILES.slice(0, 6).map(p => ({
+          id: p.id,
+          userId: p.id,
+          isLive: p.isLive ?? false,
+          isApproved: true,
+          subscriberCount: p.followersCount ?? 0,
+          totalEarnings: p.totalEarnings ?? 0,
+          monthlyEarnings: 0,
+          bio: p.bio ?? null,
+          subscriptionPrice: 0,
+          user: {
+            id: p.id,
+            username: p.username,
+            profile: {
+              displayName: p.displayName,
+              avatarUrl: p.avatarUrl,
+              coverUrl: p.coverUrl,
+              location: p.location,
+              isVerified: false,
+            },
+          },
+        }));
+        setFeaturedCreators(mockCreators);
+      });
   }, []);
 
   return (

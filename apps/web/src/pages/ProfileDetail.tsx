@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { profiles as profilesApi, messages as messagesApi, CreatorProfileItem } from "@/lib/api";
+import { MOCK_PROFILES } from "@/lib/mock-data";
 import { useApp } from "@/contexts/AppContext";
 import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2 } from "lucide-react";
+
+interface ContentItem {
+  id: string;
+  type: string;
+  thumbnailUrl: string;
+  creditCost: number;
+  title: string;
+}
 
 export default function ProfileDetail() {
   const { id } = useParams<{ id: string }>();  // id is userId
@@ -10,6 +19,7 @@ export default function ProfileDetail() {
   const { unlockContent, unlockedContent, isLoggedIn, showToast } = useApp();
 
   const [creator, setCreator] = useState<CreatorProfileItem | null>(null);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
@@ -18,8 +28,55 @@ export default function ProfileDetail() {
     if (!id) return;
     setLoading(true);
     profilesApi.get(id)
-      .then(data => setCreator(data))
-      .catch(() => setNotFound(true))
+      .then(data => {
+        setCreator(data);
+        // Placeholder content items for real API profiles
+        setContentItems([
+          { id: `${data.id}-ph-1`, creditCost: 50, title: "Exclusive Photo", type: "photo", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-a/400/300` },
+          { id: `${data.id}-ph-2`, creditCost: 75, title: "Photo Set", type: "photo", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-b/400/300` },
+          { id: `${data.id}-v-1`, creditCost: 150, title: "Private Video", type: "video", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-c/400/300` },
+        ]);
+      })
+      .catch(() => {
+        // API unavailable — look for matching mock profile
+        const mock = MOCK_PROFILES.find(p => p.id === id || p.username === id);
+        if (mock) {
+          setCreator({
+            id: mock.id,
+            userId: mock.id,
+            isLive: mock.isLive ?? false,
+            isApproved: true,
+            subscriberCount: mock.followersCount ?? 0,
+            totalEarnings: mock.totalEarnings ?? 0,
+            monthlyEarnings: 0,
+            bio: mock.bio ?? null,
+            subscriptionPrice: 0,
+            user: {
+              id: mock.id,
+              username: mock.username,
+              profile: {
+                displayName: mock.displayName,
+                avatarUrl: mock.avatarUrl,
+                coverUrl: mock.coverUrl,
+                location: mock.location,
+                isVerified: false,
+              },
+            },
+          });
+          // Use the rich mock media items
+          if (mock.mediaItems?.length) {
+            setContentItems(mock.mediaItems.map(m => ({
+              id: m.id,
+              type: m.type,
+              thumbnailUrl: m.thumbnailUrl,
+              creditCost: m.creditCost,
+              title: m.title,
+            })));
+          }
+        } else {
+          setNotFound(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -172,20 +229,15 @@ export default function ProfileDetail() {
           {/* Right panel — Exclusive Content */}
           <div className="lg:col-span-3">
             <h3 className="font-bold text-sm text-white mb-4">Exclusive Content</h3>
-            {/* Placeholder locked content items — real media upload not yet implemented */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {[
-                { id: `${creator.id}-ph-1`, creditCost: 50, title: "Exclusive Photo", type: "photo", seed: "a" },
-                { id: `${creator.id}-ph-2`, creditCost: 75, title: "Photo Set", type: "photo", seed: "b" },
-                { id: `${creator.id}-v-1`, creditCost: 150, title: "Private Video", type: "video", seed: "c" },
-              ].map(item => {
+              {contentItems.map(item => {
                 const isUnlocked = unlockedContent.has(item.id);
                 return (
                   <div key={item.id} className="vl-card overflow-hidden cursor-pointer group"
                     onClick={() => !isUnlocked && unlockContent(item.id, item.creditCost)}>
                     <div className="relative h-28 overflow-hidden">
                       <img
-                        src={`https://picsum.photos/seed/${creator.user.username}-${item.seed}/400/300`}
+                        src={item.thumbnailUrl}
                         alt={item.title}
                         className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!isUnlocked ? "blur-sm scale-105" : ""}`}
                       />

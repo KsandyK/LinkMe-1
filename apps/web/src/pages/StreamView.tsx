@@ -4,9 +4,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useParams } from "wouter";
+import { Link, useParams, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from "@/lib/api";
+import { MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
@@ -28,7 +29,15 @@ interface ChatMsg {
 
 export default function StreamView() {
   const { id } = useParams<{ id: string }>();
+  const [, navigate] = useLocation();
   const { credits, spendCredits, token, user, isLoggedIn, showToast } = useApp();
+
+  // Auth gate — redirect to login if not signed in
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
 
   const [feed, setFeed] = useState<LiveFeedItem | null>(null);
   const [loadingFeed, setLoadingFeed] = useState(true);
@@ -60,7 +69,7 @@ export default function StreamView() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showGifts]);
 
-  // Load feed from API
+  // Load feed from API (fallback to mock data when API is unreachable)
   useEffect(() => {
     if (!id) return;
     setLoadingFeed(true);
@@ -69,7 +78,38 @@ export default function StreamView() {
         setFeed(data);
         setViewerCount(data.viewerCount);
       })
-      .catch(() => setFeedNotFound(true))
+      .catch(() => {
+        // Match by feed id OR by hostId (so /live/profile-1 works in demo mode)
+        const mock = MOCK_LIVE_FEEDS.find(f => f.id === id || f.hostId === id);
+        if (mock) {
+          const feedItem: LiveFeedItem = {
+            id: mock.id,
+            creatorId: mock.hostId ?? mock.id,
+            title: mock.title,
+            category: mock.category ?? null,
+            isVip: mock.isVip ?? false,
+            viewerCount: mock.viewerCount ?? 0,
+            thumbnailUrl: mock.thumbnailUrl ?? null,
+            tags: mock.tags ?? [],
+            isLive: true,
+            startedAt: mock.startedAt ?? new Date().toISOString(),
+            endedAt: null,
+            creator: {
+              id: mock.hostId ?? mock.id,
+              userId: mock.hostId ?? mock.id,
+              user: {
+                id: mock.hostId ?? mock.id,
+                username: mock.hostName ?? "creator",
+                profile: { displayName: mock.hostName ?? null, avatarUrl: mock.hostAvatarUrl ?? null },
+              },
+            },
+          };
+          setFeed(feedItem);
+          setViewerCount(feedItem.viewerCount);
+        } else {
+          setFeedNotFound(true);
+        }
+      })
       .finally(() => setLoadingFeed(false));
   }, [id]);
 
