@@ -1,7 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { profiles as profilesApi, CreatorProfileItem } from "@/lib/api";
+import { MOCK_PROFILES } from "@/lib/mock-data";
 import { Search, Radio, Loader2 } from "lucide-react";
+
+// Map mock profiles to CreatorProfileItem shape for fallback display
+const MOCK_CREATORS: CreatorProfileItem[] = MOCK_PROFILES.map(p => ({
+  id: p.id,
+  userId: p.id,
+  isLive: p.isLive ?? false,
+  isApproved: true,
+  subscriberCount: p.followersCount ?? 0,
+  totalEarnings: 0,
+  monthlyEarnings: 0,
+  bio: p.bio ?? null,
+  subscriptionPrice: 0,
+  user: {
+    id: p.id,
+    username: p.username,
+    profile: {
+      displayName: p.displayName,
+      avatarUrl: p.avatarUrl,
+      coverUrl: p.coverUrl,
+      location: p.location,
+      isVerified: false,
+    },
+  },
+}));
 
 type Filter = "all" | "live";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -65,7 +90,7 @@ export default function Profiles() {
   const [creators, setCreators] = useState<CreatorProfileItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   // Debounce search input
   useEffect(() => {
@@ -75,7 +100,6 @@ export default function Profiles() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await profilesApi.list({
         search: debouncedSearch || undefined,
@@ -84,9 +108,19 @@ export default function Profiles() {
       });
       setCreators(data.profiles);
       setTotal(data.total);
+      setUsingFallback(false);
     } catch {
-      setError("Failed to load creators");
-      setCreators([]);
+      // API unavailable — filter mock data client-side
+      const q = debouncedSearch.toLowerCase();
+      let results = MOCK_CREATORS;
+      if (q) results = results.filter(c =>
+        (c.user.profile?.displayName ?? c.user.username).toLowerCase().includes(q) ||
+        (c.user.profile?.location ?? "").toLowerCase().includes(q)
+      );
+      if (filter === "live") results = results.filter(c => c.isLive);
+      setCreators(results);
+      setTotal(results.length);
+      setUsingFallback(true);
     } finally {
       setLoading(false);
     }
@@ -101,7 +135,13 @@ export default function Profiles() {
         <div className="mb-7">
           <h1 className="text-3xl font-bold text-white mb-1">Browse Creators</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            {loading ? "Loading…" : `Discover ${total} verified adult creators`}
+            {loading ? "Loading…" : `Discover ${total}+ verified adult creators`}
+            {usingFallback && (
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
+                Demo
+              </span>
+            )}
           </p>
         </div>
 
@@ -139,11 +179,6 @@ export default function Profiles() {
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#14b8a6" }} />
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>{error}</p>
-            <button onClick={load} className="vl-btn-primary px-4 py-2 text-sm">Retry</button>
           </div>
         ) : (
           <>

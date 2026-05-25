@@ -22,27 +22,6 @@ const STEPS = [
   { num: "04", title: "Go Live & Earn", desc: "Hit Go Live and start connecting with fans who pay to spend time with you." },
 ];
 
-const PLANS = [
-  {
-    name: "Starter",
-    cut: "80%",
-    features: ["Unlimited live streams", "Fan messaging", "Custom tip menu", "Basic analytics"],
-    highlight: false,
-  },
-  {
-    name: "Pro Creator",
-    cut: "85%",
-    features: ["Everything in Starter", "Priority search placement", "Advanced analytics", "Dedicated support", "Custom profile badge"],
-    highlight: true,
-  },
-  {
-    name: "Elite",
-    cut: "90%",
-    features: ["Everything in Pro", "VIP lounge access", "Co-streaming features", "Cross-promotion", "Personal account manager"],
-    highlight: false,
-  },
-];
-
 export default function BecomeCreator() {
   const { isLoggedIn, ageVerificationStatus, showToast } = useApp();
   const [showApplyForm, setShowApplyForm] = useState(false);
@@ -152,47 +131,6 @@ export default function BecomeCreator() {
                 {i < STEPS.length - 1 && (
                   <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0 self-center" style={{ color: "rgba(255,255,255,0.15)" }} />
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing tiers */}
-      <section className="py-14">
-        <div className="container max-w-4xl">
-          <h2 className="vl-section-title text-center mb-2">Creator Plans</h2>
-          <p className="text-center text-sm mb-9" style={{ color: "rgba(255,255,255,0.45)" }}>No monthly fees. You only pay when you earn.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {PLANS.map(plan => (
-              <div key={plan.name} className="vl-card p-6 flex flex-col relative"
-                style={plan.highlight ? { border: "1px solid rgba(20,184,166,0.4)", boxShadow: "0 0 30px rgba(20,184,166,0.1)" } : {}}>
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="font-bold text-white mb-1">{plan.name}</h3>
-                <div className="text-3xl font-black mb-0.5" style={{ color: "#14b8a6" }}>{plan.cut}</div>
-                <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>of every dollar earned</p>
-                <ul className="space-y-2.5 flex-1 mb-5">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
-                      <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#14b8a6" }} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/register">
-                  <button className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
-                    style={plan.highlight
-                      ? { background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }
-                      : { background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }
-                    }>
-                    Get Started
-                  </button>
-                </Link>
               </div>
             ))}
           </div>
