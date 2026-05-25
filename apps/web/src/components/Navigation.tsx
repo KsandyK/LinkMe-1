@@ -12,10 +12,18 @@ const NAV_LINKS = [
 ];
 
 export function Navigation() {
-  const { ageGateAccepted, credits, ageVerificationStatus, user, isLoggedIn, logout } = useApp();
-  const [location, navigate] = useLocation();
+  const { ageGateAccepted, credits, ageVerificationStatus, user, isLoggedIn, logout, showToast } = useApp();
+  const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleSignOut = () => {
+    setUserMenuOpen(false);
+    logout();
+    showToast({ title: "Signed out", description: "You have been signed out successfully." });
+    // Hard navigation to guarantee all in-memory state is reset
+    window.location.href = "/";
+  };
 
   if (!ageGateAccepted) return null;
 
@@ -101,13 +109,14 @@ export function Navigation() {
                   ))}
                   <div className="h-px mx-3 my-1" style={{ background: "rgba(255,255,255,0.06)" }} />
                   {isLoggedIn ? (
-                    <div
-                      onClick={() => { setUserMenuOpen(false); logout(); navigate("/"); }}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
                       style={{ color: "rgba(255,255,255,0.35)" }}
                     >
                       Sign Out
-                    </div>
+                    </button>
                   ) : (
                     <>
                       <Link href="/login">
