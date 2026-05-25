@@ -49,6 +49,8 @@ export default function StreamView() {
   const [viewerCount, setViewerCount] = useState(0);
   const [muted, setMuted] = useState(true);
   const [showGifts, setShowGifts] = useState(false);
+  const [showAllGifts, setShowAllGifts] = useState(false);
+  const [allGifts, setAllGifts] = useState<GiftItem[]>([]);
   const [sentGift, setSentGift] = useState<string | null>(null);
   const [streamEnded, setStreamEnded] = useState(false);
   const [showTipMenu, setShowTipMenu] = useState(false);
@@ -72,9 +74,12 @@ export default function StreamView() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const giftDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close gift dropdown on outside click
+  // Close gift dropdown on outside click; reset expanded state when closed
   useEffect(() => {
-    if (!showGifts) return;
+    if (!showGifts) {
+      setShowAllGifts(false);
+      return;
+    }
     const handler = (e: MouseEvent) => {
       if (giftDropdownRef.current && !giftDropdownRef.current.contains(e.target as Node)) {
         setShowGifts(false);
@@ -128,14 +133,19 @@ export default function StreamView() {
       .finally(() => setLoadingFeed(false));
   }, [id]);
 
-  // Load gift catalogue (take 5 for quick gifts)
+  // Load gift catalogue (take 5 for quick gifts; keep full list for "More")
   useEffect(() => {
     giftsApi.catalogue()
       .then(data => {
-        const quick = Array.isArray(data) ? data.slice(0, 5) : [];
-        setQuickGifts(quick);
+        const list = Array.isArray(data) ? data : [];
+        setQuickGifts(list.slice(0, 5));
+        setAllGifts(list);
       })
-      .catch(() => setQuickGifts(MOCK_GIFTS.slice(0, 5) as GiftItem[]));
+      .catch(() => {
+        const mock = MOCK_GIFTS as GiftItem[];
+        setQuickGifts(mock.slice(0, 5));
+        setAllGifts(mock);
+      });
   }, []);
 
   // Scroll chat to bottom on new messages
@@ -249,6 +259,28 @@ export default function StreamView() {
       }]);
     }
   }, [feed, isLoggedIn, spendCredits, user, showToast, tipGoal.target]);
+
+  // ── Send tip menu item ──────────────────────────────────────────────────────
+  const sendTipItem = useCallback((item: { emoji: string; name: string; credits: number }) => {
+    if (!feed) return;
+    const hostName = feed.creator?.user?.profile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+    const ok = spendCredits(item.credits, `${item.emoji} ${item.name} to ${hostName}`);
+    if (!ok) return;
+    setSentGift(`tip-${item.name}`);
+    setTimeout(() => setSentGift(null), 1500);
+    setGoalProgress(p => Math.min(p + item.credits, tipGoal.target));
+    const text = `${item.emoji} ${item.name} — ${item.credits} cr tip!`;
+    if (wsRef.current?.isOpen) {
+      wsRef.current.send({ type: "chat", text, creditTip: item.credits });
+    } else {
+      setMsgs(prev => [...prev, {
+        id: String(Date.now()), userId: user?.id ?? "me",
+        username: user?.username ?? "You", text,
+        creditTip: item.credits, createdAt: new Date().toISOString(),
+      }]);
+    }
+    showToast({ title: `${item.emoji} Sent!`, description: `You sent ${item.name} (${item.credits} cr)` });
+  }, [feed, spendCredits, user, tipGoal.target, showToast]);
 
   // ── Loading / 404 ────────────────────────────────────────────────────────────
   if (loadingFeed) {
@@ -364,41 +396,71 @@ export default function StreamView() {
                 </div>
 
                 {/* Gift grid */}
-                <div className="flex gap-2 p-3 overflow-x-auto">
-                  {quickGifts.map(gift => (
-                    <button
-                      key={gift.id}
-                      onClick={() => { sendGift(gift); setShowGifts(false); }}
-                      disabled={!isLoggedIn && credits < gift.creditCost}
-                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
-                        border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
-                        minWidth: "68px",
-                      }}
-                    >
-                      <span className="text-2xl leading-none">{gift.emoji}</span>
-                      <span className="text-xs text-white font-semibold mt-1">{gift.name}</span>
-                      <span className="text-xs" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
-                    </button>
-                  ))}
+                {!showAllGifts ? (
+                  <div className="flex gap-2 p-3 overflow-x-auto">
+                    {quickGifts.map(gift => (
+                      <button
+                        key={gift.id}
+                        onClick={() => { sendGift(gift); setShowGifts(false); }}
+                        disabled={credits < gift.creditCost}
+                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{
+                          background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                          border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                          minWidth: "68px",
+                        }}
+                      >
+                        <span className="text-2xl leading-none">{gift.emoji}</span>
+                        <span className="text-xs text-white font-semibold mt-1">{gift.name}</span>
+                        <span className="text-xs" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
+                      </button>
+                    ))}
 
-                  {/* More gifts link */}
-                  <Link href="/gifts">
-                    <button
-                      onClick={() => setShowGifts(false)}
-                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105"
-                      style={{
-                        background: "rgba(20,184,166,0.06)",
-                        border: "1px solid rgba(20,184,166,0.2)",
-                        minWidth: "68px",
-                      }}>
-                      <span className="text-2xl leading-none">🎁</span>
-                      <span className="text-xs font-semibold mt-1" style={{ color: "#14b8a6" }}>More</span>
-                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Gifts</span>
-                    </button>
-                  </Link>
-                </div>
+                    {/* More gifts — expand inline */}
+                    {allGifts.length > 5 && (
+                      <button
+                        onClick={() => setShowAllGifts(true)}
+                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl flex-shrink-0 transition-all hover:scale-105"
+                        style={{
+                          background: "rgba(20,184,166,0.06)",
+                          border: "1px solid rgba(20,184,166,0.2)",
+                          minWidth: "68px",
+                        }}>
+                        <span className="text-2xl leading-none">🎁</span>
+                        <span className="text-xs font-semibold mt-1" style={{ color: "#14b8a6" }}>More</span>
+                        <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Gifts</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Expanded: all gifts in a scrollable grid */
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-white">All Gifts</span>
+                      <button onClick={() => setShowAllGifts(false)} className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        ← Back
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 max-h-52 overflow-y-auto">
+                      {allGifts.map(gift => (
+                        <button
+                          key={gift.id}
+                          onClick={() => { sendGift(gift); setShowGifts(false); setShowAllGifts(false); }}
+                          disabled={credits < gift.creditCost}
+                          className="flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                          style={{
+                            background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                            border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                          }}
+                        >
+                          <span className="text-xl leading-none">{gift.emoji}</span>
+                          <span className="text-xs text-white font-medium mt-0.5 text-center leading-tight">{gift.name}</span>
+                          <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -441,17 +503,24 @@ export default function StreamView() {
       {/* Tip menu dropdown */}
       {showTipMenu && (
         <div className="px-4 py-3 flex-shrink-0" style={{ background: "rgba(13,13,30,0.97)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p className="text-xs font-bold text-white mb-2">💸 Tip Menu — send a gift to trigger:</p>
+          <p className="text-xs font-bold text-white mb-2">💸 Tip Menu — tap to send:</p>
           <div className="flex flex-wrap gap-2">
             {DEMO_TIP_MENU.map(item => (
-              <div key={item.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <button
+                key={item.name}
+                onClick={() => sendTipItem(item)}
+                disabled={credits < item.credits}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  background: sentGift === `tip-${item.name}` ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                  border: sentGift === `tip-${item.name}` ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                }}>
                 <span className="text-base">{item.emoji}</span>
-                <div>
+                <div className="text-left">
                   <p className="text-xs font-semibold text-white">{item.name}</p>
                   <p className="text-xs font-mono" style={{ color: "#14b8a6" }}>{item.credits} cr</p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

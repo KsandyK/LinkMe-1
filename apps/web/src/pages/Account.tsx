@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone } from "lucide-react";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
@@ -42,6 +42,17 @@ export default function Account() {
   const [twoFALoading, setTwoFALoading] = useState(false);
   const [pwChanged, setPwChanged] = useState(false);
 
+  // 2FA setup modal
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [twoFAStep, setTwoFAStep] = useState<"phone" | "verify" | "done">("phone");
+  const [twoFAPhone, setTwoFAPhone] = useState("");
+  const [twoFACode, setTwoFACode] = useState("");
+  const [twoFASending, setTwoFASending] = useState(false);
+  const [twoFAVerifying, setTwoFAVerifying] = useState(false);
+  const [twoFACodeError, setTwoFACodeError] = useState(false);
+  // Simulated OTP (always "123456" in demo)
+  const DEMO_OTP = "123456";
+
   // Danger zone modals
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -55,13 +66,44 @@ export default function Account() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleEnable2FA = () => {
-    setTwoFALoading(true);
+  const open2FAModal = () => {
+    setTwoFAStep("phone");
+    setTwoFAPhone("");
+    setTwoFACode("");
+    setTwoFACodeError(false);
+    setShow2FAModal(true);
+  };
+
+  const handleSendOTP = () => {
+    if (twoFAPhone.replace(/\D/g, "").length < 7) return;
+    setTwoFASending(true);
     setTimeout(() => {
-      setTwoFALoading(false);
-      setTwoFAEnabled(true);
-      showToast({ title: "2FA Enabled", description: "Two-factor authentication is now active on your account." });
+      setTwoFASending(false);
+      setTwoFAStep("verify");
+      showToast({ title: "Code sent!", description: `Verification code sent to ${twoFAPhone}` });
+    }, 1000);
+  };
+
+  const handleVerifyOTP = () => {
+    setTwoFAVerifying(true);
+    setTimeout(() => {
+      setTwoFAVerifying(false);
+      if (twoFACode === DEMO_OTP) {
+        setTwoFAStep("done");
+        setTimeout(() => {
+          setTwoFAEnabled(true);
+          setShow2FAModal(false);
+          showToast({ title: "2FA Enabled ✓", description: "Your account is now protected with two-factor authentication." });
+        }, 1200);
+      } else {
+        setTwoFACodeError(true);
+      }
     }, 900);
+  };
+
+  const handleDisable2FA = () => {
+    setTwoFAEnabled(false);
+    showToast({ title: "2FA Disabled", description: "Two-factor authentication has been removed from your account." });
   };
 
   const handleChangePassword = () => {
@@ -250,15 +292,23 @@ export default function Account() {
                     <div>
                       <p className="text-sm font-semibold text-white">Two-Factor Authentication</p>
                       <p className="text-xs mt-0.5" style={{ color: twoFAEnabled ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
-                        {twoFAEnabled ? "Enabled — your account is protected" : "Add an extra layer of security"}
+                        {twoFAEnabled ? "Enabled — your account is protected" : "Add an extra layer of security via SMS"}
                       </p>
                     </div>
-                    <button
-                      onClick={handleEnable2FA}
-                      disabled={twoFAEnabled || twoFALoading}
-                      className="vl-btn-primary px-3 py-1.5 text-xs disabled:opacity-60 disabled:cursor-default">
-                      {twoFALoading ? "Enabling…" : twoFAEnabled ? "✓ Enabled" : "Enable 2FA"}
-                    </button>
+                    {twoFAEnabled ? (
+                      <button
+                        onClick={handleDisable2FA}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                        style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", background: "rgba(239,68,68,0.05)" }}>
+                        Disable 2FA
+                      </button>
+                    ) : (
+                      <button
+                        onClick={open2FAModal}
+                        className="vl-btn-primary px-3 py-1.5 text-xs">
+                        Enable 2FA
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -329,6 +379,111 @@ export default function Account() {
           </div>
         </div>
       </div>
+
+      {/* 2FA Setup Modal */}
+      {show2FAModal && (
+        <Modal onClose={() => setShow2FAModal(false)}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.25)" }}>
+              <Smartphone className="w-5 h-5" style={{ color: "#14b8a6" }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Set Up Two-Factor Auth</h3>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Secure your account with SMS verification</p>
+            </div>
+          </div>
+
+          {twoFAStep === "phone" && (
+            <>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={twoFAPhone}
+                onChange={e => setTwoFAPhone(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSendOTP()}
+                placeholder="+1 (555) 000-0000"
+                className="vl-input w-full mb-4"
+                autoFocus
+              />
+              <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                We'll send a 6-digit verification code to this number.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setShow2FAModal(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+                  style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendOTP}
+                  disabled={twoFASending || twoFAPhone.replace(/\D/g, "").length < 7}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                  {twoFASending ? "Sending…" : "Send Code"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {twoFAStep === "verify" && (
+            <>
+              <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>
+                Enter the 6-digit code sent to <span className="font-semibold text-white">{twoFAPhone}</span>
+              </p>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Verification Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={twoFACode}
+                onChange={e => { setTwoFACode(e.target.value.replace(/\D/g, "")); setTwoFACodeError(false); }}
+                onKeyDown={e => e.key === "Enter" && twoFACode.length === 6 && handleVerifyOTP()}
+                placeholder="123456"
+                className="vl-input w-full mb-1 text-center font-mono text-lg tracking-widest"
+                style={{ borderColor: twoFACodeError ? "rgba(239,68,68,0.5)" : undefined }}
+                autoFocus
+              />
+              {twoFACodeError && (
+                <p className="text-xs mb-3" style={{ color: "#f87171" }}>Incorrect code. Try again (hint: 123456)</p>
+              )}
+              <p className="text-xs mb-5 mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Didn't receive it?{" "}
+                <button onClick={() => setTwoFAStep("phone")} className="underline" style={{ color: "#14b8a6" }}>
+                  Change number
+                </button>
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setTwoFAStep("phone")}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+                  style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                  Back
+                </button>
+                <button
+                  onClick={handleVerifyOTP}
+                  disabled={twoFAVerifying || twoFACode.length !== 6}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                  {twoFAVerifying ? "Verifying…" : "Verify"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {twoFAStep === "done" && (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: "rgba(20,184,166,0.15)", border: "2px solid #14b8a6" }}>
+                <CheckCircle className="w-8 h-8" style={{ color: "#14b8a6" }} />
+              </div>
+              <p className="text-lg font-bold text-white mb-1">2FA Enabled!</p>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Your account is now protected.</p>
+            </div>
+          )}
+        </Modal>
+      )}
 
       {/* Deactivate modal */}
       {showDeactivate && (
