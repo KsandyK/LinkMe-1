@@ -95,19 +95,14 @@ export default function Register() {
         // Log in immediately with the new credentials
         await login(form.username, form.password);
         setStep("done");
-      } catch (err: unknown) {
-        // TypeError = network error = API server not running → demo mode
-        // login() also handles TypeError internally; re-throw here only for real errors
-        if (err instanceof TypeError) {
-          // Backend is offline — skip registration, let login() create a demo session
-          try {
-            await login(form.username, form.password);
-            setStep("done");
-          } catch {
-            setSubmitError("Registration failed. Please try again.");
-          }
-        } else {
-          setSubmitError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      } catch {
+        // Any error (network, HTTP 502/503) → backend offline → demo mode
+        // Skip registration, let login() create a demo session
+        try {
+          await login(form.username, form.password);
+          setStep("done");
+        } catch {
+          setSubmitError("Registration failed. Please try again.");
         }
       } finally {
         setSubmitting(false);

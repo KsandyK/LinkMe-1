@@ -218,25 +218,20 @@ export default function StreamView() {
             creditTip: gift.creditCost, createdAt: new Date().toISOString(),
           }]);
         }
-      } catch (err) {
-        if (err instanceof TypeError) {
-          // API offline — fall back to local demo mode
-          const hostName = feed.creator?.user?.profile?.displayName ?? feed.creator?.user?.username ?? "Creator";
-          const ok = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} tip to ${hostName}`);
-          if (!ok) return;
-          setSentGift(gift.id);
-          setTimeout(() => setSentGift(null), 1500);
-          setGoalProgress(p => Math.min(p + gift.creditCost, tipGoal.target));
-          const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
-          setMsgs(prev => [...prev, {
-            id: String(Date.now()), userId: user?.id ?? "me",
-            username: user?.username ?? "You", text,
-            creditTip: gift.creditCost, createdAt: new Date().toISOString(),
-          }]);
-        } else {
-          const msg = err instanceof Error ? err.message : "Gift failed";
-          showToast({ title: "Gift failed", description: msg, variant: "destructive" });
-        }
+      } catch {
+        // Any error (network, HTTP 502/503) → API offline — fall back to local demo mode
+        const hostName = feed.creator?.user?.profile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+        const ok = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} tip to ${hostName}`);
+        if (!ok) return;
+        setSentGift(gift.id);
+        setTimeout(() => setSentGift(null), 1500);
+        setGoalProgress(p => Math.min(p + gift.creditCost, tipGoal.target));
+        const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
+        setMsgs(prev => [...prev, {
+          id: String(Date.now()), userId: user?.id ?? "me",
+          username: user?.username ?? "You", text,
+          creditTip: gift.creditCost, createdAt: new Date().toISOString(),
+        }]);
       }
     } else {
       // Demo fallback

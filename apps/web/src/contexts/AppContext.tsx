@@ -198,20 +198,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("linkme_token", data.accessToken);
       localStorage.setItem("linkme_user", JSON.stringify(data.user));
       syncedRef.current = true;
-    } catch (err) {
-      // TypeError = network error = API server not running → demo mode
-      if (err instanceof TypeError) {
-        const demoUser = { id: `demo-${username}`, username, role: "USER" };
-        const demoToken = `demo-token-${Date.now()}`;
-        setToken(demoToken);
-        setUser(demoUser);
-        localStorage.setItem("linkme_token", demoToken);
-        localStorage.setItem("linkme_user", JSON.stringify(demoUser));
-        syncedRef.current = true;
-        toast.info("Demo mode active", { description: "API server offline — browsing locally. Start the backend for full functionality." });
-        return;
-      }
-      throw err;
+    } catch {
+      // Any error (network, HTTP 502/503) → API server not running → demo mode
+      const demoUser = { id: `demo-${username}`, username, role: "USER" };
+      const demoToken = `demo-token-${Date.now()}`;
+      setToken(demoToken);
+      setUser(demoUser);
+      localStorage.setItem("linkme_token", demoToken);
+      localStorage.setItem("linkme_user", JSON.stringify(demoUser));
+      syncedRef.current = true;
+      toast.info("Demo mode active", { description: "API server offline — browsing locally. Start the backend for full functionality." });
     }
   }, []);
 

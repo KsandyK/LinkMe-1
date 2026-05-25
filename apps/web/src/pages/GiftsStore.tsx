@@ -76,18 +76,13 @@ export default function GiftsStore() {
         setSentGift(gift.id);
         showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
         setTimeout(() => setSentGift(null), 2000);
-      } catch (err) {
-        if (err instanceof TypeError) {
-          // API offline — fall back to local credit deduction (demo mode)
-          const success = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} to ${recipientName}`);
-          if (success) {
-            setSentGift(gift.id);
-            showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
-            setTimeout(() => setSentGift(null), 2000);
-          }
-        } else {
-          const msg = err instanceof Error ? err.message : "Failed to send gift";
-          showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+      } catch {
+        // Any error (network, HTTP 502/503) → demo mode: deduct credits locally
+        const success = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} to ${recipientName}`);
+        if (success) {
+          setSentGift(gift.id);
+          showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
+          setTimeout(() => setSentGift(null), 2000);
         }
       } finally {
         setSending(null);

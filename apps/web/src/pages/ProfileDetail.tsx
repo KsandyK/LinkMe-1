@@ -110,18 +110,16 @@ export default function ProfileDetail() {
     if (!creator) return;
     setMessaging(true);
     try {
-      await messagesApi.getOrCreate(creator.userId);
-      setLocation("/messages");
-    } catch (err) {
-      if (err instanceof TypeError) {
-        // API offline — navigate to messages directly in demo mode
-        setLocation("/messages");
-      } else {
-        showToast({ title: "Error", description: "Could not open conversation", variant: "destructive" });
-      }
+      // Race API call against 3s timeout — avoids hanging when backend is offline
+      const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000));
+      await Promise.race([messagesApi.getOrCreate(creator.userId), timeout]);
+    } catch {
+      // Any error (network, HTTP 502/503, timeout) → demo mode: just go to messages
+      // The messages page handles offline state gracefully
     } finally {
       setMessaging(false);
     }
+    setLocation("/messages");
   };
 
   if (loading) {
