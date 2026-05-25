@@ -85,7 +85,9 @@ export default function Billing() {
             <div className="text-5xl mb-4">💳</div>
             <p className="font-bold text-lg text-white mb-1">No Payment Methods Saved</p>
             <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Add a card to purchase credits and subscriptions.</p>
-            <button className="vl-btn-primary px-6 py-2.5 text-sm">+ Add Payment Method</button>
+            <Link href="/credits">
+              <button className="vl-btn-primary px-6 py-2.5 text-sm">+ Add Payment Method</button>
+            </Link>
             <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>Processed securely via CCBill · Statement shows "CCBILL*LinkMe"</p>
           </div>
         )}

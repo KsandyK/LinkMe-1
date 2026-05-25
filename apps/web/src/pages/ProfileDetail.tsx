@@ -23,6 +23,7 @@ export default function ProfileDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -80,6 +81,27 @@ export default function ProfileDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const handleLike = () => {
+    setLiked(l => !l);
+    showToast({
+      title: liked ? "Removed from favourites" : "Added to favourites",
+      description: liked ? "" : `You liked ${creator?.user?.profile?.displayName ?? "this creator"}`,
+    });
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast({ title: "Link copied!", description: "Profile link copied to clipboard." });
+      }).catch(() => {
+        showToast({ title: "Share", description: url });
+      });
+    } else {
+      showToast({ title: "Share", description: url });
+    }
+  };
+
   const handleMessage = async () => {
     if (!isLoggedIn) {
       setLocation("/login");
@@ -90,8 +112,13 @@ export default function ProfileDetail() {
     try {
       await messagesApi.getOrCreate(creator.userId);
       setLocation("/messages");
-    } catch {
-      showToast({ title: "Error", description: "Could not open conversation", variant: "destructive" });
+    } catch (err) {
+      if (err instanceof TypeError) {
+        // API offline — navigate to messages directly in demo mode
+        setLocation("/messages");
+      } else {
+        showToast({ title: "Error", description: "Could not open conversation", variant: "destructive" });
+      }
     } finally {
       setMessaging(false);
     }
@@ -158,10 +185,16 @@ export default function ProfileDetail() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg transition-all hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
-              <Heart className="w-4 h-4" style={{ color: "rgba(255,255,255,0.5)" }} />
+            <button
+              onClick={handleLike}
+              className="p-2 rounded-lg transition-all hover:bg-white/5"
+              style={{ border: `1px solid ${liked ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}` }}>
+              <Heart className="w-4 h-4" style={{ color: liked ? "#f87171" : "rgba(255,255,255,0.5)", fill: liked ? "#f87171" : "none" }} />
             </button>
-            <button className="p-2 rounded-lg transition-all hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+            <button
+              onClick={handleShare}
+              className="p-2 rounded-lg transition-all hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
               <Share2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.5)" }} />
             </button>
             {creator.isLive ? (

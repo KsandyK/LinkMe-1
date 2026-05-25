@@ -3,7 +3,8 @@
  * Wraps every backend route with JWT injection + automatic token refresh.
  */
 
-const BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3000";
+// Use VITE_API_URL if set, otherwise use same-origin (goes through Vite dev proxy → /api → localhost:3000)
+const BASE: string = (import.meta as any).env?.VITE_API_URL || "";
 
 // ── Token helpers ────────────────────────────────────────────────────────────
 

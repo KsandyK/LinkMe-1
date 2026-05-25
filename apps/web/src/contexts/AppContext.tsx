@@ -6,7 +6,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3000";
+// Use VITE_API_URL if set, otherwise same-origin (Vite proxy handles /api → localhost:3000)
+const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
 
 type AgeVerificationStatus = "unverified" | "pending" | "verified";
 

@@ -32,6 +32,7 @@ import Billing from "./pages/Billing";
 import AgeVerification from "./pages/AgeVerification";
 import LegalPages from "./pages/LegalPages";
 import StreamView from "./pages/StreamView";
+import CreatorLiveStudio from "./pages/CreatorLiveStudio";
 import Login from "./pages/Login";
 
 function Router() {
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/become-creator" component={BecomeCreator} />
       <Route path="/account" component={Account} />
+      <Route path="/creator/studio" component={CreatorLiveStudio} />
       <Route path="/creator" component={CreatorDashboard} />
       <Route path="/billing" component={Billing} />
       <Route path="/verify-age" component={AgeVerification} />

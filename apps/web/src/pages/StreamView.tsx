@@ -7,11 +7,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from "@/lib/api";
-import { MOCK_LIVE_FEEDS } from "@/lib/mock-data";
+import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
 import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
-  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown,
+  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -51,6 +51,21 @@ export default function StreamView() {
   const [showGifts, setShowGifts] = useState(false);
   const [sentGift, setSentGift] = useState<string | null>(null);
   const [streamEnded, setStreamEnded] = useState(false);
+  const [showTipMenu, setShowTipMenu] = useState(false);
+
+  // Demo tip goal (simulates creator having set a goal — visible to viewers)
+  const [tipGoal] = useState({ title: "Special Show 🔥", target: 1000, current: 347 });
+  const [goalProgress, setGoalProgress] = useState(347);
+
+  // Demo tip menu (mirrors what creators build in the Live Studio)
+  const DEMO_TIP_MENU = [
+    { emoji: "💋", name: "Blowing Kiss", credits: 25 },
+    { emoji: "👋", name: "Wave to Cam", credits: 50 },
+    { emoji: "💃", name: "Dance for Me", credits: 150 },
+    { emoji: "🎵", name: "Song Request", credits: 200 },
+    { emoji: "📸", name: "Selfie Snap", credits: 300 },
+    { emoji: "🔥", name: "Special Show", credits: 1000 },
+  ];
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<LinkMeSocket | null>(null);
@@ -120,7 +135,7 @@ export default function StreamView() {
         const quick = Array.isArray(data) ? data.slice(0, 5) : [];
         setQuickGifts(quick);
       })
-      .catch(() => setQuickGifts([]));
+      .catch(() => setQuickGifts(MOCK_GIFTS.slice(0, 5) as GiftItem[]));
   }, []);
 
   // Scroll chat to bottom on new messages
@@ -192,6 +207,7 @@ export default function StreamView() {
         await giftsApi.send({ giftId: gift.id, recipientId: feed.creator.userId, feedId: feed.id });
         setSentGift(gift.id);
         setTimeout(() => setSentGift(null), 1500);
+        setGoalProgress(p => Math.min(p + gift.creditCost, tipGoal.target));
         const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
         if (wsRef.current?.isOpen) {
           wsRef.current.send({ type: "chat", text, creditTip: gift.creditCost });
@@ -203,8 +219,24 @@ export default function StreamView() {
           }]);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Gift failed";
-        showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+        if (err instanceof TypeError) {
+          // API offline — fall back to local demo mode
+          const hostName = feed.creator?.user?.profile?.displayName ?? feed.creator?.user?.username ?? "Creator";
+          const ok = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} tip to ${hostName}`);
+          if (!ok) return;
+          setSentGift(gift.id);
+          setTimeout(() => setSentGift(null), 1500);
+          setGoalProgress(p => Math.min(p + gift.creditCost, tipGoal.target));
+          const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
+          setMsgs(prev => [...prev, {
+            id: String(Date.now()), userId: user?.id ?? "me",
+            username: user?.username ?? "You", text,
+            creditTip: gift.creditCost, createdAt: new Date().toISOString(),
+          }]);
+        } else {
+          const msg = err instanceof Error ? err.message : "Gift failed";
+          showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+        }
       }
     } else {
       // Demo fallback
@@ -213,6 +245,7 @@ export default function StreamView() {
       if (!ok) return;
       setSentGift(gift.id);
       setTimeout(() => setSentGift(null), 1500);
+      setGoalProgress(p => Math.min(p + gift.creditCost, tipGoal.target));
       const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
       setMsgs(prev => [...prev, {
         id: String(Date.now()), userId: user?.id ?? "me",
@@ -220,7 +253,7 @@ export default function StreamView() {
         creditTip: gift.creditCost, createdAt: new Date().toISOString(),
       }]);
     }
-  }, [feed, isLoggedIn, spendCredits, user, showToast]);
+  }, [feed, isLoggedIn, spendCredits, user, showToast, tipGoal.target]);
 
   // ── Loading / 404 ────────────────────────────────────────────────────────────
   if (loadingFeed) {
@@ -383,8 +416,54 @@ export default function StreamView() {
         </div>
       </div>
 
+      {/* Tip goal bar — visible to all viewers when creator has set a goal */}
+      <div className="px-4 py-2 flex items-center gap-4 flex-shrink-0"
+        style={{ background: "rgba(20,184,166,0.07)", borderBottom: "1px solid rgba(20,184,166,0.15)" }}>
+        <Target className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#14b8a6" }} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold text-white">{tipGoal.title}</span>
+            <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>
+              {goalProgress.toLocaleString()} / {tipGoal.target.toLocaleString()} cr
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, (goalProgress / tipGoal.target) * 100)}%`, background: "linear-gradient(90deg, #14b8a6, #0d9488)" }} />
+          </div>
+        </div>
+        {/* Tip menu toggle */}
+        <button onClick={() => setShowTipMenu(s => !s)}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
+          style={showTipMenu
+            ? { background: "rgba(232,168,124,0.18)", border: "1px solid rgba(232,168,124,0.4)", color: "#e8a87c" }
+            : { background: "rgba(232,168,124,0.07)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }
+          }>
+          <BarChart className="w-3.5 h-3.5" /> Tip Menu
+        </button>
+      </div>
+
+      {/* Tip menu dropdown */}
+      {showTipMenu && (
+        <div className="px-4 py-3 flex-shrink-0" style={{ background: "rgba(13,13,30,0.97)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <p className="text-xs font-bold text-white mb-2">💸 Tip Menu — send a gift to trigger:</p>
+          <div className="flex flex-wrap gap-2">
+            {DEMO_TIP_MENU.map(item => (
+              <div key={item.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <span className="text-base">{item.emoji}</span>
+                <div>
+                  <p className="text-xs font-semibold text-white">{item.name}</p>
+                  <p className="text-xs font-mono" style={{ color: "#14b8a6" }}>{item.credits} cr</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden" style={{ height: "calc(100vh - 114px)" }}>
+      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         {/* ── Video column ─────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Video area */}

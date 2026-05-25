@@ -388,8 +388,11 @@ export default function Messages() {
                 {/* Input */}
                 <div className="p-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   <div className="flex gap-2 items-center">
-                    <button className="p-2 rounded-xl transition-all hover:bg-white/5 flex-shrink-0"
-                      style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <button
+                      className="p-2 rounded-xl transition-all hover:bg-white/5 flex-shrink-0"
+                      style={{ color: "rgba(255,255,255,0.35)" }}
+                      onClick={() => showToast({ title: "Emoji picker", description: "Coming soon — use keyboard shortcuts for now! 😊" })}
+                    >
                       <Smile className="w-5 h-5" />
                     </button>
                     <input

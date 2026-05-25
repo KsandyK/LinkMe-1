@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { gifts as giftsApi, profiles as profilesApi, GiftItem, CreatorProfileItem } from "@/lib/api";
+import { MOCK_GIFTS, MOCK_PROFILES } from "@/lib/mock-data";
 import { Loader2 } from "lucide-react";
 
 export default function GiftsStore() {
@@ -17,7 +18,7 @@ export default function GiftsStore() {
   useEffect(() => {
     giftsApi.catalogue()
       .then(data => setCatalogue(Array.isArray(data) ? data : []))
-      .catch(() => setCatalogue([]))
+      .catch(() => setCatalogue(MOCK_GIFTS as GiftItem[]))
       .finally(() => setLoadingCatalogue(false));
 
     profilesApi.list({ limit: 8 })
@@ -26,7 +27,32 @@ export default function GiftsStore() {
         setCreators(list);
         if (list.length > 0) setSelectedRecipientId(list[0].userId);
       })
-      .catch(() => setCreators([]))
+      .catch(() => {
+        const mockCreators: CreatorProfileItem[] = MOCK_PROFILES.slice(0, 8).map(p => ({
+          id: p.id,
+          userId: p.id,
+          isLive: p.isLive ?? false,
+          isApproved: true,
+          subscriberCount: p.followersCount ?? 0,
+          totalEarnings: p.totalEarnings ?? 0,
+          monthlyEarnings: 0,
+          bio: p.bio ?? null,
+          subscriptionPrice: 0,
+          user: {
+            id: p.id,
+            username: p.username,
+            profile: {
+              displayName: p.displayName,
+              avatarUrl: p.avatarUrl,
+              coverUrl: p.coverUrl,
+              location: p.location,
+              isVerified: false,
+            },
+          },
+        }));
+        setCreators(mockCreators);
+        if (mockCreators.length > 0) setSelectedRecipientId(mockCreators[0].userId);
+      })
       .finally(() => setLoadingCreators(false));
   }, []);
 
@@ -51,8 +77,18 @@ export default function GiftsStore() {
         showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
         setTimeout(() => setSentGift(null), 2000);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to send gift";
-        showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+        if (err instanceof TypeError) {
+          // API offline — fall back to local credit deduction (demo mode)
+          const success = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} to ${recipientName}`);
+          if (success) {
+            setSentGift(gift.id);
+            showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
+            setTimeout(() => setSentGift(null), 2000);
+          }
+        } else {
+          const msg = err instanceof Error ? err.message : "Failed to send gift";
+          showToast({ title: "Gift failed", description: msg, variant: "destructive" });
+        }
       } finally {
         setSending(null);
       }
