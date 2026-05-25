@@ -1,18 +1,38 @@
-import express from 'express';
-import securityMiddleware from './middleware/security.js';
-import monetizationRoutes from './routes/monetization.js';
+/**
+ * LinkMe API — entry point
+ *
+ * HTTP  → Express (port $PORT, default 3000)
+ * WS    → ws.WebSocketServer (port $WS_PORT, default 3001)
+ *           /ws/live  — live stream rooms + WebRTC signaling
+ *           /ws/msg   — private DM conversations
+ */
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+import "dotenv/config";
+import app from "./app.js";
+import { createWsServer } from "./ws/index.js";
+import { logger } from "./lib/logger.js";
+import db from "./lib/db.js";
 
-app.use(express.json());
-app.use(securityMiddleware);
-app.use('/api', monetizationRoutes);
+const HTTP_PORT = Number(process.env.PORT ?? 3000);
+const WS_PORT   = Number(process.env.WS_PORT ?? 3001);
 
-app.get('/', (req, res) => {
-  res.send(' LinkMe API is running!');
+// ── Graceful shutdown ─────────────────────────────────────────────────────────
+async function shutdown(signal: string) {
+  logger.info({ signal }, "Shutting down…");
+  await db.$disconnect();
+  process.exit(0);
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT",  () => shutdown("SIGINT"));
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+const server = app.listen(HTTP_PORT, () => {
+  logger.info({ port: HTTP_PORT }, "HTTP server listening");
 });
 
-app.listen(PORT, () => {
-  console.log(`LinkMe API running on http://localhost:${PORT}`);
+createWsServer(WS_PORT);
+
+server.on("error", (err) => {
+  logger.error({ err }, "HTTP server error");
+  process.exit(1);
 });

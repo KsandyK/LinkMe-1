@@ -3,38 +3,424 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // For PgBouncer / connection pooling (Supabase, Railway, etc.)
+  directUrl = env("DIRECT_URL")
 }
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  MEMBER
+  CREATOR
+  MODERATOR
+  ADMIN
+}
+
+enum AgeVerifyStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum TransactionType {
+  CREDIT_PURCHASE
+  CREDIT_SPEND_TIP
+  CREDIT_SPEND_GIFT
+  CREDIT_SPEND_UNLOCK
+  CREDIT_SPEND_MESSAGE
+  SUBSCRIPTION_PAYMENT
+  CREATOR_PAYOUT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ContentType {
+  STREAM
+  VIDEO
+  PHOTO
+  PRIVATE_MESSAGE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum ModerationStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED_ACTION
+  RESOLVED_NO_ACTION
+  DISMISSED
+}
+
+// ---------------------------------------------------------------------------
+// Core user / auth
+// ---------------------------------------------------------------------------
 
 model User {
-  id            String   @id @default(cuid())
-  username      String   @unique
-  email         String?  @unique
-  password      String   @default("")
-  credits       Int      @default(0)
-  createdAt     DateTime @default(now())
-  transactions  Transaction[]
-  unlocks       ContentUnlock[]
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String?  @unique
+  passwordHash String   @default("")
+  role         UserRole @default(MEMBER)
+  credits      Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // relations
+  profile              Profile?
+  creatorProfile       CreatorProfile?
+  sessions             Session[]
+  transactions         Transaction[]
+  unlocks              ContentUnlock[]
+  sentMessages         Message[]              @relation("MessageSender")
+  conversationLinks    ConversationParticipant[]
+  ageVerification      AgeVerification?
+  subscriptions        Subscription[]         @relation("SubscriberSubs")
+  creatorSubscriptions Subscription[]         @relation("CreatorSubs")
+  giftsSent            Gift[]                 @relation("GiftSender")
+  giftsReceived        Gift[]                 @relation("GiftReceiver")
+  boostPurchases       BoostPurchase[]
+  notifications        Notification[]
+  reportsSubmitted     ModerationReport[]     @relation("ReporterReports")
+  reportsReceived      ModerationReport[]     @relation("ReportedUserReports")
+
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
 }
 
-model Transaction {
+// Refresh-token sessions (one per device/browser)
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique           // hashed refresh token
+  userAgent   String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// Profiles
+// ---------------------------------------------------------------------------
+
+model Profile {
   id            String   @id @default(cuid())
-  userId        String
-  amount        Int
-  type          String
-  status        String
-  paymentMethod String?
+  userId        String   @unique
+  displayName   String
+  bio           String?  @db.Text
+  avatarUrl     String?
+  coverUrl      String?
+  location      String?
+  followerCount Int      @default(0)
+  isVerified    Boolean  @default(false)
   createdAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CreatorProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  subscriptionPrice Int      @default(0)   // credits per month
+  tipMenuItems      Json?                  // [{label: string, credits: number}]
+  totalEarnings     Int      @default(0)
+  monthlyEarnings   Int      @default(0)
+  subscriberCount   Int      @default(0)
+  isApproved        Boolean  @default(false)
+  isLive            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  liveFeeds LiveFeed[]
+
+  @@index([userId])
+  @@index([isLive])
+}
+
+// ---------------------------------------------------------------------------
+// Age verification
+// ---------------------------------------------------------------------------
+
+model AgeVerification {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  status         AgeVerifyStatus @default(PENDING)
+  documentType   String?         // passport | drivers_license | national_id
+  documentRef    String?         // encrypted S3 key — NOT the raw file
+  dateOfBirth    String?         // YYYY-MM-DD, stored after verify, doc purged
+  verifiedAt     DateTime?
+  rejectedAt     DateTime?
+  rejectedReason String?
+  reviewedBy     String?         // admin userId
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Live streaming
+// ---------------------------------------------------------------------------
+
+model LiveFeed {
+  id           String    @id @default(cuid())
+  creatorId    String
+  title        String
+  category     String    @default("General")
+  thumbnailUrl String?
+  viewerCount  Int       @default(0)
+  peakViewers  Int       @default(0)
+  isLive       Boolean   @default(false)
+  isVip        Boolean   @default(false)
+  // WebRTC — store the SDP offer from creator so late joiners can connect
+  sdpOffer     String?   @db.Text
+  tags         String[]  @default([])
+  startedAt    DateTime?
+  endedAt      DateTime?
+  createdAt    DateTime  @default(now())
+
+  creator      CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  chatMessages ChatMessage[]
+
+  @@index([creatorId])
+  @@index([isLive, category])
+  @@index([startedAt])
+}
+
+// Live-stream chat (ephemeral — purge after stream ends via cron)
+model ChatMessage {
+  id          String   @id @default(cuid())
+  feedId      String
+  userId      String
+  username    String   // denormalised — avoid join on hot path
+  text        String   @db.VarChar(500)
+  creditTip   Int      @default(0)
+  isModerated Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  feed LiveFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@index([feedId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Messaging
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id             String   @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime @default(now())
+  lastReadAt     DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  text           String   @db.VarChar(2000)
+  creditCost     Int      @default(0)
+  isRead         Boolean  @default(false)
+  isModerated    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+// ---------------------------------------------------------------------------
+// Monetisation
+// ---------------------------------------------------------------------------
+
+model Transaction {
+  id            String            @id @default(cuid())
+  userId        String
+  amount        Int               // credit units (positive = earn, negative = spend)
+  usdAmount     Decimal?          @db.Decimal(10, 2)
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  paymentMethod String?
+  reference     String?           // CCBill subscriptionId / transactionId
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([reference])
 }
 
 model ContentUnlock {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   userId      String
   contentId   String
-  contentType String
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  contentType ContentType
+  creditCost  Int
+  createdAt   DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, contentId])
+  @@index([userId])
 }
 
+model Subscription {
+  id           String             @id @default(cuid())
+  subscriberId String
+  creatorId    String
+  tier         String             @default("basic")
+  status       SubscriptionStatus @default(ACTIVE)
+  creditCost   Int
+  startsAt     DateTime           @default(now())
+  endsAt       DateTime
+  createdAt    DateTime           @default(now())
+
+  subscriber User @relation("SubscriberSubs", fields: [subscriberId], references: [id])
+  creator    User @relation("CreatorSubs", fields: [creatorId], references: [id])
+
+  @@unique([subscriberId, creatorId])
+  @@index([subscriberId])
+  @@index([creatorId])
+  @@index([endsAt])
+}
+
+model Gift {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  name       String
+  emoji      String
+  creditCost Int
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("GiftSender", fields: [senderId], references: [id])
+  receiver User @relation("GiftReceiver", fields: [receiverId], references: [id])
+
+  @@index([receiverId, createdAt])
+  @@index([senderId])
+}
+
+model BoostPurchase {
+  id         String   @id @default(cuid())
+  userId     String
+  package    String   // spark | flame | inferno | legend
+  boostsTotal Int
+  boostsUsed  Int      @default(0)
+  creditCost Int
+  startsAt   DateTime @default(now())
+  endsAt     DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([endsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Moderation
+// ---------------------------------------------------------------------------
+
+model ModerationReport {
+  id             String           @id @default(cuid())
+  reporterId     String
+  reportedUserId String?
+  contentType    String?
+  contentId      String?
+  reason         String           // harassment | illegal_content | underage_suspicion | spam | other
+  details        String?          @db.Text
+  status         ModerationStatus @default(PENDING)
+  priority       Int              @default(0)   // 0=normal, 1=high, 2=critical
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  resolution     String?          @db.Text
+  createdAt      DateTime         @default(now())
+
+  reporter     User  @relation("ReporterReports", fields: [reporterId], references: [id])
+  reportedUser User? @relation("ReportedUserReports", fields: [reportedUserId], references: [id])
+
+  @@index([status, priority, createdAt])
+  @@index([reportedUserId])
+}
+
+// Automated content flags (from hash-matching, keyword filters, etc.)
+model ContentFlag {
+  id          String   @id @default(cuid())
+  contentType String
+  contentId   String
+  flagType    String   // hash_match | keyword | ml_score
+  confidence  Float    @default(0)
+  metadata    Json?
+  reviewed    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([reviewed, createdAt])
+  @@index([contentType, contentId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // new_message | live_alert | tip_received | subscription | moderation
+  title     String
+  body      String?
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}

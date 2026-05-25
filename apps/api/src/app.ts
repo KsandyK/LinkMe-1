@@ -1,34 +1,112 @@
-import express, { type Express } from "express";
+import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
-import router from "./routes";
-import { logger } from "./lib/logger";
+import { logger } from "./lib/logger.js";
 
-const app: Express = express();
+// Routes
+import authRouter      from "./routes/auth.js";
+import profilesRouter  from "./routes/profiles.js";
+import livefeedsRouter from "./routes/livefeeds.js";
+import messagesRouter  from "./routes/messages.js";
+import creditsRouter   from "./routes/credits.js";
+import giftsRouter     from "./routes/gifts.js";
+import boostsRouter    from "./routes/boosts.js";
+import creatorRouter   from "./routes/creator.js";
+import verifyAgeRouter from "./routes/verify-age.js";
+import moderationRouter from "./routes/moderation.js";
+import healthRouter    from "./routes/health.js";
 
+const app = express();
+
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: ["'self'", "wss:", "ws:"],
+        mediaSrc:   ["'self'", "blob:", "https://*.amazonaws.com"],
+      },
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    xFrameOptions: { action: "deny" },
+  }),
+);
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "http://localhost:5175",
+  "http://localhost:3000",
+  ...(process.env.ALLOWED_ORIGINS?.split(",") ?? []),
+];
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow requests with no origin (server-to-server, curl, etc.)
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  }),
+);
+
+// ── Global rate limit ─────────────────────────────────────────────────────────
+app.use(
+  rateLimit({
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 900_000),
+    max:      Number(process.env.RATE_LIMIT_MAX ?? 300),
+    standardHeaders: true,
+    legacyHeaders:   false,
+    message: { error: "Too many requests — please slow down" },
+  }),
+);
+
+// ── Logging ───────────────────────────────────────────────────────────────────
 app.use(
   pinoHttp({
     logger,
     serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
-      },
-      res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
-      },
+      req: (req) => ({ id: req.id, method: req.method, url: req.url?.split("?")[0] }),
+      res: (res) => ({ statusCode: res.statusCode }),
     },
   }),
 );
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.use("/api", router);
+// ── Body parsing ──────────────────────────────────────────────────────────────
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+const api = express.Router();
+
+api.use(healthRouter);
+api.use(authRouter);
+api.use(profilesRouter);
+api.use(livefeedsRouter);
+api.use(messagesRouter);
+api.use(creditsRouter);
+api.use(giftsRouter);
+api.use(boostsRouter);
+api.use(creatorRouter);
+api.use(verifyAgeRouter);
+api.use(moderationRouter);
+
+app.use("/api", api);
+
+// ── 404 catch-all ─────────────────────────────────────────────────────────────
+app.use((_req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// ── Global error handler ──────────────────────────────────────────────────────
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error({ err }, "Unhandled error");
+  res.status(500).json({ error: "Internal server error" });
+});
 
 export default app;
