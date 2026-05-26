@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
 import { credits as creditsApi } from "@/lib/api";
+import { Tag } from "lucide-react";
 
 const PACKAGES = [
   { id: "starter", name: "Starter", credits: 100, bonusCredits: 0, price: 9.99, popular: false, emoji: "✨" },
@@ -15,14 +16,22 @@ const PACKAGES = [
 ];
 
 export default function CreditsStore() {
-  const { credits, addCredits, isLoggedIn, showToast } = useApp();
+  const { credits, addCredits, isLoggedIn, showToast, activeMembership, membershipDiscount } = useApp();
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const currentTier = CUSTOMER_TIERS.find(t => credits * 0.01 >= t.minSpend && credits * 0.01 <= t.maxSpend) || CUSTOMER_TIERS[0];
   const nextTier = CUSTOMER_TIERS[CUSTOMER_TIERS.indexOf(currentTier) + 1];
   const monthlySpend = 734;
   const progress = nextTier ? Math.min((monthlySpend / nextTier.minSpend) * 100, 100) : 100;
 
+  const discountedPrice = (price: number) =>
+    membershipDiscount > 0 ? +(price * (1 - membershipDiscount)).toFixed(2) : price;
+
+  const discountLabel = membershipDiscount > 0
+    ? `${Math.round(membershipDiscount * 100)}% member discount`
+    : null;
+
   const handlePurchase = async (pkg: typeof PACKAGES[0]) => {
+    const finalPrice = discountedPrice(pkg.price);
     if (!isLoggedIn) {
       // Demo mode — add credits locally
       const total = pkg.credits + pkg.bonusCredits;
@@ -32,12 +41,10 @@ export default function CreditsStore() {
     setPurchasing(pkg.id);
     try {
       const { redirectUrl } = await creditsApi.purchase(pkg.id);
-      // Redirect to CCBill payment page
       window.location.href = redirectUrl;
-    } catch (err: unknown) {
+    } catch {
       // Fallback: add credits locally (useful during dev without CCBill configured)
-      const msg = err instanceof Error ? err.message : "Purchase failed";
-      showToast({ title: "Payment redirect failed", description: msg + " — adding credits locally for demo.", variant: "destructive" });
+      showToast({ title: "Payment redirect failed", description: `Adding ${pkg.credits + pkg.bonusCredits} credits locally for demo.`, variant: "destructive" });
       const total = pkg.credits + pkg.bonusCredits;
       addCredits(total, `[Demo] ${pkg.name} package`);
     } finally {
@@ -97,40 +104,62 @@ export default function CreditsStore() {
         </div>
 
         {/* Packages */}
-        <h2 className="text-xl font-bold text-foreground mb-4">Choose a Package</h2>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h2 className="text-xl font-bold text-foreground">Choose a Package</h2>
+          {discountLabel && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
+              <Tag className="w-3.5 h-3.5" />
+              {discountLabel} applied
+            </div>
+          )}
+        </div>
         <p className="text-muted-foreground text-sm mb-6">
           🔒 All purchases are processed securely via CCBill. No adult transactions on your statement.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PACKAGES.map(pkg => (
-            <div key={pkg.id} className={`relative p-5 rounded-xl border transition-all duration-200 hover:scale-105 ${
-              pkg.popular ? "border-primary shadow-lg" : "border-border bg-card"
-            }`} style={pkg.popular ? { background: "linear-gradient(135deg, hsl(173 60% 12%), hsl(173 60% 8%))", borderColor: "#14B8A6" } : {}}>
-              {pkg.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold"
-                  style={{ background: "#14B8A6" }}>MOST POPULAR</div>
-              )}
-              {pkg.savings && (
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-green-600/20 text-green-400 text-xs font-semibold">{pkg.savings}</div>
-              )}
-              <div className="text-3xl mb-2">{pkg.emoji}</div>
-              <h3 className="font-bold text-foreground mb-1">{pkg.name}</h3>
-              <p className="text-2xl font-black text-primary mb-1">{pkg.credits.toLocaleString()}</p>
-              {pkg.bonusCredits > 0 && (
-                <p className="text-green-400 text-xs mb-2">+ {pkg.bonusCredits} bonus credits</p>
-              )}
-              <p className="text-muted-foreground text-xs mb-3">
-                = {(pkg.credits + pkg.bonusCredits).toLocaleString()} total credits
-              </p>
-              <p className="text-xl font-bold text-foreground mb-3">${pkg.price}</p>
-              <button onClick={() => handlePurchase(pkg)}
-                disabled={purchasing === pkg.id}
-                className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-70"
-                style={{ background: "#14B8A6" }}>
-                {purchasing === pkg.id ? "Redirecting…" : "Purchase"}
-              </button>
-            </div>
-          ))}
+          {PACKAGES.map(pkg => {
+            const finalPrice = discountedPrice(pkg.price);
+            const hasDiscount = finalPrice < pkg.price;
+            return (
+              <div key={pkg.id} className={`relative p-5 rounded-xl border transition-all duration-200 hover:scale-105 ${
+                pkg.popular ? "border-primary shadow-lg" : "border-border bg-card"
+              }`} style={pkg.popular ? { background: "linear-gradient(135deg, hsl(173 60% 12%), hsl(173 60% 8%))", borderColor: "#14B8A6" } : {}}>
+                {pkg.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold"
+                    style={{ background: "#14B8A6" }}>MOST POPULAR</div>
+                )}
+                {pkg.savings && (
+                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-green-600/20 text-green-400 text-xs font-semibold">{pkg.savings}</div>
+                )}
+                <div className="text-3xl mb-2">{pkg.emoji}</div>
+                <h3 className="font-bold text-foreground mb-1">{pkg.name}</h3>
+                <p className="text-2xl font-black text-primary mb-1">{pkg.credits.toLocaleString()}</p>
+                {pkg.bonusCredits > 0 && (
+                  <p className="text-green-400 text-xs mb-2">+ {pkg.bonusCredits} bonus credits</p>
+                )}
+                <p className="text-muted-foreground text-xs mb-3">
+                  = {(pkg.credits + pkg.bonusCredits).toLocaleString()} total credits
+                </p>
+                <div className="mb-3">
+                  {hasDiscount ? (
+                    <>
+                      <p className="text-xs line-through" style={{ color: "rgba(255,255,255,0.35)" }}>${pkg.price}</p>
+                      <p className="text-xl font-bold" style={{ color: "#14b8a6" }}>${finalPrice}</p>
+                    </>
+                  ) : (
+                    <p className="text-xl font-bold text-foreground">${pkg.price}</p>
+                  )}
+                </div>
+                <button onClick={() => handlePurchase(pkg)}
+                  disabled={purchasing === pkg.id}
+                  className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-70"
+                  style={{ background: "#14B8A6" }}>
+                  {purchasing === pkg.id ? "Redirecting…" : "Purchase"}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">

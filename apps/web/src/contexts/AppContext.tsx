@@ -40,6 +40,15 @@ interface AppContextType {
   // Toast
   showToast: (opts: ToastOptions) => void;
 
+  // Membership
+  activeMembership: string;
+  setActiveMembership: (plan: string) => void;
+  membershipDiscount: number; // e.g. 0.05 for 5% off
+
+  // Gacha collection
+  gachaCollection: string[];
+  addGachaItem: (item: string) => void;
+
   // Auth
   user: { id: string; username: string; role: string } | null;
   token: string | null;
@@ -50,11 +59,17 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
+const MEMBERSHIP_DISCOUNTS: Record<string, number> = {
+  free: 0, fan: 0, supporter: 0.05, superfan: 0.10, allaccess: 0.15, creatorpass: 0.20,
+};
+
 const STORAGE_KEYS = {
   AGE_GATE: "vl_age_gate_v1",
   AGE_VERIFY: "vl_age_verify_v1",
   CREDITS: "vl_credits_v1",
   UNLOCKED: "vl_unlocked_v1",
+  MEMBERSHIP: "vl_membership_v1",
+  GACHA: "vl_gacha_v1",
 };
 
 function safeGet<T>(key: string, fallback: T): T {
@@ -90,6 +105,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return new Set(arr);
   });
   const [unlockedMediaUrls, setUnlockedMediaUrls] = useState<Record<string, string>>({});
+
+  // Membership
+  const [activeMembership, setActiveMembershipState] = useState<string>(() =>
+    safeGet(STORAGE_KEYS.MEMBERSHIP, "free")
+  );
+  const setActiveMembership = (plan: string) => {
+    setActiveMembershipState(plan);
+    safeSet(STORAGE_KEYS.MEMBERSHIP, plan);
+  };
+  const membershipDiscount = MEMBERSHIP_DISCOUNTS[activeMembership] ?? 0;
+
+  // Gacha collection
+  const [gachaCollection, setGachaCollection] = useState<string[]>(() =>
+    safeGet<string[]>(STORAGE_KEYS.GACHA, [])
+  );
+  const addGachaItem = (item: string) => {
+    setGachaCollection(prev => {
+      const next = [...prev, item];
+      safeSet(STORAGE_KEYS.GACHA, next);
+      return next;
+    });
+  };
 
   // Auth
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("linkme_token"));
@@ -251,6 +288,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       credits, addCredits, spendCredits,
       unlockedContent, unlockContent, isUnlocked, getMediaUrl,
       showToast,
+      activeMembership, setActiveMembership, membershipDiscount,
+      gachaCollection, addGachaItem,
       user, token, isLoggedIn: !!token && !!user, login, logout,
     }}>
       {children}

@@ -6,7 +6,7 @@ const BOOST_PACKAGES = [
   { id: "spark", name: "Spark", emoji: "✨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
   { id: "flame", name: "Flame", emoji: "🔥", boosts: 12, price: 19.99, features: ["12 profile boosts/month", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"], popular: true, color: "#14B8A6" },
   { id: "inferno", name: "Inferno", emoji: "💥", boosts: 20, price: 34.99, features: ["20 profile boosts/month", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"], popular: false, color: "#f97316" },
-  { id: "legend", name: "Legend", emoji: "👑", boosts: 35, price: 59.99, features: ["35 boosts/month (MAX)", "Homepage shoutout", "Featured in newsletters", "VIP badge on profile", "Dedicated account manager", "Custom boost scheduling", "Revenue analytics"], popular: false, color: "#f59e0b" },
+  { id: "legend", name: "Legend", emoji: "👑", boosts: 35, price: 59.99, features: ["35 boosts/month (MAX)", "Homepage shoutout", "VIP badge on profile", "Custom boost scheduling", "Revenue analytics"], popular: false, color: "#f59e0b" },
 ];
 
 const MEMBERSHIP_PLANS = [
@@ -123,12 +123,10 @@ const MEMBERSHIP_PLANS = [
     credits: 1500,
     features: [
       "Everything in All-Access",
-      "500 bonus credits/month",
+      "1,500 bonus credits/month",
       "20% discount on credit purchases",
-      "Unlimited VIP Lounge access",
-      "Unlimited PPV unlocks (monthly)",
+      "20 VIP Lounge sessions/month",
       "20 profile boosts/month",
-      "Personal account manager",
       "Exclusive Creator Pass events",
       "Custom profile crown frame",
       "Creator Pass crown badge",
@@ -142,10 +140,9 @@ const MEMBERSHIP_PLANS = [
 ];
 
 export default function BoostsPage() {
-  const { spendCredits, isLoggedIn, showToast } = useApp();
+  const { spendCredits, isLoggedIn, showToast, activeMembership, setActiveMembership } = useApp();
   const [activeTab, setActiveTab] = useState<"boosts" | "memberships">("memberships");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [activeMembership, setActiveMembership] = useState<string>("free");
   const [activeBoost, setActiveBoost] = useState<string | null>(null);
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
@@ -190,6 +187,7 @@ export default function BoostsPage() {
       setActiveMembership(plan.id);
       const price = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
       spendCredits(Math.round(price * 10), `${plan.name} Membership — $${price.toFixed(2)}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
+      showToast({ title: `${plan.emoji} ${plan.name} Activated!`, description: `Your membership benefits are now active.` });
     }, 800);
   };
 

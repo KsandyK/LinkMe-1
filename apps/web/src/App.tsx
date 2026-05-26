@@ -34,6 +34,7 @@ import LegalPages from "./pages/LegalPages";
 import StreamView from "./pages/StreamView";
 import CreatorLiveStudio from "./pages/CreatorLiveStudio";
 import Login from "./pages/Login";
+import GachaPage from "./pages/GachaPage";
 
 function Router() {
   return (
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/creator/studio" component={CreatorLiveStudio} />
       <Route path="/creator" component={CreatorDashboard} />
       <Route path="/billing" component={Billing} />
+      <Route path="/gacha" component={GachaPage} />
       <Route path="/verify-age" component={AgeVerification} />
       <Route path="/legal/:page" component={LegalPages} />
       <Route path="/404" component={NotFound} />

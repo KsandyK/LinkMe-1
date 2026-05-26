@@ -1,7 +1,39 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award } from "lucide-react";
+
+// ── Badge definitions ─────────────────────────────────────────────────────────
+type BadgeDef = {
+  id: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  type: "membership" | "credits" | "gacha";
+  /** membership IDs that unlock this */
+  levels?: string[];
+  /** credit balance threshold to unlock */
+  threshold?: number;
+  /** gacha collection size to unlock */
+  gachaMin?: number;
+};
+
+const ACCOUNT_BADGES: BadgeDef[] = [
+  // Membership badges (unlock at given level or above)
+  { id: "fan",         emoji: "⭐", name: "Fan",          desc: "Fan membership",         type: "membership", levels: ["fan","supporter","superfan","allaccess","creatorpass"] },
+  { id: "supporter",   emoji: "🌟", name: "Supporter",    desc: "Supporter membership",   type: "membership", levels: ["supporter","superfan","allaccess","creatorpass"] },
+  { id: "superfan",    emoji: "💫", name: "Super Fan",    desc: "Super Fan membership",   type: "membership", levels: ["superfan","allaccess","creatorpass"] },
+  { id: "allaccess",   emoji: "👑", name: "VIP Member",   desc: "All-Access membership",  type: "membership", levels: ["allaccess","creatorpass"] },
+  { id: "creatorpass", emoji: "💎", name: "Creator Elite","desc": "Creator Pass holder",  type: "membership", levels: ["creatorpass"] },
+  // Credit balance badges
+  { id: "credits_100",  emoji: "💰", name: "Tipped",       desc: "100+ credits",   type: "credits", threshold: 100 },
+  { id: "credits_500",  emoji: "💸", name: "Big Spender",  desc: "500+ credits",   type: "credits", threshold: 500 },
+  { id: "credits_2000", emoji: "🐋", name: "Whale",        desc: "2,000+ credits", type: "credits", threshold: 2000 },
+  // Gacha badges
+  { id: "gacha_1",  emoji: "🎴", name: "Puller",    desc: "First gacha pull",      type: "gacha", gachaMin: 1 },
+  { id: "gacha_5",  emoji: "🃏", name: "Collector", desc: "5+ gacha items",        type: "gacha", gachaMin: 5 },
+  { id: "gacha_10", emoji: "🎰", name: "Devoted",   desc: "10+ gacha items",       type: "gacha", gachaMin: 10 },
+] as const;
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
@@ -29,7 +61,7 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 }
 
 export default function Account() {
-  const { credits, ageVerificationStatus, showToast, user, logout } = useApp();
+  const { credits, ageVerificationStatus, showToast, user, logout, activeMembership, gachaCollection } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [displayName, setDisplayName] = useState(user?.username ?? "Member");
   const [username, setUsername] = useState(user?.username ?? "member_user");
@@ -52,6 +84,23 @@ export default function Account() {
   const [twoFACodeError, setTwoFACodeError] = useState(false);
   // Simulated OTP (always "123456" in demo)
   const DEMO_OTP = "123456";
+
+  // Badge selection
+  const [equippedBadge, setEquippedBadge] = useState<string | null>(() => localStorage.getItem("vl_equipped_badge_v1"));
+
+  const isBadgeUnlocked = (b: BadgeDef): boolean => {
+    if (b.type === "membership") return (b.levels ?? []).includes(activeMembership);
+    if (b.type === "credits")    return credits >= (b.threshold ?? 0);
+    if (b.type === "gacha")      return gachaCollection.length >= (b.gachaMin ?? 0);
+    return false;
+  };
+
+  const handleEquipBadge = (id: string) => {
+    const next = equippedBadge === id ? null : id;
+    setEquippedBadge(next);
+    if (next) localStorage.setItem("vl_equipped_badge_v1", next);
+    else localStorage.removeItem("vl_equipped_badge_v1");
+  };
 
   // Danger zone modals
   const [showDeactivate, setShowDeactivate] = useState(false);
@@ -234,35 +283,112 @@ export default function Account() {
 
             {/* Profile tab */}
             {activeTab === "profile" && (
-              <div className="space-y-5">
-                <h2 className="text-base font-bold text-white">Profile Information</h2>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Display Name</label>
-                  <input value={displayName} onChange={e => setDisplayName(e.target.value)}
-                    className="vl-input" placeholder="Your display name" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Username</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>@</span>
-                    <input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-                      className="vl-input pl-7" placeholder="your_username" />
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Left: Profile Information */}
+                <div className="lg:col-span-3 space-y-5">
+                  <h2 className="text-base font-bold text-white">Profile Information</h2>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Display Name</label>
+                    <input value={displayName} onChange={e => setDisplayName(e.target.value)}
+                      className="vl-input" placeholder="Your display name" />
                   </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Username</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>@</span>
+                      <input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                        className="vl-input pl-7" placeholder="your_username" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
+                    <input value={(user as any)?.email ?? "—"} disabled className="vl-input opacity-50 cursor-not-allowed" />
+                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Contact support to change your email</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Bio</label>
+                    <textarea value={bio} onChange={e => setBio(e.target.value)}
+                      rows={3} placeholder="Tell creators a little about yourself..."
+                      className="vl-input resize-none" />
+                  </div>
+                  <button onClick={handleSave} className="vl-btn-primary px-6 py-2.5 text-sm">
+                    {saved ? "✓ Saved!" : "Save Changes"}
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
-                  <input value={(user as any)?.email ?? "—"} disabled className="vl-input opacity-50 cursor-not-allowed" />
-                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Contact support to change your email</p>
+
+                {/* Right: Badge selection */}
+                <div className="lg:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Award className="w-4 h-4" style={{ color: "#a78bfa" }} />
+                    <h2 className="text-base font-bold text-white">Profile Badges</h2>
+                  </div>
+
+                  {/* Equipped badge preview */}
+                  <div className="rounded-xl p-3 mb-4 text-center"
+                    style={{ background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.15)" }}>
+                    {equippedBadge ? (() => {
+                      const b = ACCOUNT_BADGES.find(x => x.id === equippedBadge);
+                      return b ? (
+                        <>
+                          <div className="text-3xl mb-1">{b.emoji}</div>
+                          <p className="text-xs font-bold text-white">{b.name}</p>
+                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Equipped</p>
+                        </>
+                      ) : null;
+                    })() : (
+                      <p className="text-xs py-2" style={{ color: "rgba(255,255,255,0.3)" }}>No badge equipped</p>
+                    )}
+                  </div>
+
+                  {/* Badge grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {ACCOUNT_BADGES.map(b => {
+                      const unlocked = isBadgeUnlocked(b);
+                      const equipped = equippedBadge === b.id;
+                      return (
+                        <button
+                          key={b.id}
+                          onClick={() => unlocked && handleEquipBadge(b.id)}
+                          title={unlocked ? b.desc : `Locked — ${b.desc}`}
+                          className="relative flex flex-col items-center p-2 rounded-xl transition-all text-center"
+                          style={{
+                            background: equipped
+                              ? "rgba(167,139,250,0.15)"
+                              : unlocked
+                                ? "rgba(255,255,255,0.04)"
+                                : "rgba(0,0,0,0.2)",
+                            border: equipped
+                              ? "1px solid rgba(167,139,250,0.45)"
+                              : "1px solid rgba(255,255,255,0.07)",
+                            opacity: unlocked ? 1 : 0.4,
+                            cursor: unlocked ? "pointer" : "default",
+                          }}>
+                          <span className="text-xl mb-0.5">{b.emoji}</span>
+                          <span className="text-xs font-semibold leading-tight"
+                            style={{ color: equipped ? "#a78bfa" : unlocked ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.35)" }}>
+                            {b.name}
+                          </span>
+                          {equipped && (
+                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: "#a78bfa" }} />
+                          )}
+                          {!unlocked && (
+                            <span className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.2)" }}>🔒</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
+                    Earn badges through memberships, credits & gacha pulls. Tap to equip.
+                  </p>
+                  <Link href="/gacha">
+                    <button className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-90"
+                      style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", color: "#a78bfa" }}>
+                      🎴 Open The Pull (Gacha)
+                    </button>
+                  </Link>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Bio</label>
-                  <textarea value={bio} onChange={e => setBio(e.target.value)}
-                    rows={3} placeholder="Tell creators a little about yourself..."
-                    className="vl-input resize-none" />
-                </div>
-                <button onClick={handleSave} className="vl-btn-primary px-6 py-2.5 text-sm">
-                  {saved ? "✓ Saved!" : "Save Changes"}
-                </button>
               </div>
             )}
 

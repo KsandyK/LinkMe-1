@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Menu, X, Zap, MessageCircle, Users, Radio, Crown, User, LayoutDashboard, ShoppingBag, ChevronDown, Shield } from "lucide-react";
+import { Menu, X, Zap, MessageCircle, Users, Radio, Crown, User, LayoutDashboard, ShoppingBag, ChevronDown, Shield, Sparkles } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/profiles", label: "Creators", icon: Users },
   { href: "/live", label: "Live", icon: Radio, badge: "LIVE" },
   { href: "/messages", label: "Messages", icon: MessageCircle },
   { href: "/credits", label: "Credits", icon: Zap },
+  { href: "/gacha", label: "The Pull", icon: Sparkles, badge: "NEW" },
   { href: "/vip-lounge", label: "VIP", icon: Crown },
 ];
 
@@ -49,7 +50,12 @@ export function Navigation() {
                     <link.icon className="w-3.5 h-3.5" />
                     {link.label}
                     {link.badge && (
-                      <span className="vl-badge-live" style={{ fontSize: "0.55rem", padding: "1px 4px" }}>{link.badge}</span>
+                      <span className={link.badge === "LIVE" ? "vl-badge-live" : undefined}
+                        style={link.badge === "NEW"
+                          ? { fontSize: "0.55rem", padding: "1px 4px", borderRadius: "4px", background: "rgba(139,92,246,0.3)", color: "#a78bfa", fontWeight: 700, lineHeight: 1.4 }
+                          : { fontSize: "0.55rem", padding: "1px 4px" }}>
+                        {link.badge}
+                      </span>
                     )}
                   </div>
                 </Link>

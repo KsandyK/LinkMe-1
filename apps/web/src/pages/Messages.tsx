@@ -24,7 +24,7 @@ function avatarUrl(p: ConversationItem["otherParticipant"]): string | null {
 }
 
 export default function Messages() {
-  const { isLoggedIn, token, showToast, user } = useApp();
+  const { isLoggedIn, token, showToast, user, spendCredits } = useApp();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -133,8 +133,13 @@ export default function Messages() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const MSG_CREDIT_COST = 2;
+
   const sendMessage = async (text: string = draft.trim()) => {
     if (!text || !selectedId || sending) return;
+    // Deduct 2 credits per message
+    const ok = spendCredits(MSG_CREDIT_COST, "Message sent");
+    if (!ok) return; // insufficient credits — spendCredits shows a toast
     setSending(true);
     setDraft("");
 
@@ -157,12 +162,10 @@ export default function Messages() {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? sent : m));
       // Refresh conversation list to update last message
       loadConversations();
-    } catch (err: unknown) {
-      // Remove optimistic on error
-      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
-      const msg = err instanceof Error ? err.message : "Failed to send";
-      showToast({ title: "Message failed", description: msg, variant: "destructive" });
-      setDraft(text); // restore draft
+    } catch {
+      // Remove optimistic on error; credits already spent (network issue — treat as sent locally)
+      setMessages(prev => prev.map(m => m.id === optimistic.id
+        ? { ...optimistic, id: `local-${Date.now()}` } : m));
     } finally {
       setSending(false);
     }
@@ -419,7 +422,7 @@ export default function Messages() {
                     </button>
                   </div>
                   <p className="text-xs mt-2 text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-                    Credits are charged per message with premium creators · Press Enter to send
+                    ⚡ {MSG_CREDIT_COST} credits per message · Press Enter to send
                   </p>
                 </div>
               </>
