@@ -49,6 +49,10 @@ interface AppContextType {
   gachaCollection: string[];
   addGachaItem: (item: string) => void;
 
+  // Active boost package (spark | flame | inferno | legend | null)
+  activeBoost: string | null;
+  setActiveBoost: (pkg: string | null) => void;
+
   // Auth
   user: { id: string; username: string; role: string } | null;
   token: string | null;
@@ -70,6 +74,7 @@ const STORAGE_KEYS = {
   UNLOCKED: "vl_unlocked_v1",
   MEMBERSHIP: "vl_membership_v1",
   GACHA: "vl_gacha_v1",
+  BOOST: "vl_active_boost_v1",
 };
 
 function safeGet<T>(key: string, fallback: T): T {
@@ -126,6 +131,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       safeSet(STORAGE_KEYS.GACHA, next);
       return next;
     });
+  };
+
+  // Active boost
+  const [activeBoost, setActiveBoostState] = useState<string | null>(() =>
+    safeGet<string | null>(STORAGE_KEYS.BOOST, null)
+  );
+  const setActiveBoost = (pkg: string | null) => {
+    setActiveBoostState(pkg);
+    safeSet(STORAGE_KEYS.BOOST, pkg);
   };
 
   // Auth
@@ -290,6 +304,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showToast,
       activeMembership, setActiveMembership, membershipDiscount,
       gachaCollection, addGachaItem,
+      activeBoost, setActiveBoost,
       user, token, isLoggedIn: !!token && !!user, login, logout,
     }}>
       {children}

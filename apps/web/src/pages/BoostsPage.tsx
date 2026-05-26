@@ -1,6 +1,24 @@
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { boosts as boostsApi } from "@/lib/api";
+import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star } from "lucide-react";
+
+// ── Boost tier helpers ────────────────────────────────────────────────────────
+const BOOST_TIER_RANK: Record<string, number> = { spark: 1, flame: 2, inferno: 3, legend: 4 };
+function boostRank(id: string | null) { return id ? (BOOST_TIER_RANK[id] ?? 0) : 0; }
+
+// ── Schedule helpers ──────────────────────────────────────────────────────────
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const SLOTS = [
+  { id: "morning",   label: "Morning",   time: "6am–12pm" },
+  { id: "afternoon", label: "Afternoon", time: "12–6pm"   },
+  { id: "evening",   label: "Evening",   time: "6–10pm"   },
+  { id: "night",     label: "Night",     time: "10pm–6am" },
+];
+// Peak hours recommended by the "algorithm"
+const PEAK_CELLS = new Set(["Mon-evening","Tue-evening","Wed-evening","Thu-evening","Fri-evening","Sat-afternoon","Sat-evening","Sun-afternoon"]);
+type ScheduleMap = Record<string, boolean>; // key: "Mon-morning"
 
 const BOOST_PACKAGES = [
   { id: "spark", name: "Spark", emoji: "✨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
@@ -140,14 +158,47 @@ const MEMBERSHIP_PLANS = [
 ];
 
 export default function BoostsPage() {
-  const { spendCredits, isLoggedIn, showToast, activeMembership, setActiveMembership } = useApp();
+  const { spendCredits, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
   const [activeTab, setActiveTab] = useState<"boosts" | "memberships">("memberships");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [activeBoost, setActiveBoost] = useState<string | null>(null);
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
 
-  // Load active boost on mount
+  // Scheduler state
+  const [schedule, setSchedule] = useState<ScheduleMap>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_boost_schedule_v1") ?? "{}"); } catch { return {}; }
+  });
+  const [autoBoost, setAutoBoost] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_boost_auto_v1") ?? "false"); } catch { return false; }
+  });
+
+  const saveSchedule = (s: ScheduleMap) => {
+    setSchedule(s);
+    try { localStorage.setItem("vl_boost_schedule_v1", JSON.stringify(s)); } catch {}
+  };
+  const toggleCell = (key: string) => saveSchedule({ ...schedule, [key]: !schedule[key] });
+  const toggleAutoBoost = () => {
+    const next = !autoBoost;
+    setAutoBoost(next);
+    try { localStorage.setItem("vl_boost_auto_v1", JSON.stringify(next)); } catch {}
+    if (next) {
+      // Auto-fill peak cells
+      const auto: ScheduleMap = {};
+      PEAK_CELLS.forEach(k => { auto[k] = true; });
+      saveSchedule(auto);
+      showToast({ title: "Auto-Boost enabled", description: "Your boosts are now scheduled at peak engagement hours." });
+    }
+  };
+
+  const scheduledCount = Object.values(schedule).filter(Boolean).length;
+  const rank = boostRank(activeBoost);
+  const hasScheduling  = rank >= 2; // Flame+
+  const hasAutomation  = rank >= 3; // Inferno+
+  const hasFeaturedHome = rank >= 3; // Inferno+
+  const hasFeaturedLive = rank >= 2; // Flame+
+  const hasCategoryTop  = rank >= 3; // Inferno+
+
+  // Load active boost on mount (try API, fall back to context)
   useEffect(() => {
     if (!isLoggedIn) return;
     boostsApi.active()
@@ -166,13 +217,11 @@ export default function BoostsPage() {
         setActiveBoost(pkg.id);
         showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month for 30 days` });
       } catch {
-        // Any error (network, HTTP 502/503) → demo mode fallback
         spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
         setActiveBoost(pkg.id);
         showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month activated` });
       }
     } else {
-      // Demo mode
       spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
       setActiveBoost(pkg.id);
     }
@@ -356,6 +405,173 @@ export default function BoostsPage() {
                 ))}
               </div>
             </div>
+
+            {/* ── Active Placement Status ───────────────────────────────────── */}
+            {activeBoost && (
+              <div className="p-6 rounded-xl border" style={{ borderColor: "rgba(20,184,166,0.25)", background: "rgba(20,184,166,0.04)" }}>
+                <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" style={{ color: "#14b8a6" }} />
+                  Your Active Placements
+                </h2>
+                <p className="text-xs text-muted-foreground mb-5">
+                  Active boost: <strong style={{ color: BOOST_PACKAGES.find(p => p.id === activeBoost)?.color }}>{BOOST_PACKAGES.find(p => p.id === activeBoost)?.emoji} {BOOST_PACKAGES.find(p => p.id === activeBoost)?.name}</strong>
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    { icon: Radio,       label: "Featured on Live Feeds",   active: hasFeaturedLive,  href: "/live",     desc: "Your streams appear in the Featured row" },
+                    { icon: Home,        label: "Homepage Featured Spot",   active: hasFeaturedHome,  href: "/",         desc: "Your profile is pinned at the top of Home" },
+                    { icon: Star,        label: "Category Top Placement",   active: hasCategoryTop,   href: "/profiles", desc: "Your profile ranks first in category browsing" },
+                  ].map(item => (
+                    <div key={item.label} className="rounded-xl p-4"
+                      style={{ background: item.active ? "rgba(20,184,166,0.07)" : "rgba(255,255,255,0.02)", border: `1px solid ${item.active ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.06)"}` }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <item.icon className="w-4 h-4" style={{ color: item.active ? "#14b8a6" : "rgba(255,255,255,0.25)" }} />
+                        <span className="text-xs font-bold" style={{ color: item.active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)" }}>{item.label}</span>
+                      </div>
+                      {item.active ? (
+                        <>
+                          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>{item.desc}</p>
+                          <Link href={item.href}>
+                            <button className="text-xs font-semibold px-3 py-1 rounded-lg"
+                              style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                              View Page →
+                            </button>
+                          </Link>
+                        </>
+                      ) : (
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                          Requires {item.icon === Radio ? "Flame" : "Inferno"}+ boost
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Boost Scheduler ─────────────────────────────────────────── */}
+            {activeBoost ? (
+              hasScheduling ? (
+                <div className="p-6 rounded-xl border border-border bg-card">
+                  <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <Calendar className="w-5 h-5" style={{ color: "#f97316" }} />
+                        Boost Scheduler
+                      </h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Choose when your boosts fire. {scheduledCount > 0 ? `${scheduledCount} slot${scheduledCount !== 1 ? "s" : ""} scheduled.` : "No slots selected yet."}
+                      </p>
+                    </div>
+                    {hasAutomation && (
+                      <button onClick={toggleAutoBoost}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                        style={{
+                          background: autoBoost ? "rgba(249,115,22,0.12)" : "rgba(255,255,255,0.04)",
+                          border: `1px solid ${autoBoost ? "rgba(249,115,22,0.3)" : "rgba(255,255,255,0.1)"}`,
+                          color: autoBoost ? "#f97316" : "rgba(255,255,255,0.5)",
+                        }}>
+                        {autoBoost ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                        Auto-Boost {autoBoost ? "ON" : "OFF"}
+                      </button>
+                    )}
+                  </div>
+
+                  {autoBoost && hasAutomation && (
+                    <div className="rounded-lg px-4 py-2 mb-4 text-xs flex items-center gap-2"
+                      style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", color: "#fb923c" }}>
+                      <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+                      Auto-Boost active — your boosts fire automatically at peak engagement windows (highlighted below).
+                    </div>
+                  )}
+
+                  {/* Grid */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr>
+                          <th className="text-left pb-2 pr-3 font-semibold" style={{ color: "rgba(255,255,255,0.35)", width: 100 }}>
+                            <Clock className="w-3.5 h-3.5 inline mr-1" />Slot
+                          </th>
+                          {DAYS.map(d => (
+                            <th key={d} className="text-center pb-2 font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>{d}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="space-y-1">
+                        {SLOTS.map(slot => (
+                          <tr key={slot.id}>
+                            <td className="pr-3 py-1.5">
+                              <p className="font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>{slot.label}</p>
+                              <p style={{ color: "rgba(255,255,255,0.25)" }}>{slot.time}</p>
+                            </td>
+                            {DAYS.map(day => {
+                              const key = `${day}-${slot.id}`;
+                              const isPeak = PEAK_CELLS.has(key);
+                              const isOn   = schedule[key];
+                              return (
+                                <td key={day} className="text-center py-1.5">
+                                  <button
+                                    onClick={() => !autoBoost && toggleCell(key)}
+                                    title={isPeak ? "Peak hours" : ""}
+                                    disabled={autoBoost}
+                                    className="w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all"
+                                    style={{
+                                      background: isOn
+                                        ? isPeak ? "rgba(249,115,22,0.3)" : "rgba(20,184,166,0.2)"
+                                        : isPeak ? "rgba(249,115,22,0.06)" : "rgba(255,255,255,0.03)",
+                                      border: isOn
+                                        ? isPeak ? "1px solid rgba(249,115,22,0.5)" : "1px solid rgba(20,184,166,0.4)"
+                                        : "1px solid rgba(255,255,255,0.07)",
+                                      cursor: autoBoost ? "default" : "pointer",
+                                    }}>
+                                    {isOn ? (
+                                      <Zap className="w-3.5 h-3.5" style={{ color: isPeak ? "#f97316" : "#14b8a6" }} />
+                                    ) : isPeak ? (
+                                      <span style={{ color: "rgba(249,115,22,0.35)", fontSize: 10 }}>⬡</span>
+                                    ) : null}
+                                  </button>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    <span className="flex items-center gap-1">
+                      <span className="w-3 h-3 rounded" style={{ background: "rgba(20,184,166,0.25)", border: "1px solid rgba(20,184,166,0.5)", display: "inline-block" }} />
+                      Scheduled
+                    </span>
+                    {hasAutomation && (
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded" style={{ background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.4)", display: "inline-block" }} />
+                        Peak hours (auto)
+                      </span>
+                    )}
+                    {!hasAutomation && (
+                      <span>Upgrade to Inferno for auto-scheduling at peak hours</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 rounded-xl border border-border bg-card text-center">
+                  <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                  <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>Boost Scheduling</p>
+                  <p className="text-xs mt-1 mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Upgrade to <strong style={{ color: "#14b8a6" }}>Flame</strong> or higher to schedule your boosts
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="p-6 rounded-xl border border-border bg-card text-center">
+                <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>Boost Scheduler</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Subscribe to a boost package above to unlock scheduling</p>
+              </div>
+            )}
           </>
         )}
       </div>

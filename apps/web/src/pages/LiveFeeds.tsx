@@ -2,7 +2,15 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { livefeeds as liveApi, LiveFeedItem } from "@/lib/api";
 import { MOCK_LIVE_FEEDS } from "@/lib/mock-data";
-import { Eye, Clock, Crown, Loader2 } from "lucide-react";
+import { Eye, Clock, Crown, Loader2, Star, Flame } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+
+// Mock featured streams (always pinned to simulate server-side featured ranking)
+const FEATURED_STREAMS = [
+  { id: "feat-1", title: "VIP Lounge Night 🔥",        host: "Aria Valencia", viewers: 3218, thumbnail: "https://picsum.photos/seed/feat1/640/360", boost: "Legend",  boostColor: "#f59e0b" },
+  { id: "feat-2", title: "Midnight Chat Session ✨",    host: "Mia Rose",      viewers: 1847, thumbnail: "https://picsum.photos/seed/feat2/640/360", boost: "Inferno", boostColor: "#f97316" },
+  { id: "feat-3", title: "Exclusive Q&A with Celeste", host: "Celeste Kim",   viewers: 1293, thumbnail: "https://picsum.photos/seed/feat3/640/360", boost: "Inferno", boostColor: "#f97316" },
+];
 
 // Map mock feeds to LiveFeedItem shape for fallback
 const MOCK_FEED_ITEMS: LiveFeedItem[] = MOCK_LIVE_FEEDS.map(f => ({
@@ -47,6 +55,8 @@ function elapsed(isoStr: string) {
 }
 
 export default function LiveFeeds() {
+  const { activeBoost } = useApp();
+  const hasFeaturedLive = activeBoost === "flame" || activeBoost === "inferno" || activeBoost === "legend";
   const [category, setCategory] = useState<Category>("all");
   const [feeds, setFeeds] = useState<LiveFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +109,59 @@ export default function LiveFeeds() {
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             LIVE
           </div>
+        </div>
+
+        {/* ── Featured Streams ─────────────────────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4" style={{ color: "#f97316" }} />
+              <h2 className="text-base font-bold text-white">Featured Streams</h2>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{ background: "rgba(249,115,22,0.12)", color: "#f97316", border: "1px solid rgba(249,115,22,0.25)" }}>
+                PROMOTED
+              </span>
+            </div>
+            {hasFeaturedLive && (
+              <span className="flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full"
+                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", color: "#f97316" }}>
+                ✦ Your streams appear here
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {FEATURED_STREAMS.map(fs => (
+              <Link key={fs.id} href={`/live/${fs.id}`}>
+                <div className="vl-card overflow-hidden cursor-pointer group relative">
+                  <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                    style={{ background: "rgba(0,0,0,0.7)", border: `1px solid ${fs.boostColor}60`, color: fs.boostColor }}>
+                    <Star className="w-3 h-3" />{fs.boost}
+                  </div>
+                  <div className="absolute top-2 right-2 z-10 vl-badge-live flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
+                  </div>
+                  <div className="relative" style={{ aspectRatio: "16/9" }}>
+                    <img src={fs.thumbnail} alt={fs.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs"
+                      style={{ background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.85)" }}>
+                      <Eye className="w-3 h-3" />{fs.viewers.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-bold text-white line-clamp-1">{fs.title}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{fs.host}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {!hasFeaturedLive && (
+            <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Get a <Link href="/boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Flame+ boost</span></Link> to feature your stream here
+            </p>
+          )}
         </div>
 
         {/* Category filter */}

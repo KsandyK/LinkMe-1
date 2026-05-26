@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, livefeeds as liveApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
-import { Radio, Zap, Shield, Crown, ChevronRight, Eye } from "lucide-react";
+import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Star } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -47,8 +47,16 @@ function CreatorCard({ creator }: { creator: CreatorProfileItem }) {
   );
 }
 
+// Mock promoted creator data (simulates server-side featured ranking)
+const PROMOTED_CREATORS = [
+  { id: "promo-1", name: "Aria Valencia", username: "aria_v", location: "Los Angeles, CA", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ariavalencia", cover: "https://picsum.photos/seed/ariacov/600/200", boost: "Inferno", color: "#f97316" },
+  { id: "promo-2", name: "Mia Rose",      username: "mia.rose",   location: "Miami, FL",       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=miarose",      cover: "https://picsum.photos/seed/miacov/600/200",  boost: "Legend",  color: "#f59e0b" },
+  { id: "promo-3", name: "Celeste Kim",   username: "celestek",   location: "New York, NY",    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=celestekim",   cover: "https://picsum.photos/seed/celestecov/600/200", boost: "Inferno", color: "#f97316" },
+];
+
 export default function Home() {
-  const { ageVerificationStatus } = useApp();
+  const { ageVerificationStatus, activeBoost } = useApp();
+  const hasFeaturedSpot = activeBoost === "inferno" || activeBoost === "legend";
   const [liveFeeds, setLiveFeeds] = useState<LiveFeedItem[]>([]);
   const [featuredCreators, setFeaturedCreators] = useState<CreatorProfileItem[]>([]);
   const [liveCount, setLiveCount] = useState(0);
@@ -238,6 +246,61 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* ── Promoted Creators (Homepage Featured Spot) ── */}
+      <section className="py-10" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(249,115,22,0.02)" }}>
+        <div className="container">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4" style={{ color: "#f59e0b" }} />
+              <h2 className="vl-section-title" style={{ color: "#f59e0b" }}>Featured Creators</h2>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{ background: "rgba(249,115,22,0.12)", color: "#f97316", border: "1px solid rgba(249,115,22,0.25)" }}>
+                PROMOTED
+              </span>
+            </div>
+            {hasFeaturedSpot && (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", color: "#f97316" }}>
+                ✦ Your profile is featured here
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {PROMOTED_CREATORS.map(p => (
+              <Link key={p.id} href={`/profile/${p.id}`}>
+                <div className="vl-card overflow-hidden cursor-pointer group relative">
+                  {/* Featured badge */}
+                  <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
+                    style={{ background: p.color, color: "#fff" }}>
+                    <Star className="w-3 h-3" />{p.boost}
+                  </div>
+                  <div className="relative h-32 overflow-hidden">
+                    <img src={p.cover} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+                    <img src={p.avatar} alt={p.name}
+                      className="absolute bottom-0 translate-y-1/2 left-3 w-12 h-12 rounded-full border-2 object-cover z-10"
+                      style={{ borderColor: p.color }} />
+                  </div>
+                  <div className="p-3 pt-8">
+                    <h3 className="font-bold text-sm text-white">{p.name}</h3>
+                    {p.location && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {p.location}</p>}
+                    <div className="mt-2 rounded-lg py-1.5 text-center text-xs font-bold text-white"
+                      style={{ background: `linear-gradient(135deg, ${p.color}cc, ${p.color}88)` }}>
+                      View Profile
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {!hasFeaturedSpot && (
+            <p className="text-xs text-center mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Get an <Link href="/boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Inferno or Legend boost</span></Link> to feature your profile here
+            </p>
+          )}
+        </div>
+      </section>
 
       {/* Featured Creators */}
       <section className="py-10" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>

@@ -3,7 +3,97 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock } from "lucide-react";
+
+// ── Analytics mock data ───────────────────────────────────────────────────────
+const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const VIEWER_DATA  = [142, 267, 198, 334, 298, 489, 421];
+const EARNINGS_DATA = [48, 93, 71, 127, 104, 168, 143];
+const maxViewers  = Math.max(...VIEWER_DATA);
+const maxEarnings = Math.max(...EARNINGS_DATA);
+
+// SVG line chart (simple, no external deps)
+function SparkLine({ data, color, maxVal, height = 60 }: { data: number[]; color: string; maxVal: number; height?: number }) {
+  const w = 280; const pad = 6;
+  const pts = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = height - pad - ((v / maxVal) * (height - pad * 2));
+    return `${x},${y}`;
+  }).join(" ");
+  const areaBot = `${pad},${height - pad} ${pts} ${w - pad},${height - pad}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
+      <defs>
+        <linearGradient id={`grad-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={areaBot} fill={`url(#grad-${color.replace("#","")})`} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      {data.map((v, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = height - pad - ((v / maxVal) * (height - pad * 2));
+        return <circle key={i} cx={x} cy={y} r="3" fill={color} />;
+      })}
+    </svg>
+  );
+}
+
+// CSS bar chart
+function BarRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-20 text-xs shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(value / max) * 100}%`, background: color }} />
+      </div>
+      <span className="w-12 text-xs text-right font-bold text-white">{value.toLocaleString()}</span>
+    </div>
+  );
+}
+
+// Donut segment via conic-gradient
+function DonutChart({ segments }: { segments: { label: string; value: number; color: string }[] }) {
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  let cumulative = 0;
+  const stops = segments.map(seg => {
+    const pct = (seg.value / total) * 100;
+    const start = cumulative;
+    cumulative += pct;
+    return `${seg.color} ${start.toFixed(1)}% ${cumulative.toFixed(1)}%`;
+  }).join(", ");
+  return (
+    <div className="flex items-center gap-4 flex-wrap">
+      <div className="w-24 h-24 rounded-full flex-shrink-0" style={{
+        background: `conic-gradient(${stops})`,
+        WebkitMask: "radial-gradient(circle at center, transparent 38%, black 38%)",
+        mask: "radial-gradient(circle at center, transparent 38%, black 38%)",
+      }} />
+      <div className="space-y-1.5 flex-1 min-w-32">
+        {segments.map(seg => (
+          <div key={seg.label} className="flex items-center gap-2 text-xs">
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: seg.color }} />
+            <span style={{ color: "rgba(255,255,255,0.55)" }}>{seg.label}</span>
+            <span className="ml-auto font-bold text-white">{Math.round((seg.value / total) * 100)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Boost tier rank helper
+const BOOST_RANK: Record<string, number> = { spark: 1, flame: 2, inferno: 3, legend: 4 };
+type AnalyticsTier = "none" | "basic" | "full" | "premium" | "revenue";
+function getAnalyticsTier(activeBoost: string | null): AnalyticsTier {
+  const r = activeBoost ? (BOOST_RANK[activeBoost] ?? 0) : 0;
+  if (r === 0) return "none";
+  if (r === 1) return "basic";
+  if (r === 2) return "full";
+  if (r === 3) return "premium";
+  return "revenue";
+}
 
 // Mock dashboard data for demo mode (API offline)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,8 +140,9 @@ function centsToDisplay(cents: number) {
 }
 
 export default function CreatorDashboard() {
-  const { credits, isLoggedIn, showToast } = useApp();
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans">("overview");
+  const { credits, isLoggedIn, showToast, activeBoost } = useApp();
+  const analyticsTier = getAnalyticsTier(activeBoost);
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics">("overview");
   const [data, setData] = useState<CreatorDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,15 +271,19 @@ export default function CreatorDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 vl-card p-1.5 w-fit">
-          {(["overview", "content", "fans"] as const).map(tab => (
+        <div className="flex gap-1 mb-6 vl-card p-1.5 w-fit flex-wrap">
+          {(["overview", "content", "fans", "analytics"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all"
+              className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all flex items-center gap-1.5"
               style={activeTab === tab
                 ? { background: "rgba(20,184,166,0.15)", color: "#14b8a6" }
                 : { color: "rgba(255,255,255,0.45)" }
               }>
+              {tab === "analytics" && <BarChart2 className="w-3.5 h-3.5" />}
               {tab}
+              {tab === "analytics" && analyticsTier === "none" && (
+                <Lock className="w-3 h-3 opacity-50" />
+              )}
             </button>
           ))}
         </div>
@@ -288,6 +383,256 @@ export default function CreatorDashboard() {
                       </span>
                     </div>
                   ))
+                )}
+              </div>
+            )}
+
+            {/* ── Analytics tab ───────────────────────────────────────────── */}
+            {activeTab === "analytics" && (
+              <div className="space-y-5">
+                {/* Tier banner */}
+                <div className="rounded-xl p-4 flex items-center justify-between flex-wrap gap-3"
+                  style={{
+                    background: analyticsTier === "none" ? "rgba(255,255,255,0.02)" : "rgba(20,184,166,0.06)",
+                    border: `1px solid ${analyticsTier === "none" ? "rgba(255,255,255,0.06)" : "rgba(20,184,166,0.2)"}`,
+                  }}>
+                  <div className="flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4" style={{ color: analyticsTier === "none" ? "rgba(255,255,255,0.25)" : "#14b8a6" }} />
+                    <span className="text-sm font-bold" style={{ color: analyticsTier === "none" ? "rgba(255,255,255,0.4)" : "white" }}>
+                      {analyticsTier === "none"    ? "Analytics locked"        :
+                       analyticsTier === "basic"   ? "Basic Analytics — Spark" :
+                       analyticsTier === "full"    ? "Full Analytics — Flame"  :
+                       analyticsTier === "premium" ? "Premium Analytics — Inferno" :
+                                                     "Revenue Analytics — Legend"}
+                    </span>
+                  </div>
+                  {analyticsTier === "none" && (
+                    <Link href="/boosts">
+                      <button className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                        style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                        Upgrade Boost →
+                      </button>
+                    </Link>
+                  )}
+                </div>
+
+                {analyticsTier === "none" ? (
+                  /* ── Locked state ── */
+                  <div className="vl-card p-8 text-center">
+                    <Lock className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
+                    <h3 className="text-base font-bold text-white mb-2">Analytics require a Boost package</h3>
+                    <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Subscribe to <strong style={{ color: "#64748b" }}>Spark</strong> for basic stats,
+                      <strong style={{ color: "#14B8A6" }}> Flame</strong> for full analytics,
+                      <strong style={{ color: "#f97316" }}> Inferno</strong> for premium insights, or
+                      <strong style={{ color: "#f59e0b" }}> Legend</strong> for revenue forecasting.
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 opacity-40">
+                      {[
+                        { label: "7-day Viewers",  val: "2,149",  color: "#14b8a6" },
+                        { label: "Engagement",     val: "8.4%",   color: "#a78bfa" },
+                        { label: "Avg Watch",      val: "18m32s", color: "#e8a87c" },
+                        { label: "New Followers",  val: "+47",    color: "#f97316" },
+                      ].map(s => (
+                        <div key={s.label} className="rounded-xl p-3 text-center"
+                          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <p className="text-lg font-black" style={{ color: s.color }}>{s.val}</p>
+                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <Link href="/boosts">
+                      <button className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
+                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+                        Get a Boost Package
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    {/* ── Basic stats (all tiers) ── */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: "7-day Viewers",  val: VIEWER_DATA.reduce((a,b) => a+b, 0).toLocaleString(), color: "#14b8a6" },
+                        { label: "Engagement",     val: "8.4%",   color: "#a78bfa" },
+                        { label: "Avg Watch Time", val: "18m 32s",color: "#e8a87c" },
+                        { label: "New Followers",  val: "+47",    color: "#f97316" },
+                      ].map(s => (
+                        <div key={s.label} className="vl-card p-4 text-center">
+                          <p className="text-xl font-black" style={{ color: s.color }}>{s.val}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ── Full analytics: charts (Flame+) ── */}
+                    {(analyticsTier === "full" || analyticsTier === "premium" || analyticsTier === "revenue") && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* Viewer trend */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-1">Viewer Trend</p>
+                            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>Last 7 days · peak {Math.max(...VIEWER_DATA).toLocaleString()}</p>
+                            <SparkLine data={VIEWER_DATA} color="#14b8a6" maxVal={maxViewers} />
+                            <div className="flex justify-between mt-1">
+                              {WEEK_LABELS.map(d => (
+                                <span key={d} className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>{d}</span>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Earnings trend */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-1">Daily Earnings</p>
+                            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>Last 7 days · peak ${Math.max(...EARNINGS_DATA)}</p>
+                            <SparkLine data={EARNINGS_DATA} color="#e8a87c" maxVal={maxEarnings} />
+                            <div className="flex justify-between mt-1">
+                              {WEEK_LABELS.map(d => (
+                                <span key={d} className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>{d}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Top content */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-4">Top Performing Streams</p>
+                          <div className="space-y-3">
+                            {[
+                              { title: "Evening Chat & Chill ☀️",  viewers: 489, earnings: 168 },
+                              { title: "Late Night Vibes 🔥",      viewers: 334, earnings: 127 },
+                              { title: "Q&A Special 🎤",           viewers: 267, earnings: 93  },
+                            ].map((item, i) => (
+                              <div key={i} className="flex items-center gap-3">
+                                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                  style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6" }}>{i+1}</span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{item.viewers} viewers · ${item.earnings} earned</p>
+                                </div>
+                                <TrendingUp className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* ── Premium analytics (Inferno+) ── */}
+                    {(analyticsTier === "premium" || analyticsTier === "revenue") && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* Audience demographics */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Audience Demographics</p>
+                            <DonutChart segments={[
+                              { label: "18–24",  value: 38, color: "#14b8a6" },
+                              { label: "25–34",  value: 31, color: "#8b5cf6" },
+                              { label: "35–44",  value: 18, color: "#e8a87c" },
+                              { label: "45+",    value: 13, color: "#f97316" },
+                            ]} />
+                          </div>
+                          {/* Traffic sources */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Traffic Sources</p>
+                            <div className="space-y-3">
+                              {[
+                                { label: "Search",   value: 45, color: "#14b8a6" },
+                                { label: "Featured", value: 28, color: "#f59e0b" },
+                                { label: "Direct",   value: 17, color: "#8b5cf6" },
+                                { label: "Social",   value: 10, color: "#e8a87c" },
+                              ].map(s => (
+                                <BarRow key={s.label} label={s.label} value={s.value} max={45} color={s.color} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Conversion funnel */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-4">Conversion Funnel</p>
+                          <div className="space-y-2">
+                            {[
+                              { stage: "Profile Impressions", value: 12400, pct: 100, color: "#14b8a6" },
+                              { stage: "Profile Views",       value: 3720,  pct: 30,  color: "#8b5cf6" },
+                              { stage: "Follows",             value: 744,   pct: 6,   color: "#e8a87c" },
+                              { stage: "Subscribers",         value: 149,   pct: 1.2, color: "#f59e0b" },
+                            ].map(f => (
+                              <div key={f.stage} className="flex items-center gap-3">
+                                <span className="w-36 text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{f.stage}</span>
+                                <div className="flex-1 h-5 rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                                  <div className="h-full rounded-lg flex items-center px-2"
+                                    style={{ width: `${f.pct}%`, background: f.color, minWidth: 40 }}>
+                                    <span className="text-xs font-bold text-white whitespace-nowrap">{f.value.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                                <span className="w-12 text-xs text-right" style={{ color: "rgba(255,255,255,0.4)" }}>{f.pct}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* ── Revenue analytics (Legend) ── */}
+                    {analyticsTier === "revenue" && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* Revenue breakdown */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Revenue by Source</p>
+                            <DonutChart segments={[
+                              { label: "Subscriptions", value: 52, color: "#14b8a6" },
+                              { label: "Tips",          value: 28, color: "#e8a87c" },
+                              { label: "PPV Content",   value: 13, color: "#8b5cf6" },
+                              { label: "Gifts",         value: 7,  color: "#f59e0b" },
+                            ]} />
+                          </div>
+                          {/* KPI cards */}
+                          <div className="vl-card p-5 space-y-4">
+                            <p className="text-sm font-bold text-white">Revenue KPIs</p>
+                            {[
+                              { label: "Fan Lifetime Value",   value: "$47.80", color: "#14b8a6" },
+                              { label: "Monthly Recurring Rev", value: "$1,243", color: "#e8a87c" },
+                              { label: "30-day Forecast",      value: "$1,410", color: "#8b5cf6" },
+                              { label: "Churn Rate (30d)",     value: "4.2%",   color: "#f59e0b" },
+                            ].map(k => (
+                              <div key={k.label} className="flex items-center justify-between">
+                                <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{k.label}</span>
+                                <span className="text-sm font-black" style={{ color: k.color }}>{k.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* MRR trend */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-1">MRR Trend</p>
+                          <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>Monthly recurring revenue over 7 weeks</p>
+                          <SparkLine data={[820, 890, 940, 1050, 1100, 1210, 1243]} color="#f59e0b" maxVal={1400} />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Upgrade nudge for lower tiers */}
+                    {analyticsTier !== "revenue" && (
+                      <div className="rounded-xl p-4 flex items-center justify-between gap-3"
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                        <div>
+                          <p className="text-sm font-semibold text-white">
+                            {analyticsTier === "basic"   ? "Upgrade to Flame for charts & engagement data" :
+                             analyticsTier === "full"    ? "Upgrade to Inferno for demographics & conversion funnel" :
+                                                          "Upgrade to Legend for revenue forecasting & LTV"}
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                            Unlock deeper insights to grow your creator business
+                          </p>
+                        </div>
+                        <Link href="/boosts">
+                          <button className="text-xs font-bold px-4 py-2 rounded-lg flex-shrink-0"
+                            style={{ background: "rgba(20,184,166,0.12)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                            Upgrade →
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
