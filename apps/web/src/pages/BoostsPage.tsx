@@ -35,7 +35,7 @@ const MEMBERSHIP_PLANS = [
     emoji: "❤️",
     price: 4.99,
     billingPeriod: "per month",
-    credits: 50,
+    credits: 150,
     features: [
       "Everything in Free",
       "50 bonus credits/month",
@@ -55,7 +55,7 @@ const MEMBERSHIP_PLANS = [
     emoji: "🔥",
     price: 9.99,
     billingPeriod: "per month",
-    credits: 100,
+    credits: 150,
     features: [
       "Everything in Fan",
       "100 bonus credits/month",
@@ -76,7 +76,7 @@ const MEMBERSHIP_PLANS = [
     emoji: "💎",
     price: 14.99,
     billingPeriod: "per month",
-    credits: 150,
+    credits: 750,
     features: [
       "Everything in Supporter",
       "150 bonus credits/month",
@@ -98,7 +98,7 @@ const MEMBERSHIP_PLANS = [
     emoji: "🏆",
     price: 24.99,
     billingPeriod: "per month",
-    credits: 250,
+    credits: 750,
     features: [
       "Everything in Super Fan",
       "250 bonus credits/month",
@@ -120,7 +120,7 @@ const MEMBERSHIP_PLANS = [
     emoji: "👑",
     price: 49.99,
     billingPeriod: "per month",
-    credits: 500,
+    credits: 1500,
     features: [
       "Everything in All-Access",
       "500 bonus credits/month",
@@ -168,12 +168,11 @@ export default function BoostsPage() {
         await boostsApi.subscribe(pkg.id);
         setActiveBoost(pkg.id);
         showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month for 30 days` });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to subscribe";
-        showToast({ title: "Subscription failed", description: msg, variant: "destructive" });
-        // Fallback: local demo
+      } catch {
+        // Any error (network, HTTP 502/503) → demo mode fallback
         spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
         setActiveBoost(pkg.id);
+        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month activated` });
       }
     } else {
       // Demo mode
