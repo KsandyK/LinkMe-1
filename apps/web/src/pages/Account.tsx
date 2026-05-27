@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users } from "lucide-react";
 
 // ── Favorites storage ─────────────────────────────────────────────────────────
 const FAV_STORAGE_KEY = "vl_favorites_v1";
@@ -56,6 +56,23 @@ function detectBrand(num: string): string {
 function brandIcon(b: string) { return b === "Visa" ? "💳" : b === "Mastercard" ? "🟠" : b === "Amex" ? "🔵" : b === "Discover" ? "🟡" : "💳"; }
 function fmtCardNum(v: string) { return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(); }
 function fmtExpiry(v: string) { const d = v.replace(/\D/g, "").slice(0, 4); return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; }
+
+// ── Creator subscriptions (mock) ─────────────────────────────────────────────
+interface CreatorSub {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  tier: string;
+  tierColor: string;
+  price: number;
+  renewDate: string;
+}
+const MOCK_CREATOR_SUBS: CreatorSub[] = [
+  { id: "cs1", username: "luna_vibes",      displayName: "Luna Vibes",      avatarUrl: null, tier: "VIP Fan",   tierColor: "#a78bfa", price: 19.99, renewDate: "Jun 27, 2026" },
+  { id: "cs2", username: "xander_stream",   displayName: "Xander Stream",   avatarUrl: null, tier: "Supporter", tierColor: "#14b8a6", price:  9.99, renewDate: "Jul 3, 2026"  },
+  { id: "cs3", username: "stella_noir",     displayName: "Stella Noir",     avatarUrl: null, tier: "All-Access",tierColor: "#f59e0b", price: 29.99, renewDate: "Jun 30, 2026" },
+];
 
 // ── Subscription display helpers — imported from single source of truth ───────
 // MEMBERSHIP_INFO and BOOST_INFO are imported from @/lib/membership-tiers
@@ -135,9 +152,12 @@ export default function Account() {
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
   const [cardSaved, setCardSaved] = useState(false);
 
+  // Creator subscriptions
+  const [creatorSubs, setCreatorSubs] = useState<CreatorSub[]>(MOCK_CREATOR_SUBS);
+
   // Cancel plan confirmation modal
   const [cancelPlanModal, setCancelPlanModal] = useState<{
-    type: "membership" | "boost";
+    type: "membership" | "boost" | "creator";
     name: string;
     emoji: string;
     color: string;
@@ -671,7 +691,7 @@ export default function Account() {
                   )}
                 </div>
 
-                {/* ── Active Subscriptions ───────────────────────────────── */}
+                {/* ── Active Subscriptions (platform plans) ─────────────── */}
                 <div>
                   <p className="text-sm font-semibold text-white mb-3">Active Subscriptions</p>
                   {activeMembership === "free" && !activeBoost ? (
@@ -744,6 +764,86 @@ export default function Account() {
                           </div>
                         );
                       })()}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Creator Subscriptions ──────────────────────────────── */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users className="w-4 h-4" style={{ color: "#a78bfa" }} />
+                    <p className="text-sm font-semibold text-white">Creator Subscriptions</p>
+                    {creatorSubs.length > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+                        style={{ background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)", color: "#a78bfa" }}>
+                        {creatorSubs.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {creatorSubs.length === 0 ? (
+                    <div className="rounded-xl p-6 text-center"
+                      style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
+                      <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>No creator subscriptions</p>
+                      <Link href="/profiles">
+                        <button className="text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
+                          style={{ background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.3)", color: "#a78bfa" }}>
+                          Browse Creators
+                        </button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {creatorSubs.map(sub => {
+                        const avatar = sub.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${sub.username}`;
+                        return (
+                          <div key={sub.id} className="flex items-center gap-3 p-3 rounded-xl"
+                            style={{ background: "rgba(167,139,250,0.05)", border: "1px solid rgba(167,139,250,0.15)" }}>
+                            <img src={avatar} alt={sub.displayName}
+                              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                              style={{ border: `2px solid ${sub.tierColor}50` }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="text-sm font-bold text-white">{sub.displayName}</p>
+                                <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                                  style={{ background: `${sub.tierColor}18`, border: `1px solid ${sub.tierColor}35`, color: sub.tierColor }}>
+                                  {sub.tier}
+                                </span>
+                              </div>
+                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                                @{sub.username} · ${sub.price}/mo · Renews {sub.renewDate}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Link href={`/profiles/${sub.username}`}>
+                                <button className="text-xs px-2.5 py-1 rounded-lg transition-all hover:bg-white/10"
+                                  style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }}>
+                                  View
+                                </button>
+                              </Link>
+                              <button
+                                onClick={() => setCancelPlanModal({
+                                  type: "creator",
+                                  name: sub.displayName,
+                                  emoji: "👤",
+                                  color: sub.tierColor,
+                                  renewDate: sub.renewDate,
+                                  perks: [`${sub.tier} tier content access`, "Private messaging", "Exclusive subscriber perks"],
+                                  onConfirm: () => {
+                                    setCreatorSubs(prev => prev.filter(s => s.id !== sub.id));
+                                    showToast({ title: `Unsubscribed from ${sub.displayName}` });
+                                    setCancelPlanModal(null);
+                                  },
+                                })}
+                                className="text-xs px-2.5 py-1 rounded-lg transition-all hover:bg-red-500/10"
+                                style={{ border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -934,7 +1034,7 @@ export default function Account() {
             <div>
               <h3 className="font-bold text-white text-base">Cancel {cancelPlanModal.name}?</h3>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                {cancelPlanModal.type === "membership" ? "Membership" : "Boost"} cancellation
+                {cancelPlanModal.type === "membership" ? "Membership" : cancelPlanModal.type === "boost" ? "Boost" : "Creator subscription"} cancellation
               </p>
             </div>
           </div>

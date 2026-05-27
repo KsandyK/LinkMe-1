@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ShoppingBag, ChevronDown, Shield } from "lucide-react";
+import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/profiles", label: "Creators", icon: Users },
@@ -99,7 +99,6 @@ export function Navigation() {
                   {[
                     { href: "/account", label: "My Account", icon: User },
                     { href: "/creator", label: "Creator Dashboard", icon: LayoutDashboard },
-                    { href: "/billing", label: "Billing", icon: ShoppingBag },
                     { href: "/become-creator", label: "Become a Creator", icon: Crown },
                   ].map(item => (
                     <Link key={item.href} href={item.href}>
