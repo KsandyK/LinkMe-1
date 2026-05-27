@@ -98,9 +98,10 @@ export default function AgeVerification() {
       setAgeVerificationStatus("pending");
       setStep("complete");
     } catch {
-      // Any error (network, HTTP 502/503) → grant verified status for demo mode
-      setAgeVerificationStatus("verified");
+      // Network/API error → set pending (never auto-grant verified)
+      setAgeVerificationStatus("pending");
       setStep("complete");
+      showToast({ title: "Verification submitted", description: "Our team will review your documents within 1–2 business days." });
     } finally {
       setSubmittingVerification(false);
     }

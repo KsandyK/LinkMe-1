@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, livefeeds as liveApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
-import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Star } from "lucide-react";
+import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Star, Search, Gift, Sparkles } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -54,12 +54,36 @@ const PROMOTED_CREATORS = [
   { id: "promo-3", name: "Celeste Kim",   username: "celestek",   location: "New York, NY",    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=celestekim",   cover: "https://picsum.photos/seed/celestecov/600/200", boost: "Inferno", color: "#f97316" },
 ];
 
+// Build sorted creator lists from mock data for demo sections
+const NEW_CREATORS: CreatorProfileItem[] = [...MOCK_PROFILES]
+  .sort((a, b) => (b.joinedDate ?? "").localeCompare(a.joinedDate ?? ""))
+  .slice(0, 3)
+  .map(p => ({
+    id: p.id, userId: p.id, isLive: p.isLive ?? false, isApproved: true,
+    subscriberCount: p.followersCount ?? 0, totalEarnings: p.totalEarnings ?? 0,
+    monthlyEarnings: 0, bio: p.bio ?? null, subscriptionPrice: 0,
+    user: { id: p.id, username: p.username, profile: { displayName: p.displayName, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl, location: p.location, isVerified: false } },
+  }));
+
+const TOP_GIFTED: CreatorProfileItem[] = [...MOCK_PROFILES]
+  .sort((a, b) => (b.totalEarnings ?? 0) - (a.totalEarnings ?? 0))
+  .slice(0, 3)
+  .map(p => ({
+    id: p.id, userId: p.id, isLive: p.isLive ?? false, isApproved: true,
+    subscriberCount: p.followersCount ?? 0, totalEarnings: p.totalEarnings ?? 0,
+    monthlyEarnings: 0, bio: p.bio ?? null, subscriptionPrice: 0,
+    user: { id: p.id, username: p.username, profile: { displayName: p.displayName, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl, location: p.location, isVerified: false } },
+  }));
+
 export default function Home() {
   const { ageVerificationStatus, activeBoost } = useApp();
+  const [, navigate] = useLocation();
   const hasFeaturedSpot = activeBoost === "inferno" || activeBoost === "legend";
   const [liveFeeds, setLiveFeeds] = useState<LiveFeedItem[]>([]);
   const [featuredCreators, setFeaturedCreators] = useState<CreatorProfileItem[]>([]);
   const [liveCount, setLiveCount] = useState(0);
+  const [heroSearch, setHeroSearch] = useState("");
+  const heroSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load live feeds and featured creators in parallel
@@ -147,6 +171,28 @@ export default function Home() {
             <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.7 }}>
               The premium hybrid dating and live interaction platform. Discover genuine connections with creators who match your vibe.
             </p>
+            {/* Hero Search */}
+            <div className="relative mb-5 max-w-sm">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(255,255,255,0.35)" }} />
+              <input
+                ref={heroSearchRef}
+                type="text"
+                value={heroSearch}
+                onChange={e => setHeroSearch(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && heroSearch.trim()) navigate(`/profiles?q=${encodeURIComponent(heroSearch.trim())}`); }}
+                placeholder="Search creators…"
+                className="w-full pl-10 pr-12 py-2.5 rounded-xl text-sm text-white"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", outline: "none", backdropFilter: "blur(8px)" }}
+              />
+              {heroSearch && (
+                <button
+                  onClick={() => navigate(`/profiles?q=${encodeURIComponent(heroSearch.trim())}`)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                  style={{ background: "#14b8a6", color: "white" }}>
+                  Go
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/profiles">
                 <button className="vl-btn-primary px-6 py-2.5 text-sm">Browse Profiles</button>
@@ -175,7 +221,24 @@ export default function Home() {
       </section>
 
       {/* Age Verification Banner */}
-      {ageVerificationStatus !== "verified" && (
+      {ageVerificationStatus === "pending" && (
+        <div className="py-3" style={{ borderBottom: "1px solid rgba(20,184,166,0.15)", background: "rgba(20,184,166,0.04)" }}>
+          <div className="container flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Shield className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} />
+              <div>
+                <span className="text-sm font-semibold" style={{ color: "#14b8a6" }}>Verification Under Review</span>
+                <span className="text-xs ml-2 hidden sm:inline" style={{ color: "rgba(94,234,212,0.5)" }}>Our team is reviewing your documents. You'll be notified when approved (1–2 business days).</span>
+              </div>
+            </div>
+            <span className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold"
+              style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#5eead4" }}>
+              Pending ⏳
+            </span>
+          </div>
+        </div>
+      )}
+      {ageVerificationStatus === "unverified" && (
         <div className="py-3" style={{ borderBottom: "1px solid rgba(234,179,8,0.18)" }}>
           <div className="container flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -302,11 +365,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Creators */}
+      {/* Popular Creators */}
       <section className="py-10">
         <div className="container">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="vl-section-title">Featured Creators</h2>
+            <h2 className="vl-section-title">Popular Creators</h2>
             <Link href="/profiles">
               <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>Browse All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
             </Link>
@@ -326,6 +389,77 @@ export default function Home() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* ── New to LINKME ────────────────────────────────────────────────── */}
+      <section className="py-10">
+        <div className="container">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" style={{ color: "#a78bfa" }} />
+              <h2 className="vl-section-title">New to LINKME</h2>
+            </div>
+            <Link href="/profiles?sort=newest">
+              <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>See All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {NEW_CREATORS.map(creator => (
+              <CreatorCard key={creator.id} creator={creator} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Top Gifted ───────────────────────────────────────────────────── */}
+      <section className="py-10">
+        <div className="container">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <Gift className="w-4 h-4" style={{ color: "#e8a87c" }} />
+              <h2 className="vl-section-title">Top Gifted</h2>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{ background: "rgba(232,168,124,0.1)", color: "#e8a87c", border: "1px solid rgba(232,168,124,0.2)" }}>
+                THIS WEEK
+              </span>
+            </div>
+            <Link href="/gifts">
+              <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>Send Gifts <ChevronRight className="w-3.5 h-3.5 inline" /></span>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {TOP_GIFTED.map((creator, i) => {
+              const p = creator.user.profile;
+              const displayName = p?.displayName ?? creator.user.username;
+              const avatarUrl = p?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.user.username}`;
+              const rankColors = ["#f59e0b", "#94a3b8", "#cd7c4e"];
+              const rankEmojis = ["🥇", "🥈", "🥉"];
+              return (
+                <Link key={creator.id} href={`/profile/${creator.userId}`}>
+                  <div className="vl-card p-4 flex items-center gap-4 cursor-pointer group hover:bg-white/5 transition-all">
+                    <div className="text-xl font-bold w-8 text-center flex-shrink-0">{rankEmojis[i]}</div>
+                    <img src={avatarUrl} alt={displayName}
+                      className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2"
+                      style={{ borderColor: rankColors[i] }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-white truncate">{displayName}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        ${(creator.totalEarnings ?? 0).toLocaleString()} in gifts
+                      </p>
+                    </div>
+                    <Link href={`/gifts`}>
+                      <button onClick={e => e.stopPropagation()}
+                        className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
+                        style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
+                        Gift 🎁
+                      </button>
+                    </Link>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 

@@ -132,8 +132,9 @@ export default function Account() {
   const [twoFASending, setTwoFASending] = useState(false);
   const [twoFAVerifying, setTwoFAVerifying] = useState(false);
   const [twoFACodeError, setTwoFACodeError] = useState(false);
-  // Simulated OTP (always "123456" in demo)
-  const DEMO_OTP = "123456";
+  // Generated OTP — randomised per "send" in demo mode; stored with 5-min TTL
+  const [generatedOTP, setGeneratedOTP] = useState("");
+  const [otpExpiresAt, setOtpExpiresAt] = useState(0);
 
   // Favorites
   const [favorites, setFavorites] = useState<FavoriteCreator[]>(() => {
@@ -240,10 +241,17 @@ export default function Account() {
   const handleSendOTP = () => {
     if (twoFAPhone.replace(/\D/g, "").length < 7) return;
     setTwoFASending(true);
+    // Generate a cryptographically random 6-digit OTP
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    const otp = String(arr[0] % 1_000_000).padStart(6, "0");
+    setGeneratedOTP(otp);
+    setOtpExpiresAt(Date.now() + 5 * 60 * 1000); // 5-min TTL
     setTimeout(() => {
       setTwoFASending(false);
       setTwoFAStep("verify");
-      showToast({ title: "Code sent!", description: `Verification code sent to ${twoFAPhone}` });
+      // In demo mode: show the code in a toast since no real SMS is sent
+      showToast({ title: "Code sent! (demo)", description: `Your verification code is: ${otp}` });
     }, 1000);
   };
 
@@ -251,7 +259,9 @@ export default function Account() {
     setTwoFAVerifying(true);
     setTimeout(() => {
       setTwoFAVerifying(false);
-      if (twoFACode === DEMO_OTP) {
+      // Check against generated OTP; also reject if expired
+      const expired = Date.now() > otpExpiresAt;
+      if (!expired && twoFACode === generatedOTP) {
         setTwoFAStep("done");
         setTimeout(() => {
           setTwoFAEnabled(true);
@@ -1148,7 +1158,7 @@ export default function Account() {
                 autoFocus
               />
               {twoFACodeError && (
-                <p className="text-xs mb-3" style={{ color: "#f87171" }}>Incorrect code. Try again (hint: 123456)</p>
+                <p className="text-xs mb-3" style={{ color: "#f87171" }}>Incorrect or expired code. Check the toast notification for your code.</p>
               )}
               <p className="text-xs mb-5 mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
                 Didn't receive it?{" "}

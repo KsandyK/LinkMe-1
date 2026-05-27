@@ -1,7 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle } from "lucide-react";
+
+const LOCAL_CONVS_KEY = "vl_local_convs_v1";
+
+function getUnreadCount(): number {
+  try {
+    const convs: { lastReadAt: string | null; lastMessage: { createdAt: string; senderId?: string } | null }[] =
+      JSON.parse(localStorage.getItem(LOCAL_CONVS_KEY) ?? "[]");
+    const userId = (() => { try { return JSON.parse(localStorage.getItem("linkme_user") ?? "{}").id ?? null; } catch { return null; } })();
+    return convs.filter(c => {
+      if (!c.lastMessage) return false;
+      // Don't count messages the current user sent themselves
+      if (userId && c.lastMessage.senderId === userId) return false;
+      if (!c.lastReadAt) return true;
+      return new Date(c.lastMessage.createdAt) > new Date(c.lastReadAt);
+    }).length;
+  } catch {
+    return 0;
+  }
+}
 
 const NAV_LINKS = [
   { href: "/profiles", label: "Creators", icon: Users },
@@ -16,6 +35,14 @@ export function Navigation() {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Refresh unread count on route change and on a 30s poll
+  useEffect(() => {
+    setUnreadMessages(getUnreadCount());
+    const id = setInterval(() => setUnreadMessages(getUnreadCount()), 30_000);
+    return () => clearInterval(id);
+  }, [location]);
 
   const handleSignOut = () => {
     setUserMenuOpen(false);
@@ -43,11 +70,23 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-0.5">
             {NAV_LINKS.map(link => {
               const isActive = location === link.href || (link.href !== "/" && location.startsWith(link.href));
+              const hasUnread = link.href === "/messages" && unreadMessages > 0;
               return (
                 <Link key={link.href} href={link.href}>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${isActive ? "text-white bg-white/8" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
-                    <link.icon className="w-3.5 h-3.5" />
+                  <div className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${isActive ? "text-white bg-white/8" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
+                    <span className="relative">
+                      <link.icon className="w-3.5 h-3.5" />
+                      {hasUnread && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-[#09091a]" />
+                      )}
+                    </span>
                     {link.label}
+                    {hasUnread && (
+                      <span className="text-xs font-bold px-1 py-0 rounded-full"
+                        style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", fontSize: "0.6rem" }}>
+                        {unreadMessages}
+                      </span>
+                    )}
                     {link.badge && (
                       <span className={link.badge === "LIVE" ? "vl-badge-live" : undefined}
                         style={link.badge === "NEW"
@@ -157,13 +196,23 @@ export function Navigation() {
           <div className="container py-3 space-y-1">
             {NAV_LINKS.map(link => {
               const isActive = location === link.href || (link.href !== "/" && location.startsWith(link.href));
+              const hasUnread = link.href === "/messages" && unreadMessages > 0;
               return (
                 <Link key={link.href} href={link.href}>
                   <div onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all"
                     style={{ background: isActive ? "rgba(20,184,166,0.08)" : "transparent", color: isActive ? "#14b8a6" : "rgba(255,255,255,0.6)" }}>
-                    <link.icon className="w-4 h-4" />
+                    <span className="relative">
+                      <link.icon className="w-4 h-4" />
+                      {hasUnread && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-[#0a0a14]" />}
+                    </span>
                     {link.label}
+                    {hasUnread && (
+                      <span className="ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: "rgba(239,68,68,0.15)", color: "#f87171" }}>
+                        {unreadMessages}
+                      </span>
+                    )}
                     {link.badge && <span className="vl-badge-live ml-auto">{link.badge}</span>}
                   </div>
                 </Link>

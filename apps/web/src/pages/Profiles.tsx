@@ -1,38 +1,93 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import { profiles as profilesApi, CreatorProfileItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { Search, Radio, Loader2 } from "lucide-react";
+import { Search, Radio, Loader2, ArrowUpDown, ChevronDown } from "lucide-react";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    q:        p.get("q") ?? "",
+    category: (p.get("category") ?? "all") as Category,
+    sort:     (p.get("sort") ?? "popular") as SortOption,
+    live:     p.get("live") === "true",
+  };
+}
+
+function pushParams(q: string, category: Category, sort: SortOption, live: boolean) {
+  const p = new URLSearchParams();
+  if (q)                 p.set("q", q);
+  if (category !== "all") p.set("category", category);
+  if (sort !== "popular") p.set("sort", sort);
+  if (live)              p.set("live", "true");
+  const qs = p.toString();
+  window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+}
+
+// Assign a demo category to each mock profile based on their interests
+const CREATOR_CATEGORIES: Record<string, Category> = {
+  "profile-1":  "dating",
+  "profile-2":  "entertainment",
+  "profile-3":  "chat",
+  "profile-4":  "entertainment",
+  "profile-5":  "dating",
+  "profile-6":  "dating",
+  "profile-7":  "chat",
+  "profile-8":  "entertainment",
+  "profile-9":  "chat",
+  "profile-10": "entertainment",
+};
 
 // Map mock profiles to CreatorProfileItem shape for fallback display
-const MOCK_CREATORS: CreatorProfileItem[] = MOCK_PROFILES.map(p => ({
-  id: p.id,
-  userId: p.id,
-  isLive: p.isLive ?? false,
-  isApproved: true,
-  subscriberCount: p.followersCount ?? 0,
-  totalEarnings: 0,
-  monthlyEarnings: 0,
-  bio: p.bio ?? null,
-  subscriptionPrice: 0,
-  user: {
-    id: p.id,
-    username: p.username,
-    profile: {
-      displayName: p.displayName,
-      avatarUrl: p.avatarUrl,
-      coverUrl: p.coverUrl,
-      location: p.location,
-      isVerified: false,
+const MOCK_CREATORS: (CreatorProfileItem & { _joinedDate: string; _totalEarnings: number; _category: Category })[] =
+  MOCK_PROFILES.map(p => ({
+    id:               p.id,
+    userId:           p.id,
+    isLive:           p.isLive ?? false,
+    isApproved:       true,
+    subscriberCount:  p.followersCount ?? 0,
+    totalEarnings:    p.totalEarnings ?? 0,
+    monthlyEarnings:  0,
+    bio:              p.bio ?? null,
+    subscriptionPrice: 0,
+    _joinedDate:      p.joinedDate ?? "2024-01-01",
+    _totalEarnings:   p.totalEarnings ?? 0,
+    _category:        CREATOR_CATEGORIES[p.id] ?? "chat",
+    user: {
+      id:       p.id,
+      username: p.username,
+      profile: {
+        displayName: p.displayName,
+        avatarUrl:   p.avatarUrl,
+        coverUrl:    p.coverUrl,
+        location:    p.location,
+        isVerified:  false,
+      },
     },
-  },
-}));
+  }));
 
-type Filter = "all" | "live";
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "live", label: "Live Only" },
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type Category   = "all" | "dating" | "entertainment" | "chat";
+type SortOption = "popular" | "newest" | "top-rated";
+type LiveFilter = boolean;
+
+const CATEGORIES: { id: Category; label: string }[] = [
+  { id: "all",           label: "All" },
+  { id: "dating",        label: "Dating" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "chat",          label: "Chat" },
 ];
+
+const SORT_OPTIONS: { id: SortOption; label: string }[] = [
+  { id: "popular",   label: "Most Popular" },
+  { id: "newest",    label: "New Arrivals" },
+  { id: "top-rated", label: "Top Earning" },
+];
+
+// ── ProfileCard ───────────────────────────────────────────────────────────────
 
 function ProfileCard({ creator }: { creator: CreatorProfileItem }) {
   const p = creator.user.profile;
@@ -83,13 +138,21 @@ function ProfileCard({ creator }: { creator: CreatorProfileItem }) {
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function Profiles() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
-  const [creators, setCreators] = useState<CreatorProfileItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const init = getParams();
+  const [search,   setSearch]   = useState(init.q);
+  const [debouncedSearch, setDebouncedSearch] = useState(init.q);
+  const [category, setCategory] = useState<Category>(init.category);
+  const [sort,     setSort]     = useState<SortOption>(init.sort);
+  const [liveOnly, setLiveOnly] = useState<LiveFilter>(init.live);
+  const [showSort, setShowSort] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  const [creators,      setCreators]      = useState<CreatorProfileItem[]>([]);
+  const [total,         setTotal]         = useState(0);
+  const [loading,       setLoading]       = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
 
   // Debounce search input
@@ -98,35 +161,62 @@ export default function Profiles() {
     return () => clearTimeout(t);
   }, [search]);
 
+  // Sync URL whenever filters change
+  useEffect(() => {
+    pushParams(debouncedSearch, category, sort, liveOnly);
+  }, [debouncedSearch, category, sort, liveOnly]);
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setShowSort(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await profilesApi.list({
-        search: debouncedSearch || undefined,
-        live: filter === "live" ? "true" : undefined,
-        limit: 40,
+        search:   debouncedSearch || undefined,
+        live:     liveOnly ? "true" : undefined,
+        limit:    40,
       });
       setCreators(data.profiles);
       setTotal(data.total);
       setUsingFallback(false);
     } catch {
-      // API unavailable — filter mock data client-side
+      // API unavailable — filter & sort mock data client-side
       const q = debouncedSearch.toLowerCase();
-      let results = MOCK_CREATORS;
-      if (q) results = results.filter(c =>
-        (c.user.profile?.displayName ?? c.user.username).toLowerCase().includes(q) ||
-        (c.user.profile?.location ?? "").toLowerCase().includes(q)
-      );
-      if (filter === "live") results = results.filter(c => c.isLive);
+      let results = MOCK_CREATORS as (CreatorProfileItem & { _joinedDate: string; _totalEarnings: number; _category: Category })[];
+
+      if (q) {
+        results = results.filter(c =>
+          (c.user.profile?.displayName ?? c.user.username).toLowerCase().includes(q) ||
+          (c.bio ?? "").toLowerCase().includes(q) ||
+          (c.user.profile?.location ?? "").toLowerCase().includes(q)
+        );
+      }
+      if (category !== "all") results = results.filter(c => c._category === category);
+      if (liveOnly)           results = results.filter(c => c.isLive);
+
+      // Sort
+      if (sort === "popular")   results = [...results].sort((a, b) => b.subscriberCount - a.subscriberCount);
+      if (sort === "newest")    results = [...results].sort((a, b) => b._joinedDate.localeCompare(a._joinedDate));
+      if (sort === "top-rated") results = [...results].sort((a, b) => b._totalEarnings - a._totalEarnings);
+
       setCreators(results);
       setTotal(results.length);
       setUsingFallback(true);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filter]);
+  }, [debouncedSearch, category, sort, liveOnly]);
 
   useEffect(() => { load(); }, [load]);
+
+  const currentSortLabel = SORT_OPTIONS.find(s => s.id === sort)?.label ?? "Sort";
 
   return (
     <div className="min-h-screen py-8">
@@ -150,7 +240,7 @@ export default function Profiles() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
           <input
             type="text"
-            placeholder="Search creators…"
+            placeholder="Search creators by name, bio, or location…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-xl text-sm text-white"
@@ -158,22 +248,64 @@ export default function Profiles() {
           />
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex items-center gap-2 mb-6 flex-wrap">
-          {FILTERS.map(f => (
+        {/* Filters row */}
+        <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+          {/* Left: category + live chips */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {CATEGORIES.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setCategory(c.id)}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={category === c.id
+                  ? { background: "#14b8a6", color: "white" }
+                  : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }
+                }
+              >
+                {c.label}
+              </button>
+            ))}
             <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
+              onClick={() => setLiveOnly(!liveOnly)}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-              style={filter === f.id
-                ? { background: "#14b8a6", color: "white" }
+              style={liveOnly
+                ? { background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }
                 : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }
               }
             >
-              {f.id === "live" && <Radio className="w-3.5 h-3.5" />}
-              {f.label}
+              <Radio className="w-3.5 h-3.5" />
+              Live Only
             </button>
-          ))}
+          </div>
+
+          {/* Right: sort dropdown */}
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setShowSort(!showSort)}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}
+            >
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              {currentSortLabel}
+              <ChevronDown className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)", transform: showSort ? "rotate(180deg)" : undefined, transition: "transform 0.15s" }} />
+            </button>
+            {showSort && (
+              <div className="absolute right-0 top-full mt-1.5 w-44 rounded-xl overflow-hidden z-30"
+                style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 16px 32px rgba(0,0,0,0.5)" }}>
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { setSort(opt.id); setShowSort(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5"
+                    style={{ color: sort === opt.id ? "#14b8a6" : "rgba(255,255,255,0.7)", fontWeight: sort === opt.id ? 700 : 400 }}
+                  >
+                    {opt.label}
+                    {sort === opt.id && <span className="float-right">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {loading ? (
@@ -182,7 +314,10 @@ export default function Profiles() {
           </div>
         ) : (
           <>
-            <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>Showing {creators.length} creators</p>
+            <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Showing {creators.length} creator{creators.length !== 1 ? "s" : ""}
+              {category !== "all" && <span> in <span style={{ color: "#14b8a6" }}>{CATEGORIES.find(c => c.id === category)?.label}</span></span>}
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {creators.map(creator => (
                 <ProfileCard key={creator.id} creator={creator} />
@@ -192,6 +327,13 @@ export default function Profiles() {
               <div className="text-center py-20" style={{ color: "rgba(255,255,255,0.3)" }}>
                 <p className="text-lg font-medium mb-2">No creators found</p>
                 <p className="text-sm">Try adjusting your search or filters</p>
+                {(category !== "all" || liveOnly) && (
+                  <button
+                    onClick={() => { setCategory("all"); setLiveOnly(false); setSearch(""); }}
+                    className="mt-4 vl-btn-primary px-5 py-2 text-sm">
+                    Clear Filters
+                  </button>
+                )}
               </div>
             )}
           </>

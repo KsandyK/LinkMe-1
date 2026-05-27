@@ -34,6 +34,13 @@ export default function BoostsPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
+  // Tier visibility toggles — default to showing only core tiers
+  const [showAllMemberships, setShowAllMemberships] = useState(false);
+  const [showAllBoosts, setShowAllBoosts] = useState(false);
+
+  // IDs shown by default (most approachable price points)
+  const CORE_MEMBERSHIP_IDS = new Set(["free", "fan", "superfan", "devotee", "allaccess", "elite"]);
+  const CORE_BOOST_IDS      = new Set(["spark", "flame", "inferno", "legend"]);
 
   // ── Payment method guard ──────────────────────────────────────────────────
   type SavedCardSnippet = { id: string; last4: string; brand: string; isDefault: boolean };
@@ -240,14 +247,14 @@ export default function BoostsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {MEMBERSHIP_PLANS.map((plan, i) => {
+              {MEMBERSHIP_PLANS.filter(p => showAllMemberships || CORE_MEMBERSHIP_IDS.has(p.id)).map((plan, i, arr) => {
                 const rawPrice = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
                 const price = rawPrice % 1 === 0 ? rawPrice.toLocaleString() : rawPrice.toFixed(2);
                 const annualTotal = rawPrice * 12;
                 const annualTotalStr = annualTotal % 1 === 0 ? annualTotal.toLocaleString() : annualTotal.toFixed(2);
                 const isBlackCard = plan.id === "blackcard";
                 const isUltra = ULTRA_MEMBERSHIP_IDS.has(plan.id);
-                const isFirstUltra = isUltra && !ULTRA_MEMBERSHIP_IDS.has(MEMBERSHIP_PLANS[i - 1]?.id ?? "");
+                const isFirstUltra = isUltra && !ULTRA_MEMBERSHIP_IDS.has(arr[i - 1]?.id ?? "");
                 return (
                   <Fragment key={plan.id}>
                     {isFirstUltra && (
@@ -374,7 +381,17 @@ export default function BoostsPage() {
               })}
             </div>
 
-            <div className="mt-8 p-4 rounded-xl text-center"
+            {/* Show all / collapse toggle */}
+            <div className="text-center mb-4">
+              <button
+                onClick={() => setShowAllMemberships(!showAllMemberships)}
+                className="px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+                style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                {showAllMemberships ? "▲ Show fewer plans" : `▼ Show all ${MEMBERSHIP_PLANS.length} plans`}
+              </button>
+            </div>
+
+            <div className="mt-4 p-4 rounded-xl text-center"
               style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
                 🔒 Memberships billed monthly to your saved card. Cancel anytime from Account Settings.
@@ -400,10 +417,10 @@ export default function BoostsPage() {
             </div>
 
             {/* Boost cards grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-              {BOOST_PACKAGES.map((pkg, i) => {
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+              {BOOST_PACKAGES.filter(p => showAllBoosts || CORE_BOOST_IDS.has(p.id)).map((pkg, i, arr) => {
                 const isUltraBoost = ULTRA_BOOST_IDS.has(pkg.id);
-                const isFirstUltraBoost = isUltraBoost && !ULTRA_BOOST_IDS.has(BOOST_PACKAGES[i - 1]?.id ?? "");
+                const isFirstUltraBoost = isUltraBoost && !ULTRA_BOOST_IDS.has(arr[i - 1]?.id ?? "");
                 return (
                 <Fragment key={pkg.id}>
                   {isFirstUltraBoost && (
@@ -470,6 +487,16 @@ export default function BoostsPage() {
                 </Fragment>
                 );
               })}
+            </div>
+
+            {/* Show all / collapse toggle */}
+            <div className="text-center mb-6">
+              <button
+                onClick={() => setShowAllBoosts(!showAllBoosts)}
+                className="px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+                style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                {showAllBoosts ? "▲ Show fewer boost tiers" : `▼ Show all ${BOOST_PACKAGES.length} boost tiers (enterprise)`}
+              </button>
             </div>
 
             {/* How Boosts Work */}
