@@ -1,38 +1,70 @@
 import { Link } from "wouter";
-import { FileText, Shield, UserCheck, Users, ChevronRight, Mail } from "lucide-react";
+import { FileText, Shield, UserCheck, Users, ChevronRight, Mail, Copyright, RotateCcw, Cookie } from "lucide-react";
 
 const LEGAL_DOCS = [
   {
     href: "/legal/terms",
     icon: FileText,
     title: "Terms of Service",
-    desc: "Binding agreement governing your use of the platform, credits, content, and dispute resolution.",
-    updated: "March 27, 2026",
+    desc: "Binding agreement governing your use of the platform, credits, content, arbitration clause, and dispute resolution.",
+    updated: "May 27, 2026",
     color: "#14b8a6",
   },
   {
     href: "/legal/privacy",
     icon: Shield,
     title: "Privacy Policy",
-    desc: "How we collect, use, store, and protect your personal data. Includes GDPR & CCPA rights.",
-    updated: "March 27, 2026",
+    desc: "How we collect, use, store, and protect your personal data. Includes full GDPR & CCPA rights.",
+    updated: "May 27, 2026",
     color: "#a78bfa",
   },
   {
     href: "/legal/creator",
     icon: UserCheck,
     title: "Creator Agreement",
-    desc: "Terms for creators — revenue share, content standards, payout conditions, and platform rules.",
-    updated: "March 27, 2026",
+    desc: "Terms for creators — revenue share tiers, payout conditions, § 2257 compliance, FOSTA-SESTA, NDA.",
+    updated: "May 27, 2026",
     color: "#e8a87c",
   },
   {
     href: "/legal/conduct",
     icon: Users,
     title: "Code of Conduct",
-    desc: "Community standards, prohibited behaviour, reporting procedures, and enforcement policy.",
-    updated: "March 27, 2026",
+    desc: "Community standards, prohibited behaviour, enforcement tiers, and content moderation appeal process.",
+    updated: "May 27, 2026",
     color: "#ec4899",
+  },
+  {
+    href: "/legal/dmca",
+    icon: Copyright,
+    title: "DMCA Policy",
+    desc: "Copyright takedown procedures, counter-notification process, and repeat infringer policy.",
+    updated: "May 27, 2026",
+    color: "#f97316",
+  },
+  {
+    href: "/legal/refund",
+    icon: RotateCcw,
+    title: "Refund Policy",
+    desc: "Eligible refund circumstances, subscription cancellation rules, and how to request a refund.",
+    updated: "May 27, 2026",
+    color: "#38bdf8",
+  },
+  {
+    href: "/legal/cookies",
+    icon: Cookie,
+    title: "Cookie Policy",
+    desc: "What cookies we use, why we use them, your opt-out options, and GDPR / CCPA cookie rights.",
+    updated: "May 27, 2026",
+    color: "#f59e0b",
+  },
+  {
+    href: "/legal/community",
+    icon: Users,
+    title: "Community Guidelines",
+    desc: "Plain-language rules for creators and viewers — what's allowed, what's not, and why it matters.",
+    updated: "May 27, 2026",
+    color: "#8b5cf6",
   },
 ];
 
@@ -46,6 +78,8 @@ const CONTACTS = [
   { label: "Creator Support",    email: "creators@LinkMe.com" },
   { label: "Community & Trust",  email: "community@LinkMe.com" },
   { label: "GDPR — EU",          email: "gdpr@LinkMe.com" },
+  { label: "Appeals",            email: "appeals@LinkMe.com" },
+  { label: "Compliance (§2257)", email: "compliance@LinkMe.com" },
   { label: "Law Enforcement",    email: "law-enforcement@LinkMe.com" },
 ];
 
@@ -60,7 +94,7 @@ export default function LegalHub() {
           <h1 className="text-4xl font-black text-white mb-2">Legal Centre</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
             All legal documents, policies, and contact information in one place.
-            Last reviewed: March 27, 2026.
+            Last reviewed: May 27, 2026.
           </p>
         </div>
 

@@ -60,6 +60,7 @@ interface AppContextType {
 
   // Transaction log
   transactions: LocalTransaction[];
+  recordPurchase: (dollarAmount: number, description: string) => void;
 
   // Auth
   user: { id: string; username: string; role: string } | null;
@@ -308,6 +309,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetch(`${API_BASE}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => null);
   }, []);
 
+  const recordPurchase = (dollarAmount: number, description: string) => {
+    // Records a real-money purchase as a transaction WITHOUT touching the credit balance
+    pushTx(-dollarAmount, "PURCHASE", description);
+  };
+
   const showToast = (opts: ToastOptions) => {
     if (opts.variant === "destructive") {
       toast.error(opts.title, { description: opts.description });
@@ -325,7 +331,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showToast,
       activeMembership, setActiveMembership, membershipDiscount,
       activeBoost, setActiveBoost,
-      transactions,
+      transactions, recordPurchase,
       user, token, isLoggedIn: !!token && !!user, login, logout,
     }}>
       {children}

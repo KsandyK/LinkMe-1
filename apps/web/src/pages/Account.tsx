@@ -794,23 +794,33 @@ export default function Account() {
                 ) : (
                   <div className="space-y-1.5">
                     {transactions.map(tx => {
+                      const isPurchase = tx.type === "PURCHASE";
                       const isCredit = tx.amount > 0;
+                      // For real-money purchases: amount is stored as negative dollar value
+                      const displayAmt = isPurchase
+                        ? `-$${Math.abs(tx.amount).toFixed(2)}`
+                        : `${isCredit ? "+" : ""}${tx.amount.toLocaleString()}`;
+                      const amtColor = isPurchase ? "#f87171" : isCredit ? "#14b8a6" : "#e8a87c";
+                      const iconColor = isPurchase ? "#f87171" : isCredit ? "#14b8a6" : "#e8a87c";
+                      const iconBg   = isPurchase ? "rgba(248,113,113,0.1)" : isCredit ? "rgba(20,184,166,0.12)" : "rgba(232,168,124,0.1)";
                       return (
                         <div key={tx.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5"
                           style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: isCredit ? "rgba(20,184,166,0.12)" : "rgba(232,168,124,0.1)" }}>
-                            <Zap className="w-3.5 h-3.5" style={{ color: isCredit ? "#14b8a6" : "#e8a87c" }} />
+                            style={{ background: iconBg }}>
+                            {isPurchase
+                              ? <CreditCard className="w-3.5 h-3.5" style={{ color: iconColor }} />
+                              : <Zap className="w-3.5 h-3.5" style={{ color: iconColor }} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-white truncate">{tx.description}</p>
                             <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
                               {new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              {isPurchase && <span className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: "rgba(248,113,113,0.1)", color: "#f87171" }}>Card</span>}
                             </p>
                           </div>
-                          <span className="text-sm font-black flex-shrink-0"
-                            style={{ color: isCredit ? "#14b8a6" : "#e8a87c" }}>
-                            {isCredit ? "+" : ""}{tx.amount.toLocaleString()}
+                          <span className="text-sm font-black flex-shrink-0" style={{ color: amtColor }}>
+                            {displayAmt}
                           </span>
                         </div>
                       );

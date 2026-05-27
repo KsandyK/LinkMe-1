@@ -115,7 +115,7 @@ export default function CreditsStore() {
           )}
         </div>
         <p className="text-muted-foreground text-sm mb-6">
-          🔒 All purchases are processed securely via CCBill. No adult transactions on your statement.
+          🔒 All purchases are processed securely. No explicit descriptors on your statement.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PACKAGES.map(pkg => {
@@ -164,8 +164,8 @@ export default function CreditsStore() {
 
         <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">
           <p className="text-muted-foreground text-sm">
-            🔒 Secure payment powered by <strong>CCBill</strong> — the industry standard for adult content billing.
-            All transactions are discreet and encrypted.
+            🔒 Secure payment — industry-standard encryption on every transaction.
+            All transactions are discreet and statement-friendly.
           </p>
         </div>
       </div>

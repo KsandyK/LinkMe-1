@@ -147,7 +147,7 @@ const ULTRA_MEMBERSHIP_IDS = new Set(["diamond", "obsidian", "platinum_m"]);
 const ULTRA_BOOST_IDS      = new Set(["supernova", "colossus", "sovereign"]);
 
 export default function BoostsPage() {
-  const { spendCredits, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
+  const { spendCredits, addCredits, recordPurchase, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
   const [activeTab, setActiveTab] = useState<"boosts" | "memberships">("memberships");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
@@ -211,18 +211,20 @@ export default function BoostsPage() {
   // ── Internal purchase executors (called after confirmation) ─────────────
   const _doSubscribeBoost = async (pkg: typeof BOOST_PACKAGES[0]) => {
     setLoadingBoost(pkg.id);
+    const priceStr = pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price.toFixed(2);
     if (isLoggedIn) {
       try {
         await boostsApi.subscribe(pkg.id);
         setActiveBoost(pkg.id);
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
         showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month for 30 days` });
       } catch {
-        spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
         setActiveBoost(pkg.id);
         showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month activated` });
       }
     } else {
-      spendCredits(Math.round(pkg.price * 10), `${pkg.name} Boost — ${pkg.boosts} boosts/month`);
+      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
       setActiveBoost(pkg.id);
     }
     setLoadingBoost(null);
@@ -235,7 +237,11 @@ export default function BoostsPage() {
       setActiveMembership(plan.id);
       const price = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
       const priceStr = price % 1 === 0 ? price.toLocaleString() : price.toFixed(2);
-      spendCredits(Math.round(price * 10), `${plan.name} Membership — $${priceStr}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
+      recordPurchase(price, `${plan.emoji} ${plan.name} Membership — $${priceStr}/${billingCycle === "annual" ? "yr" : "mo"}`);
+      // Award monthly bonus credits included in the plan
+      if (plan.credits > 0) {
+        addCredits(plan.credits, `${plan.emoji} ${plan.name} monthly bonus credits`);
+      }
       showToast({ title: `${plan.emoji} ${plan.name} Activated!`, description: `Your membership benefits are now active.` });
     }, 800);
   };
@@ -519,7 +525,7 @@ export default function BoostsPage() {
             <div className="mt-8 p-4 rounded-xl text-center"
               style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                🔒 Memberships billed monthly via <strong className="text-white">CCBill</strong>. Cancel anytime. Statement shows "CCBILL*LinkMe".
+                🔒 Memberships billed monthly to your saved card. Cancel anytime from Account Settings.
               </p>
             </div>
           </>
@@ -989,7 +995,7 @@ export default function BoostsPage() {
           </div>
 
           <p className="text-xs text-center mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
-            🔒 Processed securely via CCBill · Statement shows "CCBILL*LinkMe"
+            🔒 Charged securely to your saved card on file · Statement shows "LINKME"
           </p>
 
           <div className="flex gap-3">

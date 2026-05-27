@@ -340,7 +340,7 @@ export default function Billing() {
                 </div>
 
                 <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
-                  🔒 Processed securely via CCBill · Your card details are never stored on our servers
+                  🔒 Processed securely · Your card details are encrypted and never stored on our servers
                 </p>
               </div>
             ) : (
@@ -354,7 +354,7 @@ export default function Billing() {
 
             {cards.length === 0 && !showAddCard && (
               <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.25)" }}>
-                Processed securely via CCBill · Statement shows "CCBILL*LinkMe"
+                Processed securely · Statement shows "LINKME"
               </p>
             )}
           </div>
@@ -488,7 +488,7 @@ export default function Billing() {
         )}
 
         <p className="text-xs mt-6" style={{ color: "rgba(255,255,255,0.25)" }}>
-          All transactions are processed securely. Charges will appear on your statement as CCBILL*LINKME.
+          All transactions are processed securely. Charges will appear on your statement as "LINKME".
         </p>
       </div>
     </div>
