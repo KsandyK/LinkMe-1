@@ -14,8 +14,6 @@ import {
   Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
   Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
-import { MEMBER_TIERS } from "@/lib/membership-tiers";
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ChatMsg {
@@ -63,16 +61,44 @@ const DROP_RARITY_COLORS: Record<string, string> = {
   Common: "#9ca3af", Rare: "#3b82f6", Epic: "#8b5cf6", Legendary: "#f59e0b",
 };
 
-// ── Subscription tiers — imported from single source of truth ─────────────────
-// Prices always in sync with BoostsPage and Account via @/lib/membership-tiers
-const SUBSCRIBE_TIERS = MEMBER_TIERS;
+// ── Creator subscription tiers ─────────────────────────────────────────────────
+// These are CREATOR-specific subscriptions — money goes to the creator.
+// Completely separate from the site's own membership/boost system.
+// No platform credits involved.
+interface CreatorSubTier {
+  id: string; name: string; emoji: string;
+  price: number; priceStr: string; color: string;
+  popular: boolean; perks: string[];
+}
+const CREATOR_SUB_TIERS: CreatorSubTier[] = [
+  {
+    id: "fan", name: "Fan", emoji: "❤️", price: 4.99, priceStr: "$4.99",
+    color: "#f43f5e", popular: false,
+    perks: ["Fan badge in chat", "Subscriber-only posts", "Priority in chat queue"],
+  },
+  {
+    id: "supporter", name: "Supporter", emoji: "🔥", price: 9.99, priceStr: "$9.99",
+    color: "#f97316", popular: false,
+    perks: ["All Fan perks", "Early content access", "Shoutout in live streams"],
+  },
+  {
+    id: "vip", name: "VIP", emoji: "⭐", price: 19.99, priceStr: "$19.99",
+    color: "#8b5cf6", popular: true,
+    perks: ["All Supporter perks", "Direct message access", "Exclusive VIP drops", "Private Q&A sessions"],
+  },
+  {
+    id: "super_vip", name: "Super VIP", emoji: "👑", price: 49.99, priceStr: "$49.99",
+    color: "#f59e0b", popular: false,
+    perks: ["All VIP perks", "Custom content requests", "Private stream invitations", "Monthly 1-on-1 session"],
+  },
+];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function StreamView() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { credits, spendCredits, addCredits, recordPurchase, token, user, isLoggedIn, showToast, setActiveMembership } = useApp();
+  const { credits, spendCredits, recordPurchase, token, user, isLoggedIn, showToast } = useApp();
 
   // Auth gate — redirect to login if not signed in (debounced 500ms to avoid flash on load)
   useEffect(() => {
@@ -98,9 +124,11 @@ export default function StreamView() {
   const [streamEnded, setStreamEnded] = useState(false);
   const [showTipMenu, setShowTipMenu] = useState(false);
 
-  // Subscribe modal state
+  // Subscribe modal state — tier persisted per-creator in localStorage
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
-  const [subscribedTier, setSubscribedTier] = useState<string | null>(null);
+  const [subscribedTier, setSubscribedTier] = useState<string | null>(() => {
+    try { return localStorage.getItem(`vl_creator_sub_${id}`) ?? null; } catch { return null; }
+  });
   const [subscribeNoCard, setSubscribeNoCard] = useState(false);
   const [subscribePending, setSubscribePending] = useState<{
     tier: string; name: string; priceStr: string; emoji: string; onConfirm: () => void;
@@ -959,101 +987,128 @@ export default function StreamView() {
         </div>
       </div>
 
-      {/* ── Subscribe Modal ─────────────────────────────────────────────────── */}
+      {/* ── Creator Subscribe Modal ─────────────────────────────────────────── */}
       {showSubscribeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          style={{ background: "rgba(0,0,0,0.82)", backdropFilter: "blur(8px)" }}
           onClick={e => { if (e.target === e.currentTarget) setShowSubscribeModal(false); }}>
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
-            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 24px 64px rgba(0,0,0,0.7)" }}>
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-              <div>
-                <h2 className="text-lg font-black text-white flex items-center gap-2">
-                  <Bell className="w-5 h-5" style={{ color: "#ec4899" }} />
-                  Subscribe to {hostName}
-                </h2>
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Choose a tier to unlock exclusive perks and support your favorite creator
-                </p>
-              </div>
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden"
+            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 32px 80px rgba(0,0,0,0.8)" }}>
+
+            {/* Header — creator identity */}
+            <div className="relative px-6 pt-6 pb-5"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(180deg, rgba(236,72,153,0.07) 0%, transparent 100%)" }}>
               <button onClick={() => setShowSubscribeModal(false)}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="absolute top-4 right-4 p-1.5 rounded-lg transition-all hover:bg-white/10"
                 style={{ color: "rgba(255,255,255,0.4)" }}>
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img src={hostAvatar} alt={hostName}
+                    className="w-14 h-14 rounded-full object-cover border-2"
+                    style={{ borderColor: "#ec4899" }} />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs"
+                    style={{ background: "#ec4899" }}>♥</span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: "#ec4899" }}>SUBSCRIBE TO</p>
+                  <h2 className="text-xl font-black text-white leading-tight">{hostName}</h2>
+                  <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.38)" }}>
+                    Monthly · Cancel anytime · Billed to your saved card
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Tier grid */}
+            {/* Tier grid — 2 × 2 */}
             <div className="p-5 grid grid-cols-2 gap-3">
-              {SUBSCRIBE_TIERS.map(tier => {
+              {CREATOR_SUB_TIERS.map(tier => {
                 const isActive = subscribedTier === tier.id;
                 return (
-                  <div key={tier.id}
-                    className="relative p-4 rounded-xl transition-all"
+                  <div key={tier.id} className="relative flex flex-col rounded-xl overflow-hidden transition-all duration-200"
                     style={{
-                      background: isActive ? `${tier.color}18` : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${isActive ? tier.color + "55" : "rgba(255,255,255,0.08)"}`,
+                      background: isActive ? `${tier.color}14` : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${isActive ? tier.color + "60" : tier.popular ? tier.color + "35" : "rgba(255,255,255,0.08)"}`,
                     }}>
-                    {isActive && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold"
-                        style={{ background: `${tier.color}25`, color: tier.color }}>
-                        <CheckCircle2 className="w-3 h-3" /> Active
+                    {/* Popular badge */}
+                    {tier.popular && !isActive && (
+                      <div className="absolute top-0 left-0 right-0 py-0.5 text-center text-xs font-black tracking-wide"
+                        style={{ background: tier.color, color: "white" }}>
+                        MOST POPULAR
                       </div>
                     )}
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl leading-none">{tier.emoji}</span>
-                      <div>
-                        <p className="text-sm font-black text-white">{tier.name}</p>
-                        <p className="text-xs font-bold" style={{ color: tier.color }}>
-                          {tier.priceStr}/mo
-                        </p>
+                    {isActive && (
+                      <div className="absolute top-0 left-0 right-0 py-0.5 text-center text-xs font-black tracking-wide flex items-center justify-center gap-1"
+                        style={{ background: `${tier.color}30`, color: tier.color }}>
+                        <CheckCircle2 className="w-3 h-3" /> SUBSCRIBED
                       </div>
+                    )}
+
+                    <div className={`p-3.5 flex flex-col flex-1 ${tier.popular || isActive ? "pt-6" : ""}`}>
+                      {/* Tier identity */}
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <span className="text-xl leading-none">{tier.emoji}</span>
+                        <div>
+                          <p className="text-sm font-black text-white leading-tight">{tier.name}</p>
+                          <p className="text-base font-black leading-tight" style={{ color: tier.color }}>
+                            {tier.priceStr}<span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="mb-2.5" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+
+                      {/* Perks */}
+                      <ul className="space-y-1.5 flex-1 mb-3">
+                        {tier.perks.map(perk => (
+                          <li key={perk} className="flex items-start gap-1.5 text-xs leading-snug"
+                            style={{ color: "rgba(255,255,255,0.62)" }}>
+                            <span className="mt-0.5 flex-shrink-0" style={{ color: tier.color }}>✓</span>
+                            {perk}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* CTA */}
+                      <button
+                        onClick={() => {
+                          if (isActive) return;
+                          if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
+                          setSubscribePending({
+                            tier: tier.id,
+                            name: tier.name,
+                            priceStr: tier.priceStr,
+                            emoji: tier.emoji,
+                            onConfirm: () => {
+                              recordPurchase(tier.price, `${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
+                              try { localStorage.setItem(`vl_creator_sub_${id ?? ""}`, tier.id); } catch {}
+                              setSubscribedTier(tier.id);
+                              setSubscribePending(null);
+                              setShowSubscribeModal(false);
+                              showToast({ title: `${tier.emoji} Subscribed to ${hostName}!`, description: `You're now a ${tier.name} — thank you for your support!` });
+                            },
+                          });
+                        }}
+                        className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+                        style={isActive
+                          ? { background: `${tier.color}18`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
+                          : { background: `linear-gradient(135deg, ${tier.color}dd, ${tier.color}99)`, color: "white" }
+                        }>
+                        {isActive ? "✓ Subscribed" : `Subscribe ${tier.priceStr}/mo`}
+                      </button>
                     </div>
-                    <ul className="space-y-1 mb-3">
-                      {tier.perks.map(perk => (
-                        <li key={perk} className="flex items-start gap-1.5 text-xs"
-                          style={{ color: "rgba(255,255,255,0.6)" }}>
-                          <Star className="w-2.5 h-2.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
-                          {perk}
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={() => {
-                        if (isActive) return;
-                        if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
-                        setSubscribePending({
-                          tier: tier.id,
-                          name: tier.name,
-                          priceStr: tier.priceStr,
-                          emoji: tier.emoji,
-                          onConfirm: () => {
-                            // Record real-money transaction attributed to this creator
-                            recordPurchase(tier.price, `${tier.emoji} ${tier.name} Subscription — ${hostName} — ${tier.priceStr}/mo`);
-                            // Award monthly bonus credits included in this tier
-                            if (tier.bonusCredits > 0) {
-                              addCredits(tier.bonusCredits, `${tier.emoji} ${tier.name} monthly bonus credits`);
-                            }
-                            setActiveMembership(tier.id);
-                            setSubscribedTier(tier.id);
-                            setSubscribePending(null);
-                            setShowSubscribeModal(false);
-                            showToast({ title: `${tier.emoji} Subscribed — ${tier.name}!`, description: `Welcome to ${hostName}'s ${tier.name} tier` });
-                          },
-                        });
-                      }}
-                      className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
-                      style={isActive
-                        ? { background: `${tier.color}20`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
-                        : { background: `linear-gradient(135deg, ${tier.color}cc, ${tier.color}88)`, color: "white" }
-                      }>
-                      {isActive ? "✓ Subscribed" : `Subscribe ${tier.priceStr}/mo`}
-                    </button>
                   </div>
                 );
               })}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 pb-5 flex items-center gap-2 text-xs justify-center"
+              style={{ color: "rgba(255,255,255,0.28)" }}>
+              <span>🔒</span>
+              Secure billing · Payments go directly to {hostName} · Cancel anytime in Billing
             </div>
           </div>
         </div>
@@ -1098,16 +1153,21 @@ export default function StreamView() {
           <div className="w-full max-w-sm p-6 rounded-2xl"
             style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 24px 64px rgba(0,0,0,0.7)" }}>
             <div className="text-center mb-5">
-              <span className="text-5xl">{subscribePending.emoji}</span>
-              <h3 className="text-lg font-black text-white mt-3 mb-1">{subscribePending.name} Subscription</h3>
+              <div className="relative inline-block mb-3">
+                <img src={hostAvatar} alt={hostName}
+                  className="w-14 h-14 rounded-full object-cover border-2 mx-auto"
+                  style={{ borderColor: "#ec4899" }} />
+                <span className="absolute -bottom-1 -right-1 text-2xl leading-none">{subscribePending.emoji}</span>
+              </div>
+              <h3 className="text-lg font-black text-white mb-1">Support {hostName}</h3>
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                You're subscribing to {hostName}'s <strong className="text-white">{subscribePending.name}</strong> tier
+                <strong className="text-white">{subscribePending.name}</strong> tier · billed monthly
               </p>
             </div>
             <div className="p-3 rounded-xl mb-5"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <div className="flex items-center justify-between text-sm">
-                <span style={{ color: "rgba(255,255,255,0.5)" }}>Billed monthly</span>
+                <span style={{ color: "rgba(255,255,255,0.5)" }}>Monthly subscription</span>
                 <span className="font-black text-white">{subscribePending.priceStr}/mo</span>
               </div>
               {defaultCard && (
@@ -1119,6 +1179,9 @@ export default function StreamView() {
                   </span>
                 </div>
               )}
+              <p className="text-xs mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.3)" }}>
+                Payment goes directly to {hostName} · Cancel anytime
+              </p>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setSubscribePending(null)}
