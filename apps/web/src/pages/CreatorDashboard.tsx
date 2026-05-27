@@ -3,7 +3,9 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
+import { BOOST_TIERS } from "@/lib/membership-tiers";
+import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
 
 // ── Analytics mock data ───────────────────────────────────────────────────────
 const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -83,11 +85,10 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
   );
 }
 
-// Boost tier rank helper — must stay in sync with BOOST_PACKAGES in BoostsPage
-const BOOST_RANK: Record<string, number> = {
-  starter: 1, spark: 2, flame: 3, blaze: 4, inferno: 5, legend: 6,
-  titan: 7, supernova: 8, colossus: 9, sovereign: 10,
-};
+// Boost tier rank — index 0-based from BOOST_TIERS array (single source of truth)
+const BOOST_RANK: Record<string, number> = Object.fromEntries(
+  BOOST_TIERS.map((t, i) => [t.id, i + 1])
+);
 type AnalyticsTier = "none" | "basic" | "full" | "premium" | "revenue";
 function getAnalyticsTier(activeBoost: string | null): AnalyticsTier {
   const r = activeBoost ? (BOOST_RANK[activeBoost] ?? 0) : 0;
@@ -149,11 +150,38 @@ function centsToDisplay(cents: number) {
 export default function CreatorDashboard() {
   const { credits, isLoggedIn, showToast, activeBoost, user } = useApp();
   const analyticsTier = getAnalyticsTier(activeBoost);
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "referral">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral">("overview");
   const [codeCopied, setCodeCopied] = useState(false);
   const [boostClaimed, setBoostClaimed] = useState(() => {
     try { return localStorage.getItem("linkme_referral_claimed") === "1"; } catch { return false; }
   });
+  // Boost scheduling state (persisted to localStorage, same keys as BoostsPage)
+  const [schedule, setSchedule] = useState<ScheduleMap>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_boost_schedule_v1") ?? "{}"); } catch { return {}; }
+  });
+  const [autoBoost, setAutoBoost] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_boost_auto_v1") ?? "false"); } catch { return false; }
+  });
+  const [showAllLog, setShowAllLog] = useState(false);
+
+  const saveSchedule = (s: ScheduleMap) => {
+    setSchedule(s);
+    try { localStorage.setItem("vl_boost_schedule_v1", JSON.stringify(s)); } catch {}
+  };
+  const toggleCell = (key: string) => saveSchedule({ ...schedule, [key]: !schedule[key] });
+  const toggleAutoBoost = () => {
+    const next = !autoBoost;
+    setAutoBoost(next);
+    try { localStorage.setItem("vl_boost_auto_v1", JSON.stringify(next)); } catch {}
+    if (next) {
+      const auto: ScheduleMap = {};
+      PEAK_CELLS.forEach(k => { auto[k] = true; });
+      saveSchedule(auto);
+      showToast({ title: "Auto-Boost enabled", description: "Boosts will fire automatically at peak engagement windows." });
+    }
+  };
+  const scheduledCount = Object.values(schedule).filter(Boolean).length;
+
   // Demo referral progress — in production these come from the API
   const REFERRAL_TARGET_COUNT = 25;
   const REFERRAL_TARGET_EARNINGS = 10000;
@@ -290,18 +318,22 @@ export default function CreatorDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 vl-card p-1.5 w-fit flex-wrap">
-          {(["overview", "content", "fans", "analytics", "referral"] as const).map(tab => (
+          {(["overview", "content", "fans", "analytics", "boosts", "referral"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all flex items-center gap-1.5"
               style={activeTab === tab
-                ? { background: tab === "referral" ? "rgba(232,168,124,0.15)" : "rgba(20,184,166,0.15)", color: tab === "referral" ? "#e8a87c" : "#14b8a6" }
+                ? { background: tab === "referral" ? "rgba(232,168,124,0.15)" : tab === "boosts" ? "rgba(249,115,22,0.15)" : "rgba(20,184,166,0.15)", color: tab === "referral" ? "#e8a87c" : tab === "boosts" ? "#f97316" : "#14b8a6" }
                 : { color: "rgba(255,255,255,0.45)" }
               }>
               {tab === "analytics" && <BarChart2 className="w-3.5 h-3.5" />}
-              {tab === "referral" && <Gift className="w-3.5 h-3.5" />}
+              {tab === "boosts"    && <Zap        className="w-3.5 h-3.5" />}
+              {tab === "referral"  && <Gift       className="w-3.5 h-3.5" />}
               {tab}
               {tab === "analytics" && analyticsTier === "none" && (
                 <Lock className="w-3 h-3 opacity-50" />
+              )}
+              {tab === "boosts" && activeBoost && (
+                <span className="w-2 h-2 rounded-full" style={{ background: "#f97316" }} />
               )}
               {tab === "referral" && !boostClaimed && referralCount > 0 && (
                 <span className="w-2 h-2 rounded-full bg-orange-400 ml-0.5" />
@@ -687,6 +719,297 @@ export default function CreatorDashboard() {
                 )}
               </div>
             )}
+            {/* ── Boosts tab ───────────────────────────────────────────── */}
+            {activeTab === "boosts" && (() => {
+              const activePkg = activeBoost ? BOOST_TIERS.find(t => t.id === activeBoost) : null;
+              const boostIdx  = activeBoost ? BOOST_TIERS.findIndex(t => t.id === activeBoost) : -1;
+              const hasScheduling   = boostIdx >= 2; // Flame+
+              const hasAutomation   = boostIdx >= 4; // Inferno+
+              const hasFeaturedHome = boostIdx >= 4;
+              const hasFeaturedLive = boostIdx >= 2;
+              const hasCategoryTop  = boostIdx >= 3; // Blaze+
+              const isUnlimited = (activePkg?.boosts ?? 0) >= 9999;
+              const used = MOCK_BOOST_LOG.length;
+              const remaining = isUnlimited ? null : (activePkg?.boosts ?? 0) - used;
+              const usagePct = isUnlimited ? 20 : activePkg ? Math.min((used / activePkg.boosts) * 100, 100) : 0;
+              const resetDate = (() => {
+                const d = new Date(); d.setMonth(d.getMonth() + 1); d.setDate(1);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              })();
+              const logColor = activePkg?.color ?? "#f97316";
+              const visibleLog = showAllLog ? MOCK_BOOST_LOG : MOCK_BOOST_LOG.slice(0, 8);
+              const totalImpressions = MOCK_BOOST_LOG.reduce((s, e) => s + e.impressions, 0);
+              const totalViews       = MOCK_BOOST_LOG.reduce((s, e) => s + e.views, 0);
+              const totalFollows     = MOCK_BOOST_LOG.reduce((s, e) => s + e.follows, 0);
+
+              if (!activePkg) {
+                return (
+                  <div className="vl-card p-8 text-center">
+                    <Zap className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
+                    <h3 className="text-base font-bold text-white mb-2">No active boost</h3>
+                    <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Get a Profile Boost to unlock the scheduler, usage tracker, and activity log here.
+                    </p>
+                    <Link href="/boosts">
+                      <button className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
+                        style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
+                        Browse Boost Plans
+                      </button>
+                    </Link>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-5">
+                  {/* ── Monthly Usage ─────────────────────────────── */}
+                  <div className="vl-card p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4" style={{ color: activePkg.color }} />
+                        <p className="text-sm font-bold text-white">Monthly Boost Usage</p>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: `${activePkg.color}18`, border: `1px solid ${activePkg.color}35`, color: activePkg.color }}>
+                          {activePkg.emoji} {activePkg.name}
+                        </span>
+                      </div>
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Resets {resetDate}</p>
+                    </div>
+                    <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${usagePct}%`, background: `linear-gradient(90deg, ${activePkg.color}, ${activePkg.color}bb)` }} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: "rgba(255,255,255,0.5)" }}><strong className="text-white">{used}</strong> boosts fired this month</span>
+                      <span style={{ color: activePkg.color, fontWeight: 700 }}>
+                        {isUnlimited ? "∞ unlimited" : <><strong>{remaining}</strong> remaining of {activePkg.boosts}</>}
+                      </span>
+                    </div>
+                    {(autoBoost || scheduledCount > 0) && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        <Clock className="w-3 h-3" style={{ color: activePkg.color }} />
+                        Next boost: <span style={{ color: activePkg.color }}>
+                          {autoBoost ? "Tonight, 6:00 PM (Evening)" : "Next scheduled slot"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Active Placements ─────────────────────────── */}
+                  <div className="vl-card p-5">
+                    <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" style={{ color: "#f97316" }} />
+                      Active Placements
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {[
+                        { icon: Radio,   label: "Live Feeds Featured",  active: hasFeaturedLive,  href: "/live",     reqTier: "Flame"   },
+                        { icon: Home,    label: "Homepage Featured",     active: hasFeaturedHome,  href: "/",         reqTier: "Inferno"  },
+                        { icon: Star,    label: "Category Top",          active: hasCategoryTop,   href: "/profiles", reqTier: "Blaze"   },
+                      ].map(item => (
+                        <div key={item.label} className="rounded-xl p-4"
+                          style={{
+                            background: item.active ? "rgba(249,115,22,0.07)" : "rgba(255,255,255,0.02)",
+                            border: `1px solid ${item.active ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.06)"}`,
+                          }}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <item.icon className="w-3.5 h-3.5" style={{ color: item.active ? "#f97316" : "rgba(255,255,255,0.2)" }} />
+                            <span className="text-xs font-bold" style={{ color: item.active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)" }}>
+                              {item.label}
+                            </span>
+                          </div>
+                          {item.active ? (
+                            <Link href={item.href}>
+                              <button className="text-xs font-semibold px-2.5 py-1 rounded-lg"
+                                style={{ background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.2)" }}>
+                                View →
+                              </button>
+                            </Link>
+                          ) : (
+                            <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>Requires {item.reqTier}+</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Boost Scheduler ───────────────────────────── */}
+                  {hasScheduling ? (
+                    <div className="vl-card p-5">
+                      <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
+                        <div>
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Calendar className="w-4 h-4" style={{ color: "#f97316" }} />
+                            Boost Scheduler
+                          </h3>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                            {scheduledCount > 0 ? `${scheduledCount} slot${scheduledCount !== 1 ? "s" : ""} scheduled` : "No slots selected yet"}
+                          </p>
+                        </div>
+                        {hasAutomation && (
+                          <button onClick={toggleAutoBoost}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                            style={{
+                              background: autoBoost ? "rgba(249,115,22,0.12)" : "rgba(255,255,255,0.04)",
+                              border: `1px solid ${autoBoost ? "rgba(249,115,22,0.3)" : "rgba(255,255,255,0.1)"}`,
+                              color: autoBoost ? "#f97316" : "rgba(255,255,255,0.5)",
+                            }}>
+                            {autoBoost ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                            Auto-Boost {autoBoost ? "ON" : "OFF"}
+                          </button>
+                        )}
+                      </div>
+                      {autoBoost && (
+                        <div className="rounded-lg px-3 py-2 mb-4 text-xs flex items-center gap-2"
+                          style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", color: "#fb923c" }}>
+                          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+                          Auto-Boost active — firing at peak engagement windows (highlighted below).
+                        </div>
+                      )}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr>
+                              <th className="text-left pb-2 pr-3 font-semibold" style={{ color: "rgba(255,255,255,0.3)", width: 90 }}>
+                                <Clock className="w-3 h-3 inline mr-1" />Slot
+                              </th>
+                              {DAYS.map(d => (
+                                <th key={d} className="text-center pb-2 font-semibold" style={{ color: "rgba(255,255,255,0.3)" }}>{d}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {SLOTS.map(slot => (
+                              <tr key={slot.id}>
+                                <td className="pr-3 py-1.5">
+                                  <p className="font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>{slot.label}</p>
+                                  <p style={{ color: "rgba(255,255,255,0.25)" }}>{slot.time}</p>
+                                </td>
+                                {DAYS.map(day => {
+                                  const key = `${day}-${slot.id}`;
+                                  const isPeak = PEAK_CELLS.has(key);
+                                  const isOn   = schedule[key];
+                                  return (
+                                    <td key={day} className="text-center py-1.5">
+                                      <button
+                                        onClick={() => !autoBoost && toggleCell(key)}
+                                        disabled={autoBoost}
+                                        className="w-7 h-7 rounded-lg mx-auto flex items-center justify-center transition-all"
+                                        style={{
+                                          background: isOn ? (isPeak ? "rgba(249,115,22,0.3)" : "rgba(249,115,22,0.15)") : (isPeak ? "rgba(249,115,22,0.06)" : "rgba(255,255,255,0.03)"),
+                                          border: isOn ? (isPeak ? "1px solid rgba(249,115,22,0.5)" : "1px solid rgba(249,115,22,0.3)") : "1px solid rgba(255,255,255,0.07)",
+                                          cursor: autoBoost ? "default" : "pointer",
+                                        }}>
+                                        {isOn ? <Zap className="w-3 h-3" style={{ color: "#f97316" }} />
+                                          : isPeak ? <span style={{ color: "rgba(249,115,22,0.35)", fontSize: 9 }}>⬡</span>
+                                          : null}
+                                      </button>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.2)", border: "1px solid rgba(249,115,22,0.4)" }} />
+                          Scheduled
+                        </span>
+                        {hasAutomation
+                          ? <span className="flex items-center gap-1"><span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.25)" }} />Peak (auto)</span>
+                          : <span>Upgrade to Inferno+ for auto-scheduling</span>
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="vl-card p-5 text-center">
+                      <Calendar className="w-7 h-7 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                      <p className="text-sm font-semibold text-white mb-1">Boost Scheduling</p>
+                      <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Upgrade to <strong style={{ color: "#14b8a6" }}>Flame</strong> or above to schedule your boosts
+                      </p>
+                      <Link href="/boosts"><button className="text-xs px-4 py-2 rounded-lg font-semibold" style={{ background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.2)" }}>Upgrade Plan</button></Link>
+                    </div>
+                  )}
+
+                  {/* ── Activity Log ──────────────────────────────── */}
+                  <div className="vl-card p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <BarChart2 className="w-4 h-4" style={{ color: logColor }} />
+                        Boost Activity Log
+                      </h3>
+                      <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
+                        style={{ background: `${logColor}14`, border: `1px solid ${logColor}30`, color: logColor }}>
+                        {MOCK_BOOST_LOG.length} boosts this month
+                      </span>
+                    </div>
+
+                    {/* Totals */}
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {[
+                        { label: "Impressions",   value: totalImpressions.toLocaleString(), color: logColor                  },
+                        { label: "Profile Views", value: totalViews.toLocaleString(),        color: "rgba(255,255,255,0.85)"  },
+                        { label: "New Follows",   value: `+${totalFollows}`,                 color: "#4ade80"                 },
+                      ].map(s => (
+                        <div key={s.label} className="rounded-xl p-3 text-center"
+                          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                          <p className="text-lg font-black mb-0.5" style={{ color: s.color }}>{s.value}</p>
+                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Column headings */}
+                    <div className="hidden sm:grid text-xs font-semibold mb-1 px-3"
+                      style={{ color: "rgba(255,255,255,0.25)", gridTemplateColumns: "1fr 90px 72px 72px" }}>
+                      <span>Fired · Placement</span>
+                      <span className="text-right">Impressions</span>
+                      <span className="text-right">Views</span>
+                      <span className="text-right">Follows</span>
+                    </div>
+
+                    {/* Rows */}
+                    <div className="space-y-1">
+                      {visibleLog.map(entry => (
+                        <div key={entry.id}
+                          className="flex sm:grid items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5"
+                          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", gridTemplateColumns: "1fr 90px 72px 72px" }}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-semibold text-white">{entry.firedAt}</span>
+                              <span className="text-xs px-1.5 py-0.5 rounded font-medium"
+                                style={{ background: `${entry.placementColor}18`, color: entry.placementColor, border: `1px solid ${entry.placementColor}30` }}>
+                                {entry.placement}
+                              </span>
+                            </div>
+                            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{entry.slot} slot</p>
+                          </div>
+                          <div className="flex sm:contents items-center gap-3 flex-shrink-0">
+                            <span className="text-xs font-mono font-bold sm:text-right" style={{ color: logColor }}>+{entry.impressions.toLocaleString()}</span>
+                            <span className="text-xs font-mono sm:text-right" style={{ color: "rgba(255,255,255,0.6)" }}>{entry.views}</span>
+                            <span className="text-xs font-mono font-bold sm:text-right" style={{ color: entry.follows > 0 ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
+                              {entry.follows > 0 ? `+${entry.follows}` : "—"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {MOCK_BOOST_LOG.length > 8 && (
+                      <button onClick={() => setShowAllLog(v => !v)}
+                        className="w-full mt-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:bg-white/5"
+                        style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                        {showAllLog ? <><ChevronUp className="w-3.5 h-3.5" />Show less</> : <><ChevronDown className="w-3.5 h-3.5" />Show all {MOCK_BOOST_LOG.length} boosts</>}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* ── Referral tab ─────────────────────────────────────────── */}
             {activeTab === "referral" && (
               <div className="space-y-5">
