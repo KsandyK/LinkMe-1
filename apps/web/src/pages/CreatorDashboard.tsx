@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star } from "lucide-react";
 
 // ── Analytics mock data ───────────────────────────────────────────────────────
 const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -98,6 +98,13 @@ function getAnalyticsTier(activeBoost: string | null): AnalyticsTier {
   return "revenue";             // legend, titan, supernova, colossus, sovereign
 }
 
+// Deterministic referral code from username
+function makeReferralCode(username: string): string {
+  const slug = username.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8).padEnd(4, "X");
+  const hash = username.split("").reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) & 0xffff, 7);
+  return `${slug}-${String(hash % 10000).padStart(4, "0")}`;
+}
+
 // Mock dashboard data for demo mode (API offline)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOCK_DASHBOARD = {
@@ -140,9 +147,20 @@ function centsToDisplay(cents: number) {
 }
 
 export default function CreatorDashboard() {
-  const { credits, isLoggedIn, showToast, activeBoost } = useApp();
+  const { credits, isLoggedIn, showToast, activeBoost, user } = useApp();
   const analyticsTier = getAnalyticsTier(activeBoost);
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "referral">("overview");
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [boostClaimed, setBoostClaimed] = useState(() => {
+    try { return localStorage.getItem("linkme_referral_claimed") === "1"; } catch { return false; }
+  });
+  // Demo referral progress — in production these come from the API
+  const REFERRAL_TARGET_COUNT = 25;
+  const REFERRAL_TARGET_EARNINGS = 10000;
+  const referralCount = 7;   // mock: 7 of 25 referrals so far
+  const referralEarnings = 2840; // mock: $2,840 of $10,000/mo earned by referrals
+  const referralCode = makeReferralCode(user?.username ?? "creator");
+  const referralMet = referralCount >= REFERRAL_TARGET_COUNT && referralEarnings >= REFERRAL_TARGET_EARNINGS;
   const [data, setData] = useState<CreatorDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -272,17 +290,21 @@ export default function CreatorDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 vl-card p-1.5 w-fit flex-wrap">
-          {(["overview", "content", "fans", "analytics"] as const).map(tab => (
+          {(["overview", "content", "fans", "analytics", "referral"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all flex items-center gap-1.5"
               style={activeTab === tab
-                ? { background: "rgba(20,184,166,0.15)", color: "#14b8a6" }
+                ? { background: tab === "referral" ? "rgba(232,168,124,0.15)" : "rgba(20,184,166,0.15)", color: tab === "referral" ? "#e8a87c" : "#14b8a6" }
                 : { color: "rgba(255,255,255,0.45)" }
               }>
               {tab === "analytics" && <BarChart2 className="w-3.5 h-3.5" />}
+              {tab === "referral" && <Gift className="w-3.5 h-3.5" />}
               {tab}
               {tab === "analytics" && analyticsTier === "none" && (
                 <Lock className="w-3 h-3 opacity-50" />
+              )}
+              {tab === "referral" && !boostClaimed && referralCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-orange-400 ml-0.5" />
               )}
             </button>
           ))}
@@ -663,6 +685,162 @@ export default function CreatorDashboard() {
                     )}
                   </>
                 )}
+              </div>
+            )}
+            {/* ── Referral tab ─────────────────────────────────────────── */}
+            {activeTab === "referral" && (
+              <div className="space-y-5">
+                {/* Header card */}
+                <div className="rounded-xl p-5"
+                  style={{ background: "linear-gradient(135deg, rgba(232,168,124,0.08), rgba(247,154,76,0.05))", border: "1px solid rgba(232,168,124,0.2)" }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Gift className="w-5 h-5" style={{ color: "#e8a87c" }} />
+                    <h3 className="text-base font-bold text-white">Creator Referral Tier Boost</h3>
+                    {boostClaimed && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.3)" }}>
+                        ✓ Claimed
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.7 }}>
+                    Bring in <strong className="text-white">25 subscribers or creators</strong> using your code, and when those referrals collectively earn <strong className="text-white">$10,000/month</strong> on-platform — you get a <strong style={{ color: "#e8a87c" }}>permanent revenue share tier boost</strong>. One-time only.
+                  </p>
+                </div>
+
+                {/* Your referral code */}
+                <div className="vl-card p-5">
+                  <p className="text-sm font-bold text-white mb-3">Your Creator / Streamer Code</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 px-4 py-3 rounded-xl font-mono text-lg font-black tracking-widest text-center"
+                      style={{ background: "rgba(232,168,124,0.08)", border: "1px solid rgba(232,168,124,0.25)", color: "#e8a87c" }}>
+                      {referralCode}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralCode).catch(() => {});
+                        setCodeCopied(true);
+                        setTimeout(() => setCodeCopied(false), 2000);
+                      }}
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all"
+                      style={{ background: codeCopied ? "rgba(20,184,166,0.15)" : "rgba(255,255,255,0.06)", border: `1px solid ${codeCopied ? "rgba(20,184,166,0.3)" : "rgba(255,255,255,0.1)"}`, color: codeCopied ? "#14b8a6" : "rgba(255,255,255,0.65)" }}>
+                      {codeCopied ? <CheckIcon className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {codeCopied ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Share this code with creators and fans. New accounts enter it during sign-up to count toward your milestone.
+                  </p>
+                </div>
+
+                {/* Progress */}
+                <div className="vl-card p-5">
+                  <p className="text-sm font-bold text-white mb-4">Milestone Progress</p>
+                  <div className="space-y-5">
+                    {/* Referral count bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-3.5 h-3.5" style={{ color: "#e8a87c" }} />
+                          <span className="text-sm font-semibold text-white">Qualifying Referrals</span>
+                        </div>
+                        <span className="text-sm font-black" style={{ color: referralCount >= REFERRAL_TARGET_COUNT ? "#14b8a6" : "#e8a87c" }}>
+                          {referralCount} / {REFERRAL_TARGET_COUNT}
+                        </span>
+                      </div>
+                      <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${Math.min(100, (referralCount / REFERRAL_TARGET_COUNT) * 100)}%`, background: referralCount >= REFERRAL_TARGET_COUNT ? "#14b8a6" : "linear-gradient(90deg, #e8a87c, #f97316)" }} />
+                      </div>
+                      <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        {REFERRAL_TARGET_COUNT - referralCount > 0 ? `${REFERRAL_TARGET_COUNT - referralCount} more referrals needed` : "✓ Referral count met!"}
+                      </p>
+                    </div>
+
+                    {/* Collective earnings bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-3.5 h-3.5" style={{ color: "#e8a87c" }} />
+                          <span className="text-sm font-semibold text-white">Referral Collective Earnings</span>
+                        </div>
+                        <span className="text-sm font-black" style={{ color: referralEarnings >= REFERRAL_TARGET_EARNINGS ? "#14b8a6" : "#e8a87c" }}>
+                          ${referralEarnings.toLocaleString()} / ${REFERRAL_TARGET_EARNINGS.toLocaleString()}/mo
+                        </span>
+                      </div>
+                      <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${Math.min(100, (referralEarnings / REFERRAL_TARGET_EARNINGS) * 100)}%`, background: referralEarnings >= REFERRAL_TARGET_EARNINGS ? "#14b8a6" : "linear-gradient(90deg, #e8a87c, #f97316)" }} />
+                      </div>
+                      <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        {referralEarnings < REFERRAL_TARGET_EARNINGS
+                          ? `$${(REFERRAL_TARGET_EARNINGS - referralEarnings).toLocaleString()} more/mo needed from your referrals`
+                          : "✓ Earnings threshold met!"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Claim button */}
+                  <div className="mt-6 pt-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    {boostClaimed ? (
+                      <div className="flex items-center gap-2 justify-center py-3 rounded-xl"
+                        style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}>
+                        <CheckIcon className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                        <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>Tier boost already claimed — enjoy the extra %!</span>
+                      </div>
+                    ) : (
+                      <button
+                        disabled={!referralMet}
+                        onClick={() => {
+                          if (!referralMet) return;
+                          setBoostClaimed(true);
+                          try { localStorage.setItem("linkme_referral_claimed", "1"); } catch {}
+                          showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share has been permanently boosted by one tier. Check your Creator Agreement for updated rates." });
+                        }}
+                        className="w-full py-3 rounded-xl text-sm font-bold transition-all"
+                        style={referralMet
+                          ? { background: "linear-gradient(135deg, #e8a87c, #f97316)", color: "#09091a" }
+                          : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.25)", cursor: "not-allowed" }
+                        }>
+                        {referralMet ? "🏆 Claim Your Tier Boost" : `Complete both milestones to claim`}
+                      </button>
+                    )}
+                    {!referralMet && !boostClaimed && (
+                      <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        Both milestones must be met simultaneously to claim
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="vl-card p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Star className="w-4 h-4" style={{ color: "#e8a87c" }} />
+                    <p className="text-sm font-bold text-white">How It Works</p>
+                  </div>
+                  <div className="space-y-4">
+                    {[
+                      { num: "1", title: "Share your code", desc: "Give your Creator/Streamer Code to subscribers, friends, or other creators. They enter it when signing up." },
+                      { num: "2", title: "Watch them grow", desc: "Once 25 referrals are active for 30+ days and collectively earn $10,000/month on-platform, both milestones turn green." },
+                      { num: "3", title: "Claim your boost", desc: "Hit the Claim button — your revenue share tier is permanently boosted by one level. One time, forever." },
+                    ].map(step => (
+                      <div key={step.num} className="flex items-start gap-4">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                          style={{ background: "rgba(232,168,124,0.12)", border: "1px solid rgba(232,168,124,0.25)", color: "#e8a87c" }}>
+                          {step.num}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{step.title}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 p-3 rounded-xl text-xs" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+                    One-time reward per account. Non-repeatable. Referrals must remain active for 30+ days. Collective earnings measured on a rolling 30-day window. See Creator Agreement §2.9 for full terms.
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -27,7 +27,7 @@ export default function BecomeCreator() {
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
-  const [applyForm, setApplyForm] = useState({ displayName: "", bio: "", subscriptionPrice: 29 });
+  const [applyForm, setApplyForm] = useState({ displayName: "", bio: "", subscriptionPrice: 29, referralCode: "" });
   const [applyError, setApplyError] = useState<string | null>(null);
 
   const handleApply = async () => {
@@ -39,6 +39,7 @@ export default function BecomeCreator() {
         displayName: applyForm.displayName,
         bio: applyForm.bio,
         subscriptionPrice: applyForm.subscriptionPrice,
+        ...(applyForm.referralCode.trim() && { referralCode: applyForm.referralCode.trim().toUpperCase() }),
       });
       setApplied(true);
       showToast({ title: "Application submitted!", description: "We'll review your application within 1–2 business days." });
@@ -207,6 +208,21 @@ export default function BecomeCreator() {
                     onChange={e => setApplyForm(f => ({ ...f, subscriptionPrice: Number(e.target.value) }))}
                     className="vl-input w-full" />
                   <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Set to 0 for a free-to-follow profile</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Creator / Streamer Referral Code <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <input
+                    value={applyForm.referralCode}
+                    onChange={e => setApplyForm(f => ({ ...f, referralCode: e.target.value.toUpperCase() }))}
+                    placeholder="e.g. USERNAME-1234"
+                    className="vl-input w-full font-mono tracking-widest"
+                    maxLength={20}
+                  />
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Were you referred by a creator? Enter their code to credit them toward the Referral Tier Boost.
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setShowApplyForm(false)}

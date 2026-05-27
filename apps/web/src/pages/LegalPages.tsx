@@ -501,12 +501,14 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 
 2.1 **Revenue Tiers:** Your creator revenue share is determined by your verified monthly gross platform earnings:
 
-- **Starter Tier** ($0–$2,500/mo gross): Creator 75% | Platform 25%
-- **Rising Tier** ($2,501–$5,000/mo gross): Creator 78% | Platform 22%
-- **Established Tier** ($5,001–$15,000/mo gross): Creator 80% | Platform 20%
-- **Elite Tier** ($15,001–$25,000/mo gross): Creator 83% | Platform 17%
-- **Partner Tier** ($25,001–$75,000/mo gross): Creator 90% | Platform 10%
-- **Top Partner Tier** ($75,001+/mo gross): Creator 95% | Platform 5%
+**🎉 Grace Period (First 90 Days):** All new creators automatically earn at the **Growth tier rate (80%)** for their first 90 days on the platform, regardless of monthly earnings volume. No application required.
+
+| Tier | Monthly Gross (post-Grace) | Creator | Platform |
+|---|---|---|---|
+| **Growth** | $0 – $15,000 | **80%** | 20% |
+| **Elite** | $15,001 – $25,000 | **83%** | 17% |
+| **Partner** | $25,001 – $75,000 | **90%** | 10% |
+| **Top Partner** | $75,001+ | **95%** | 5% |
 
 ### IMPORTANT PROCESSING FEE DISCLAIMER
 
@@ -530,6 +532,20 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 2.7 LINKME reserves the right to adjust revenue tier thresholds and percentages upon 30 days' written notice.
 
 2.8 Earnings estimates are informational only and do not constitute guarantees of income.
+
+2.9 **Creator Referral Tier Boost Program (One-Time Reward):**
+
+Creators may earn a permanent, one-time revenue share tier boost by meeting both of the following thresholds using their unique Creator/Streamer Code:
+- **Referral count:** 25 qualifying individuals (subscribers or new creators) who register via your code and remain active for 30+ consecutive days.
+- **Collective earnings:** Those 25 referrals collectively earn **$10,000/month** on-platform within a rolling 30-day window.
+
+Upon meeting both thresholds, your revenue share tier is boosted by one level (e.g., Growth 80% → Elite 83%) permanently and automatically.
+
+**Conditions:**
+- One-time reward per creator account. Non-repeatable and non-transferable.
+- Referral activity is measured on a rolling 12-month window.
+- Your unique referral code is available in your Creator Dashboard under the "Referral" tab.
+- LINKME reserves the right to verify referral authenticity and disqualify fraudulent activity.
 
 ---
 

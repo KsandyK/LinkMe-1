@@ -127,14 +127,25 @@ PART I — CREATOR SERVICES AGREEMENT
 You are an independent contractor. You are responsible for your own taxes. LINKME issues Form 1099-NEC for US creators earning $600+.
 
 2. REVENUE SHARE TIERS
-- $0–$2,500/mo: 75% Creator / 25% Platform
-- $2,501–$5,000/mo: 78% / 22%
-- $5,001–$15,000/mo: 80% / 20%
-- $15,001–$25,000/mo: 83% / 17%
-- $25,001–$75,000/mo: 90% / 10%
-- $75,001+/mo: 95% / 5%
+
+2a. GRACE PERIOD (First 90 Days)
+All new creators automatically earn at the Growth tier rate (80% / 20%) for their first 90 days on the platform, regardless of monthly earnings volume. No application required — grace period is applied automatically from your creator activation date.
+
+2b. STANDARD TIERS (post-Grace Period)
+- Growth Tier ($0–$15,000/mo): 80% Creator / 20% Platform
+- Elite Tier ($15,001–$25,000/mo): 83% / 17%
+- Partner Tier ($25,001–$75,000/mo): 90% / 10%
+- Top Partner Tier ($75,001+/mo): 95% / 5%
 Revenue shares calculated AFTER payment processing fees (~3–5% per transaction).
 Payouts every Friday; minimum threshold $50 USD.
+
+2c. CREATOR REFERRAL TIER BOOST PROGRAM (One-Time)
+Bring 25 qualifying referrals to the platform using your unique Creator/Streamer Code AND those referrals collectively earn $10,000/month on-platform — you receive a permanent one-time revenue share tier boost (e.g., Growth 80% → Elite 83%).
+- One-time reward per creator account. Non-repeatable and non-transferable.
+- Your unique code is available in your Creator Dashboard under the "Referral" tab.
+- Qualifying referral: any subscriber or creator who registers using your code and remains active (earning or spending) for 30+ consecutive days.
+- The $10,000/month collective earnings threshold is measured across a rolling 30-day window.
+- Tier boost is applied automatically upon verification. Confirmation email sent to your registered address.
 
 3. § 2257 RECORD-KEEPING & CUSTODIAN OF RECORDS
 Compliance with 18 U.S.C. § 2257 is mandatory. Maintain age verification records for all depicted individuals for 5+ years.
