@@ -2,7 +2,7 @@ import { useState, useEffect, Fragment } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { boosts as boostsApi } from "@/lib/api";
-import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star, X, CreditCard } from "lucide-react";
+import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star, X, CreditCard, BarChart2, Eye, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
 import { MEMBER_TIERS, BOOST_TIERS, MEMBER_BY_ID, type MemberTier, type BoostTier } from "@/lib/membership-tiers";
 
 // ── Boost tier helpers ────────────────────────────────────────────────────────
@@ -44,6 +44,35 @@ const MEMBERSHIP_PLANS = [
 const ULTRA_MEMBERSHIP_IDS = new Set(["diamond", "obsidian", "platinum_m"]);
 const ULTRA_BOOST_IDS      = new Set(["supernova", "colossus", "sovereign"]);
 
+// ── Boost activity log (mock) ─────────────────────────────────────────────────
+interface BoostLogEntry {
+  id: string;
+  firedAt: string;
+  slot: string;
+  placement: string;
+  placementColor: string;
+  impressions: number;
+  views: number;
+  follows: number;
+}
+const MOCK_BOOST_LOG: BoostLogEntry[] = [
+  { id: "b1",  firedAt: "Today, 8:00 PM",    slot: "Evening",   placement: "Search Top",          placementColor: "#14b8a6", impressions: 342, views: 18, follows: 3 },
+  { id: "b2",  firedAt: "Today, 2:00 PM",    slot: "Afternoon", placement: "Homepage Featured",   placementColor: "#a78bfa", impressions: 219, views: 12, follows: 1 },
+  { id: "b3",  firedAt: "May 26, 8:00 PM",   slot: "Evening",   placement: "Live Feed Featured",  placementColor: "#f87171", impressions: 489, views: 24, follows: 5 },
+  { id: "b4",  firedAt: "May 26, 2:00 PM",   slot: "Afternoon", placement: "Search Top",          placementColor: "#14b8a6", impressions: 178, views:  9, follows: 0 },
+  { id: "b5",  firedAt: "May 25, 8:00 PM",   slot: "Evening",   placement: "Category Top",        placementColor: "#f59e0b", impressions: 401, views: 21, follows: 4 },
+  { id: "b6",  firedAt: "May 25, 2:00 PM",   slot: "Afternoon", placement: "Homepage Featured",   placementColor: "#a78bfa", impressions: 267, views: 14, follows: 2 },
+  { id: "b7",  firedAt: "May 24, 8:00 PM",   slot: "Evening",   placement: "Search Top",          placementColor: "#14b8a6", impressions: 518, views: 27, follows: 6 },
+  { id: "b8",  firedAt: "May 24, 2:00 PM",   slot: "Afternoon", placement: "Live Feed Featured",  placementColor: "#f87171", impressions: 193, views: 11, follows: 1 },
+  { id: "b9",  firedAt: "May 23, 8:00 PM",   slot: "Evening",   placement: "Search Top",          placementColor: "#14b8a6", impressions: 445, views: 23, follows: 4 },
+  { id: "b10", firedAt: "May 23, 2:00 PM",   slot: "Afternoon", placement: "Category Top",        placementColor: "#f59e0b", impressions: 234, views: 13, follows: 2 },
+  { id: "b11", firedAt: "May 22, 8:00 PM",   slot: "Evening",   placement: "Homepage Featured",   placementColor: "#a78bfa", impressions: 387, views: 19, follows: 3 },
+  { id: "b12", firedAt: "May 21, 8:00 PM",   slot: "Evening",   placement: "Search Top",          placementColor: "#14b8a6", impressions: 411, views: 22, follows: 5 },
+  { id: "b13", firedAt: "May 20, 8:00 PM",   slot: "Evening",   placement: "Live Feed Featured",  placementColor: "#f87171", impressions: 302, views: 16, follows: 2 },
+  { id: "b14", firedAt: "May 19, 8:00 PM",   slot: "Evening",   placement: "Category Top",        placementColor: "#f59e0b", impressions: 356, views: 19, follows: 3 },
+  { id: "b15", firedAt: "May 18, 2:00 PM",   slot: "Afternoon", placement: "Search Top",          placementColor: "#14b8a6", impressions: 248, views: 13, follows: 1 },
+];
+
 export default function BoostsPage() {
   const { spendCredits, addCredits, recordPurchase, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
   const [activeTab, setActiveTab] = useState<"boosts" | "memberships">("memberships");
@@ -71,6 +100,8 @@ export default function BoostsPage() {
   const [autoBoost, setAutoBoost] = useState<boolean>(() => {
     try { return JSON.parse(localStorage.getItem("vl_boost_auto_v1") ?? "false"); } catch { return false; }
   });
+
+  const [showAllLog, setShowAllLog] = useState(false);
 
   const saveSchedule = (s: ScheduleMap) => {
     setSchedule(s);
@@ -448,6 +479,58 @@ export default function BoostsPage() {
               </p>
             </div>
 
+            {/* ── Monthly Usage Widget ──────────────────────────────────── */}
+            {activeBoost && (() => {
+              const activePkg = BOOST_PACKAGES.find(p => p.id === activeBoost);
+              if (!activePkg) return null;
+              const isUnlimited = activePkg.boosts >= 9999;
+              const used = MOCK_BOOST_LOG.length;
+              const total = activePkg.boosts;
+              const remaining = isUnlimited ? null : total - used;
+              const pct = isUnlimited ? 20 : Math.min((used / total) * 100, 100);
+              const resetDate = (() => {
+                const d = new Date(); d.setMonth(d.getMonth() + 1); d.setDate(1);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              })();
+              // Next scheduled slot
+              const nextPeakLabel = autoBoost ? "Tonight, 6:00 PM (Evening)" : scheduledCount > 0 ? "Next scheduled slot" : null;
+              return (
+                <div className="p-4 rounded-xl border mb-6"
+                  style={{ background: "rgba(249,115,22,0.04)", borderColor: "rgba(249,115,22,0.18)" }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4" style={{ color: activePkg.color }} />
+                      <p className="text-sm font-bold text-white">Monthly Boost Usage</p>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: `${activePkg.color}18`, border: `1px solid ${activePkg.color}35`, color: activePkg.color }}>
+                        {activePkg.emoji} {activePkg.name}
+                      </span>
+                    </div>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Resets {resetDate}</p>
+                  </div>
+                  <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.06)" }}>
+                    <div className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${activePkg.color}, ${activePkg.color}bb)` }} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span style={{ color: "rgba(255,255,255,0.5)" }}>
+                      <strong className="text-white">{used}</strong> boosts fired this month
+                    </span>
+                    <span style={{ color: activePkg.color, fontWeight: 700 }}>
+                      {isUnlimited ? "∞ unlimited" : <><strong>{remaining}</strong> remaining of {total}</>}
+                    </span>
+                  </div>
+                  {nextPeakLabel && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs"
+                      style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <Clock className="w-3 h-3" style={{ color: activePkg.color }} />
+                      Next boost: <span style={{ color: activePkg.color }}>{nextPeakLabel}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Boost cards grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
               {BOOST_PACKAGES.map((pkg, i) => {
@@ -802,6 +885,104 @@ export default function BoostsPage() {
                 </p>
               </div>
             )}
+
+            {/* ── Boost Activity Log ────────────────────────────────────── */}
+            {activeBoost && (() => {
+              const activePkg = BOOST_PACKAGES.find(p => p.id === activeBoost);
+              const logColor = activePkg?.color ?? "#f97316";
+              const visibleLog = showAllLog ? MOCK_BOOST_LOG : MOCK_BOOST_LOG.slice(0, 8);
+              const totalImpressions = MOCK_BOOST_LOG.reduce((s, e) => s + e.impressions, 0);
+              const totalViews       = MOCK_BOOST_LOG.reduce((s, e) => s + e.views, 0);
+              const totalFollows     = MOCK_BOOST_LOG.reduce((s, e) => s + e.follows, 0);
+              return (
+                <div className="mt-6 p-6 rounded-xl border"
+                  style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.07)" }}>
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <BarChart2 className="w-4 h-4" style={{ color: logColor }} />
+                      Boost Activity Log
+                    </h2>
+                    <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
+                      style={{ background: `${logColor}14`, border: `1px solid ${logColor}30`, color: logColor }}>
+                      {MOCK_BOOST_LOG.length} boosts this month
+                    </span>
+                  </div>
+
+                  {/* Monthly summary totals */}
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[
+                      { icon: Eye,      label: "Impressions", value: totalImpressions.toLocaleString(), color: logColor      },
+                      { icon: Eye,      label: "Profile Views", value: totalViews.toLocaleString(),     color: "rgba(255,255,255,0.85)" },
+                      { icon: UserPlus, label: "New Follows",  value: `+${totalFollows}`,               color: "#4ade80"     },
+                    ].map(stat => (
+                      <div key={stat.label} className="rounded-xl p-3 text-center"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                        <p className="text-xl font-black mb-0.5" style={{ color: stat.color }}>{stat.value}</p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Column labels */}
+                  <div className="hidden sm:grid text-xs font-semibold mb-1 px-3"
+                    style={{ color: "rgba(255,255,255,0.25)", gridTemplateColumns: "1fr 90px 72px 72px" }}>
+                    <span>Fired · Placement</span>
+                    <span className="text-right">Impressions</span>
+                    <span className="text-right">Views</span>
+                    <span className="text-right">Follows</span>
+                  </div>
+
+                  {/* Log rows */}
+                  <div className="space-y-1">
+                    {visibleLog.map(entry => (
+                      <div key={entry.id}
+                        className="flex sm:grid items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5"
+                        style={{
+                          background: "rgba(255,255,255,0.02)",
+                          border: "1px solid rgba(255,255,255,0.05)",
+                          gridTemplateColumns: "1fr 90px 72px 72px",
+                        }}>
+                        {/* Slot info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-semibold text-white">{entry.firedAt}</span>
+                            <span className="text-xs px-1.5 py-0.5 rounded font-medium"
+                              style={{ background: `${entry.placementColor}18`, color: entry.placementColor, border: `1px solid ${entry.placementColor}30` }}>
+                              {entry.placement}
+                            </span>
+                          </div>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{entry.slot} slot</p>
+                        </div>
+                        {/* Stats — shown inline on mobile, grid-aligned on desktop */}
+                        <div className="flex sm:contents items-center gap-3 flex-shrink-0">
+                          <span className="text-xs font-mono font-bold sm:text-right"
+                            style={{ color: logColor }}>+{entry.impressions.toLocaleString()}</span>
+                          <span className="text-xs font-mono sm:text-right"
+                            style={{ color: "rgba(255,255,255,0.6)" }}>{entry.views}</span>
+                          <span className="text-xs font-mono font-bold sm:text-right"
+                            style={{ color: entry.follows > 0 ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
+                            {entry.follows > 0 ? `+${entry.follows}` : "—"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Show more / less */}
+                  {MOCK_BOOST_LOG.length > 8 && (
+                    <button
+                      onClick={() => setShowAllLog(v => !v)}
+                      className="w-full mt-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:bg-white/5"
+                      style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                      {showAllLog
+                        ? <><ChevronUp className="w-3.5 h-3.5" />Show less</>
+                        : <><ChevronDown className="w-3.5 h-3.5" />Show all {MOCK_BOOST_LOG.length} boosts</>}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </>
         )}
       </div>
