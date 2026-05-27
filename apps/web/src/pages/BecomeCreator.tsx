@@ -11,23 +11,31 @@ const PERKS = [
   { icon: Radio, title: "HD Live Streaming", desc: "Go live instantly with crystal-clear video and ultra-low latency.", color: "#ef4444" },
   { icon: Zap, title: "Real-Time Tips & Gifts", desc: "Fans send credits and gifts during your streams — instant income.", color: "#e8a87c" },
   { icon: Shield, title: "Creator Protection", desc: "DMCA takedown support, content watermarking, and privacy controls.", color: "#a78bfa" },
-  { icon: Crown, title: "VIP Subscription Tiers", desc: "Set custom subscription prices and offer exclusive gated content.", color: "#f97316" },
+  { icon: Crown, title: "VIP Subscription Tiers", desc: "Offer exclusive gated content to your most loyal fans.", color: "#f97316" },
   { icon: TrendingUp, title: "Analytics & Insights", desc: "Track your earnings, viewers, and fan engagement in real time.", color: "#14b8a6" },
 ];
 
-const STEPS = [
+const HOW_STEPS = [
   { num: "01", title: "Create Your Account", desc: "Sign up for free in under 2 minutes. No credit card required." },
   { num: "02", title: "Verify Your Identity", desc: "Complete age & ID verification to unlock creator features. Fast and secure." },
-  { num: "03", title: "Set Up Your Profile", desc: "Upload photos, write your bio, and set your subscription prices." },
+  { num: "03", title: "Set Up Your Profile", desc: "Upload photos, write your bio, and customise your creator page." },
   { num: "04", title: "Go Live & Earn", desc: "Hit Go Live and start connecting with fans who pay to spend time with you." },
+];
+
+type ApplyStep = "prompt" | "intro" | "form" | "review";
+
+const APPLY_STEPS: { key: ApplyStep; label: string }[] = [
+  { key: "intro",  label: "Overview"    },
+  { key: "form",   label: "Your Profile" },
+  { key: "review", label: "Review"       },
 ];
 
 export default function BecomeCreator() {
   const { isLoggedIn, ageVerificationStatus, showToast } = useApp();
-  const [showApplyForm, setShowApplyForm] = useState(false);
-  const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState(false);
-  const [applyForm, setApplyForm] = useState({ displayName: "", bio: "", subscriptionPrice: 29, referralCode: "" });
+  const [applying, setApplying]     = useState(false);
+  const [applied, setApplied]       = useState(false);
+  const [applyStep, setApplyStep]   = useState<ApplyStep>("prompt");
+  const [applyForm, setApplyForm]   = useState({ displayName: "", bio: "", referralCode: "" });
   const [applyError, setApplyError] = useState<string | null>(null);
 
   const handleApply = async () => {
@@ -38,7 +46,6 @@ export default function BecomeCreator() {
       await creatorApi.apply({
         displayName: applyForm.displayName,
         bio: applyForm.bio,
-        subscriptionPrice: applyForm.subscriptionPrice,
         ...(applyForm.referralCode.trim() && { referralCode: applyForm.referralCode.trim().toUpperCase() }),
       });
       setApplied(true);
@@ -86,8 +93,8 @@ export default function BecomeCreator() {
             <div className="flex flex-wrap gap-8 mt-9">
               {[
                 { label: "Avg Monthly Earnings", value: "$3,200" },
-                { label: "Revenue Share", value: "Up to 90%" },
-                { label: "Payout Speed", value: "24–48 hrs" },
+                { label: "Revenue Share",        value: "Up to 90%" },
+                { label: "Payout Speed",         value: "24–48 hrs" },
               ].map(s => (
                 <div key={s.label}>
                   <div className="text-2xl font-bold font-mono" style={{ color: "#14b8a6" }}>{s.value}</div>
@@ -124,14 +131,14 @@ export default function BecomeCreator() {
         <div className="container max-w-3xl">
           <h2 className="vl-section-title text-center mb-9">How It Works</h2>
           <div className="space-y-5">
-            {STEPS.map((s, i) => (
+            {HOW_STEPS.map((s, i) => (
               <div key={s.num} className="vl-card p-5 flex items-start gap-5">
                 <div className="text-3xl font-black font-mono flex-shrink-0" style={{ color: "rgba(20,184,166,0.25)", lineHeight: 1 }}>{s.num}</div>
                 <div>
                   <h3 className="font-bold text-sm text-white mb-1">{s.title}</h3>
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{s.desc}</p>
                 </div>
-                {i < STEPS.length - 1 && (
+                {i < HOW_STEPS.length - 1 && (
                   <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0 self-center" style={{ color: "rgba(255,255,255,0.15)" }} />
                 )}
               </div>
@@ -140,9 +147,11 @@ export default function BecomeCreator() {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* ── Apply CTA ────────────────────────────────────────────────────── */}
       <section className="py-14" style={{ background: "rgba(20,184,166,0.03)", borderTop: "1px solid rgba(20,184,166,0.08)" }}>
         <div className="container max-w-lg mx-auto text-center">
+
+          {/* ── Success state */}
           {applied ? (
             <>
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -157,89 +166,211 @@ export default function BecomeCreator() {
                 <button className="vl-btn-primary px-8 py-3 text-sm">View Creator Dashboard</button>
               </Link>
             </>
-          ) : isLoggedIn && !showApplyForm ? (
-            <>
-              <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
-              <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
-                You're logged in! Apply now to start earning as a creator.
-              </p>
-              {ageVerificationStatus !== "verified" && (
-                <div className="mb-5 p-3 rounded-xl text-sm"
-                  style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
-                  Age verification required before applying. <Link href="/verify-age" className="underline ml-1">Verify now →</Link>
+
+          ) : isLoggedIn ? (
+            <div className="max-w-lg mx-auto w-full">
+
+              {/* Progress bar — shown when in multi-step flow */}
+              {applyStep !== "prompt" && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  {APPLY_STEPS.map((s, i) => {
+                    const allKeys = APPLY_STEPS.map(x => x.key);
+                    const currentIdx = allKeys.indexOf(applyStep);
+                    const stepIdx    = allKeys.indexOf(s.key);
+                    const isActive   = s.key === applyStep;
+                    const isDone     = stepIdx < currentIdx;
+                    return (
+                      <div key={s.key} className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                            style={{
+                              background: isDone ? "#14b8a6" : isActive ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                              border:     isDone ? "none"     : isActive ? "2px solid #14b8a6"    : "1px solid rgba(255,255,255,0.1)",
+                              color:      isDone ? "white"    : isActive ? "#14b8a6"               : "rgba(255,255,255,0.3)",
+                            }}>
+                            {isDone ? "✓" : i + 1}
+                          </div>
+                          <span className="hidden sm:block text-xs font-medium"
+                            style={{ color: isActive ? "#14b8a6" : isDone ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.25)" }}>
+                            {s.label}
+                          </span>
+                        </div>
+                        {i < APPLY_STEPS.length - 1 && (
+                          <div className="w-6 h-px" style={{ background: isDone ? "#14b8a6" : "rgba(255,255,255,0.1)" }} />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-              <button
-                onClick={() => setShowApplyForm(true)}
-                disabled={ageVerificationStatus !== "verified"}
-                className="vl-btn-primary px-10 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                Apply as Creator
-              </button>
-              <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90%</p>
-            </>
-          ) : isLoggedIn && showApplyForm ? (
-            <div className="text-left max-w-md mx-auto">
-              <h2 className="vl-section-title text-xl mb-5 text-center">Creator Application</h2>
-              {applyError && (
-                <div className="mb-4 p-3 rounded-lg text-xs" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
-                  {applyError}
-                </div>
-              )}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Creator Display Name</label>
-                  <input value={applyForm.displayName} onChange={e => setApplyForm(f => ({ ...f, displayName: e.target.value }))}
-                    placeholder="Your creator name" className="vl-input w-full" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Bio (min. 20 characters)</label>
-                  <textarea value={applyForm.bio} onChange={e => setApplyForm(f => ({ ...f, bio: e.target.value }))}
-                    rows={4} placeholder="Tell fans about yourself and what kind of content you create..."
-                    className="vl-input w-full resize-none" />
-                  <p className="text-xs mt-1" style={{ color: applyForm.bio.length < 20 ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.3)" }}>
-                    {applyForm.bio.length}/500 characters
+
+              {/* ── Step: Prompt */}
+              {applyStep === "prompt" && (
+                <>
+                  <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
+                  <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    You're logged in! Apply now to start earning as a creator.
                   </p>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    Subscription Price (credits/month)
-                  </label>
-                  <input type="number" min="0" max="10000" value={applyForm.subscriptionPrice}
-                    onChange={e => setApplyForm(f => ({ ...f, subscriptionPrice: Number(e.target.value) }))}
-                    className="vl-input w-full" />
-                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Set to 0 for a free-to-follow profile</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    Creator / Streamer Referral Code <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(optional)</span>
-                  </label>
-                  <input
-                    value={applyForm.referralCode}
-                    onChange={e => setApplyForm(f => ({ ...f, referralCode: e.target.value.toUpperCase() }))}
-                    placeholder="e.g. USERNAME-1234"
-                    className="vl-input w-full font-mono tracking-widest"
-                    maxLength={20}
-                  />
-                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
-                    Were you referred by a creator? Enter their code to credit them toward the Referral Tier Boost.
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button onClick={() => setShowApplyForm(false)}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold"
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
-                    Cancel
-                  </button>
+                  {ageVerificationStatus !== "verified" && (
+                    <div className="mb-5 p-3 rounded-xl text-sm"
+                      style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
+                      Age verification required before applying.{" "}
+                      <Link href="/verify-age" className="underline ml-1">Verify now →</Link>
+                    </div>
+                  )}
                   <button
-                    onClick={handleApply}
-                    disabled={applying || !applyForm.displayName.trim() || applyForm.bio.length < 20}
-                    className="flex-1 py-3 rounded-xl text-sm font-bold text-white vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
-                    {applying ? "Submitting…" : "Submit Application"}
+                    onClick={() => setApplyStep("intro")}
+                    disabled={ageVerificationStatus !== "verified"}
+                    className="vl-btn-primary px-10 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    Apply as Creator
+                  </button>
+                  <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90%</p>
+                </>
+              )}
+
+              {/* ── Step: Intro */}
+              {applyStep === "intro" && (
+                <div className="vl-card p-6 animate-fade-up text-left">
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "1rem" }}>
+                    Before You Apply
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+                    Becoming a creator on LINKME gives you access to livestreaming, tipping, subscription tiers, and a dedicated creator dashboard. Here's what you'll need:
+                  </p>
+                  <div className="space-y-3 mb-6">
+                    {[
+                      { icon: "✓",  title: "Verified Age",   desc: "You must have completed age verification before applying." },
+                      { icon: "📝", title: "Creator Bio",    desc: "A short bio (min. 20 characters) telling fans about your content." },
+                      { icon: "🎨", title: "Display Name",   desc: "The name fans will see on your public creator profile." },
+                      { icon: "⚡", title: "Quick Review",   desc: "Applications are reviewed within 1–2 business days." },
+                    ].map(item => (
+                      <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <span className="text-lg flex-shrink-0">{item.icon}</span>
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: "white" }}>{item.title}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{item.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => setApplyStep("form")} className="vl-btn-primary w-full py-3 flex items-center justify-center gap-2">
+                    Begin Application <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
+              )}
+
+              {/* ── Step: Form */}
+              {applyStep === "form" && (
+                <div className="vl-card p-6 animate-fade-up text-left">
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>
+                    Your Creator Profile
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
+                    This information will appear on your public creator profile.
+                  </p>
+                  {applyError && (
+                    <div className="mb-4 p-3 rounded-lg text-xs"
+                      style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                      {applyError}
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Creator Display Name</label>
+                      <input value={applyForm.displayName}
+                        onChange={e => setApplyForm(f => ({ ...f, displayName: e.target.value }))}
+                        placeholder="Your creator name" className="vl-input w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Bio (min. 20 characters)</label>
+                      <textarea value={applyForm.bio}
+                        onChange={e => setApplyForm(f => ({ ...f, bio: e.target.value }))}
+                        rows={4} placeholder="Tell fans about yourself and what kind of content you create…"
+                        className="vl-input w-full resize-none" />
+                      <p className="text-xs mt-1"
+                        style={{ color: applyForm.bio.length < 20 ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.3)" }}>
+                        {applyForm.bio.length}/500 characters
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        Referral Code{" "}
+                        <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(optional)</span>
+                      </label>
+                      <input
+                        value={applyForm.referralCode}
+                        onChange={e => setApplyForm(f => ({ ...f, referralCode: e.target.value.toUpperCase() }))}
+                        placeholder="e.g. USERNAME-1234"
+                        className="vl-input w-full font-mono tracking-widest"
+                        maxLength={20}
+                      />
+                      <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        Were you referred by a creator? Enter their code to credit them toward the Referral Tier Boost.
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => setApplyStep("intro")}
+                        className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setApplyStep("review")}
+                        disabled={!applyForm.displayName.trim() || applyForm.bio.length < 20}
+                        className="flex-1 py-3 rounded-xl text-sm font-bold vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                        Review Application
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Step: Review */}
+              {applyStep === "review" && (
+                <div className="vl-card p-6 animate-fade-up text-left">
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>
+                    Review Your Application
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
+                    Please review your details before submitting.
+                  </p>
+                  <div className="space-y-3 mb-6">
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Display Name</p>
+                      <p className="text-sm font-semibold text-white">{applyForm.displayName}</p>
+                    </div>
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Bio</p>
+                      <p className="text-sm text-white" style={{ lineHeight: 1.5 }}>{applyForm.bio}</p>
+                    </div>
+                    {applyForm.referralCode && (
+                      <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Referral Code</p>
+                        <p className="text-sm font-mono text-white">{applyForm.referralCode}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setApplyStep("form")}
+                      className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                      Back
+                    </button>
+                    <button
+                      onClick={handleApply}
+                      disabled={applying}
+                      className="flex-1 py-3 rounded-xl text-sm font-bold vl-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                      {applying ? "Submitting…" : "Submit Application"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
+
           ) : (
+            /* ── Not logged in */
             <>
               <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
               <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -251,6 +382,7 @@ export default function BecomeCreator() {
               <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required · Cancel anytime · Instant payouts</p>
             </>
           )}
+
         </div>
       </section>
     </div>

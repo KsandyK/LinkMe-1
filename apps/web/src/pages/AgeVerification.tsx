@@ -25,6 +25,10 @@ export default function AgeVerification() {
   const [dobError, setDobError] = useState("");
   const [piiConsent, setPiiConsent] = useState(false);
 
+  // ── Must be declared before any conditional returns (Rules of Hooks) ──────
+  const [submittingDob, setSubmittingDob] = useState(false);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+
   if (ageVerificationStatus === "verified") {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -56,9 +60,6 @@ export default function AgeVerification() {
     setDobError("");
     return true;
   };
-
-  const [submittingDob, setSubmittingDob] = useState(false);
-  const [submittingVerification, setSubmittingVerification] = useState(false);
 
   const handleDobNext = async () => {
     if (!validateDob()) return;
