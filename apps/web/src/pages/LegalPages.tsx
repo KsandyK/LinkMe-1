@@ -501,14 +501,19 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 
 2.1 **Revenue Tiers:** Your creator revenue share is determined by your verified monthly gross platform earnings:
 
-**🎉 Grace Period (First 90 Days):** All new creators automatically earn at the **Growth tier rate (80%)** for their first 90 days on the platform, regardless of monthly earnings volume. No application required.
+**🎉 Grace Period (First 90 Days):** All new creators automatically earn at **80%** for their first 90 days, regardless of monthly earnings. No application required — applied automatically from your creator activation date.
 
 | Tier | Monthly Gross (post-Grace) | Creator | Platform |
 |---|---|---|---|
-| **Growth** | $0 – $15,000 | **80%** | 20% |
+| **Growth** | $0 – $5,000 | **80%** | 20% |
+| **Established** | $5,001 – $15,000 | **80%** | 20% |
 | **Elite** | $15,001 – $25,000 | **83%** | 17% |
-| **Partner** | $25,001 – $75,000 | **90%** | 10% |
-| **Top Partner** | $75,001+ | **95%** | 5% |
+| **Partner** | $25,001 – $75,000 | **85%** | 15% |
+| **Senior Partner** | $75,001 – $150,000 | **87%** | 13% |
+| **Executive Partner** | $150,001 – $300,000 | **88%** | 12% |
+| **Premier Partner** | $300,001 – $500,000 | **89%** | 11% |
+| **Top Partner** | $500,001 – $1,000,000 | **90%** | 10% |
+| **Pinnacle** | $1,000,001+ | **90%** *(cap)* | 10% |
 
 ### IMPORTANT PROCESSING FEE DISCLAIMER
 
@@ -539,7 +544,7 @@ Creators may earn a permanent, one-time revenue share tier boost by meeting both
 - **Referral count:** 25 qualifying individuals (subscribers or new creators) who register via your code and remain active for 30+ consecutive days.
 - **Collective earnings:** Those 25 referrals collectively earn **$10,000/month** on-platform within a rolling 30-day window.
 
-Upon meeting both thresholds, your revenue share tier is boosted by one level (e.g., Growth 80% → Elite 83%) permanently and automatically.
+Upon meeting both thresholds, your revenue share rate is boosted by one percentage bracket (e.g., 80% → 83%, 85% → 87%, etc.) permanently and automatically.
 
 **Conditions:**
 - One-time reward per creator account. Non-repeatable and non-transferable.

@@ -132,15 +132,20 @@ You are an independent contractor. You are responsible for your own taxes. LINKM
 All new creators automatically earn at the Growth tier rate (80% / 20%) for their first 90 days on the platform, regardless of monthly earnings volume. No application required — grace period is applied automatically from your creator activation date.
 
 2b. STANDARD TIERS (post-Grace Period)
-- Growth Tier ($0–$15,000/mo): 80% Creator / 20% Platform
+- Growth Tier ($0–$5,000/mo): 80% Creator / 20% Platform
+- Established Tier ($5,001–$15,000/mo): 80% / 20%
 - Elite Tier ($15,001–$25,000/mo): 83% / 17%
-- Partner Tier ($25,001–$75,000/mo): 90% / 10%
-- Top Partner Tier ($75,001+/mo): 95% / 5%
+- Partner Tier ($25,001–$75,000/mo): 85% / 15%
+- Senior Partner Tier ($75,001–$150,000/mo): 87% / 13%
+- Executive Partner Tier ($150,001–$300,000/mo): 88% / 12%
+- Premier Partner Tier ($300,001–$500,000/mo): 89% / 11%
+- Top Partner Tier ($500,001–$1,000,000/mo): 90% / 10%
+- Pinnacle Tier ($1,000,001+/mo): 90% / 10% [MAXIMUM — platform minimum 10% at all revenue levels]
 Revenue shares calculated AFTER payment processing fees (~3–5% per transaction).
 Payouts every Friday; minimum threshold $50 USD.
 
 2c. CREATOR REFERRAL TIER BOOST PROGRAM (One-Time)
-Bring 25 qualifying referrals to the platform using your unique Creator/Streamer Code AND those referrals collectively earn $10,000/month on-platform — you receive a permanent one-time revenue share tier boost (e.g., Growth 80% → Elite 83%).
+Bring 25 qualifying referrals to the platform using your unique Creator/Streamer Code AND those referrals collectively earn $10,000/month on-platform — you receive a permanent one-time revenue share rate boost to the next percentage bracket (e.g., 80% → 83%, or 85% → 87%).
 - One-time reward per creator account. Non-repeatable and non-transferable.
 - Your unique code is available in your Creator Dashboard under the "Referral" tab.
 - Qualifying referral: any subscriber or creator who registers using your code and remains active (earning or spending) for 30+ consecutive days.

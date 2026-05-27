@@ -704,7 +704,7 @@ export default function CreatorDashboard() {
                     )}
                   </div>
                   <p className="text-sm" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.7 }}>
-                    Bring in <strong className="text-white">25 subscribers or creators</strong> using your code, and when those referrals collectively earn <strong className="text-white">$10,000/month</strong> on-platform — you get a <strong style={{ color: "#e8a87c" }}>permanent revenue share tier boost</strong>. One-time only.
+                    Bring in <strong className="text-white">25 subscribers or creators</strong> using your code, and when those referrals collectively earn <strong className="text-white">$10,000/month</strong> on-platform — you get a <strong style={{ color: "#e8a87c" }}>permanent revenue share rate boost</strong> to the next bracket (e.g. 80% → 83%). One-time only.
                   </p>
                 </div>
 
@@ -795,7 +795,7 @@ export default function CreatorDashboard() {
                           if (!referralMet) return;
                           setBoostClaimed(true);
                           try { localStorage.setItem("linkme_referral_claimed", "1"); } catch {}
-                          showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share has been permanently boosted by one tier. Check your Creator Agreement for updated rates." });
+                          showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket (e.g. 80% → 83%). Check your Creator Agreement §2.9 for details." });
                         }}
                         className="w-full py-3 rounded-xl text-sm font-bold transition-all"
                         style={referralMet
@@ -838,7 +838,7 @@ export default function CreatorDashboard() {
                     ))}
                   </div>
                   <div className="mt-5 p-3 rounded-xl text-xs" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
-                    One-time reward per account. Non-repeatable. Referrals must remain active for 30+ days. Collective earnings measured on a rolling 30-day window. See Creator Agreement §2.9 for full terms.
+                    One-time reward per account. Non-repeatable. Rate boosted to next bracket (e.g. 80%→83%, 85%→87%), capped at 90%. Referrals must stay active 30+ days. Earnings measured on a rolling 30-day window. See Creator Agreement §2.9.
                   </div>
                 </div>
               </div>
