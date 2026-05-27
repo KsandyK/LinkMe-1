@@ -71,6 +71,7 @@ interface CreatorSubTier {
   popular: boolean; perks: string[];
 }
 const CREATOR_SUB_TIERS: CreatorSubTier[] = [
+  // ── First 5 (shown by default) ────────────────────────────────────────────
   {
     id: "fan", name: "Fan", emoji: "❤️", price: 4.99, priceStr: "$4.99",
     color: "#f43f5e", popular: false,
@@ -90,6 +91,37 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
     id: "super_vip", name: "Super VIP", emoji: "👑", price: 49.99, priceStr: "$49.99",
     color: "#f59e0b", popular: false,
     perks: ["All VIP perks", "Custom content requests", "Private stream invitations", "Monthly 1-on-1 session"],
+  },
+  {
+    id: "elite", name: "Elite", emoji: "💎", price: 99.99, priceStr: "$99.99",
+    color: "#06b6d4", popular: false,
+    perks: ["All Super VIP perks", "Weekly 1-on-1 video calls", "Name featured in bio", "Priority 24hr DM response"],
+  },
+  // ── Next 5 (revealed via Show More) ──────────────────────────────────────
+  {
+    id: "diamond", name: "Diamond", emoji: "💠", price: 149.99, priceStr: "$149.99",
+    color: "#38bdf8", popular: false,
+    perks: ["All Elite perks", "Monthly custom video message", "Behind-the-scenes access", "Early merchandise drops"],
+  },
+  {
+    id: "obsidian", name: "Obsidian", emoji: "🔮", price: 299.99, priceStr: "$299.99",
+    color: "#a78bfa", popular: false,
+    perks: ["All Diamond perks", "Bi-weekly video calls", "Co-creation opportunities", "Exclusive signed merch"],
+  },
+  {
+    id: "platinum", name: "Platinum", emoji: "🪙", price: 499.99, priceStr: "$499.99",
+    color: "#cbd5e1", popular: false,
+    perks: ["All Obsidian perks", "Daily direct messages", "Featured in content credits", "Guaranteed reply within 4hrs"],
+  },
+  {
+    id: "legend", name: "Legend", emoji: "🏆", price: 999.99, priceStr: "$999.99",
+    color: "#fbbf24", popular: false,
+    perks: ["All Platinum perks", "Monthly private stream", "Named character in content", "Direct video call access"],
+  },
+  {
+    id: "icon", name: "Icon", emoji: "⚡", price: 2499.99, priceStr: "$2,499.99",
+    color: "#f43f5e", popular: false,
+    perks: ["All Legend perks", "Full creative collaboration", "Lifetime VIP fan status", "Personal dedication in all content"],
   },
 ];
 
@@ -126,9 +158,12 @@ export default function StreamView() {
 
   // Subscribe modal state — tier persisted per-creator in localStorage
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showMoreTiers, setShowMoreTiers] = useState(false);
   const [subscribedTier, setSubscribedTier] = useState<string | null>(() => {
     try { return localStorage.getItem(`vl_creator_sub_${id}`) ?? null; } catch { return null; }
   });
+  // Reset "show more" expansion whenever the modal is closed
+  useEffect(() => { if (!showSubscribeModal) setShowMoreTiers(false); }, [showSubscribeModal]);
   const [subscribeNoCard, setSubscribeNoCard] = useState(false);
   const [subscribePending, setSubscribePending] = useState<{
     tier: string; name: string; priceStr: string; emoji: string; onConfirm: () => void;
@@ -992,8 +1027,8 @@ export default function StreamView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.82)", backdropFilter: "blur(8px)" }}
           onClick={e => { if (e.target === e.currentTarget) setShowSubscribeModal(false); }}>
-          <div className="w-full max-w-lg rounded-2xl overflow-hidden"
-            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 32px 80px rgba(0,0,0,0.8)" }}>
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col"
+            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 32px 80px rgba(0,0,0,0.8)", maxHeight: "90vh" }}>
 
             {/* Header — creator identity */}
             <div className="relative px-6 pt-6 pb-5"
@@ -1021,87 +1056,126 @@ export default function StreamView() {
               </div>
             </div>
 
-            {/* Tier grid — 2 × 2 */}
-            <div className="p-5 grid grid-cols-2 gap-3">
-              {CREATOR_SUB_TIERS.map(tier => {
-                const isActive = subscribedTier === tier.id;
-                return (
-                  <div key={tier.id} className="relative flex flex-col rounded-xl overflow-hidden transition-all duration-200"
-                    style={{
-                      background: isActive ? `${tier.color}14` : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${isActive ? tier.color + "60" : tier.popular ? tier.color + "35" : "rgba(255,255,255,0.08)"}`,
-                    }}>
-                    {/* Popular badge */}
-                    {tier.popular && !isActive && (
-                      <div className="absolute top-0 left-0 right-0 py-0.5 text-center text-xs font-black tracking-wide"
-                        style={{ background: tier.color, color: "white" }}>
-                        MOST POPULAR
-                      </div>
-                    )}
-                    {isActive && (
-                      <div className="absolute top-0 left-0 right-0 py-0.5 text-center text-xs font-black tracking-wide flex items-center justify-center gap-1"
-                        style={{ background: `${tier.color}30`, color: tier.color }}>
-                        <CheckCircle2 className="w-3 h-3" /> SUBSCRIBED
-                      </div>
-                    )}
-
-                    <div className={`p-3.5 flex flex-col flex-1 ${tier.popular || isActive ? "pt-6" : ""}`}>
-                      {/* Tier identity */}
-                      <div className="flex items-center gap-2 mb-2.5">
-                        <span className="text-xl leading-none">{tier.emoji}</span>
-                        <div>
-                          <p className="text-sm font-black text-white leading-tight">{tier.name}</p>
-                          <p className="text-base font-black leading-tight" style={{ color: tier.color }}>
-                            {tier.priceStr}<span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
-                          </p>
+            {/* Tier grid — scrollable, 5 visible + Show More */}
+            <div className="overflow-y-auto flex-1">
+              {(() => {
+                // Reusable inline card renderer
+                const renderCard = (tier: CreatorSubTier) => {
+                  const isActive = subscribedTier === tier.id;
+                  return (
+                    <div key={tier.id} className="relative flex flex-col rounded-xl overflow-hidden transition-all duration-200"
+                      style={{
+                        background: isActive ? `${tier.color}14` : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${isActive ? tier.color + "60" : tier.popular ? tier.color + "35" : "rgba(255,255,255,0.08)"}`,
+                      }}>
+                      {/* Top banner */}
+                      {tier.popular && !isActive && (
+                        <div className="py-0.5 text-center text-xs font-black tracking-wide"
+                          style={{ background: tier.color, color: "white" }}>MOST POPULAR</div>
+                      )}
+                      {isActive && (
+                        <div className="py-0.5 text-center text-xs font-black tracking-wide flex items-center justify-center gap-1"
+                          style={{ background: `${tier.color}30`, color: tier.color }}>
+                          <CheckCircle2 className="w-3 h-3" /> SUBSCRIBED
                         </div>
+                      )}
+                      <div className={`p-3.5 flex flex-col flex-1 ${tier.popular || isActive ? "" : ""}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xl leading-none">{tier.emoji}</span>
+                          <div>
+                            <p className="text-sm font-black text-white leading-tight">{tier.name}</p>
+                            <p className="text-base font-black leading-tight" style={{ color: tier.color }}>
+                              {tier.priceStr}<span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.32)" }}>/mo</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mb-2" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+                        <ul className="space-y-1.5 flex-1 mb-3">
+                          {tier.perks.map(perk => (
+                            <li key={perk} className="flex items-start gap-1.5 text-xs leading-snug"
+                              style={{ color: "rgba(255,255,255,0.6)" }}>
+                              <span className="mt-0.5 flex-shrink-0" style={{ color: tier.color }}>✓</span>
+                              {perk}
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          onClick={() => {
+                            if (isActive) return;
+                            if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
+                            setSubscribePending({
+                              tier: tier.id, name: tier.name, priceStr: tier.priceStr, emoji: tier.emoji,
+                              onConfirm: () => {
+                                recordPurchase(tier.price, `${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
+                                try { localStorage.setItem(`vl_creator_sub_${id ?? ""}`, tier.id); } catch {}
+                                setSubscribedTier(tier.id);
+                                setSubscribePending(null);
+                                setShowSubscribeModal(false);
+                                showToast({ title: `${tier.emoji} Subscribed to ${hostName}!`, description: `You're now a ${tier.name} — thank you for your support!` });
+                              },
+                            });
+                          }}
+                          className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+                          style={isActive
+                            ? { background: `${tier.color}18`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
+                            : { background: `linear-gradient(135deg, ${tier.color}dd, ${tier.color}99)`, color: "white" }
+                          }>
+                          {isActive ? "✓ Subscribed" : `Subscribe ${tier.priceStr}/mo`}
+                        </button>
                       </div>
-
-                      {/* Divider */}
-                      <div className="mb-2.5" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
-
-                      {/* Perks */}
-                      <ul className="space-y-1.5 flex-1 mb-3">
-                        {tier.perks.map(perk => (
-                          <li key={perk} className="flex items-start gap-1.5 text-xs leading-snug"
-                            style={{ color: "rgba(255,255,255,0.62)" }}>
-                            <span className="mt-0.5 flex-shrink-0" style={{ color: tier.color }}>✓</span>
-                            {perk}
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* CTA */}
-                      <button
-                        onClick={() => {
-                          if (isActive) return;
-                          if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
-                          setSubscribePending({
-                            tier: tier.id,
-                            name: tier.name,
-                            priceStr: tier.priceStr,
-                            emoji: tier.emoji,
-                            onConfirm: () => {
-                              recordPurchase(tier.price, `${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
-                              try { localStorage.setItem(`vl_creator_sub_${id ?? ""}`, tier.id); } catch {}
-                              setSubscribedTier(tier.id);
-                              setSubscribePending(null);
-                              setShowSubscribeModal(false);
-                              showToast({ title: `${tier.emoji} Subscribed to ${hostName}!`, description: `You're now a ${tier.name} — thank you for your support!` });
-                            },
-                          });
-                        }}
-                        className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
-                        style={isActive
-                          ? { background: `${tier.color}18`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
-                          : { background: `linear-gradient(135deg, ${tier.color}dd, ${tier.color}99)`, color: "white" }
-                        }>
-                        {isActive ? "✓ Subscribed" : `Subscribe ${tier.priceStr}/mo`}
-                      </button>
                     </div>
-                  </div>
+                  );
+                };
+
+                return (
+                  <>
+                    {/* First 5 tiers + "Show More" tile as the 6th cell */}
+                    <div className="p-4 grid grid-cols-2 gap-3">
+                      {CREATOR_SUB_TIERS.slice(0, 5).map(renderCard)}
+
+                      {/* Show More tile (6th cell, same grid position) */}
+                      {!showMoreTiers && (
+                        <button
+                          onClick={() => setShowMoreTiers(true)}
+                          className="relative flex flex-col items-center justify-center rounded-xl p-4 transition-all hover:bg-white/5 active:scale-95"
+                          style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.14)", minHeight: 140 }}>
+                          <div className="flex gap-0.5 mb-2 text-base">
+                            {["💠","🔮","🪙","🏆","⚡"].map(e => <span key={e}>{e}</span>)}
+                          </div>
+                          <p className="text-sm font-bold text-white mb-0.5">5 More Plans</p>
+                          <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.32)" }}>Up to $2,499.99/mo</p>
+                          <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full"
+                            style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
+                            Show More <ChevronDown className="w-3.5 h-3.5" />
+                          </div>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Expanded: last 5 tiers */}
+                    {showMoreTiers && (
+                      <>
+                        <div className="px-4 pb-1 flex items-center gap-3">
+                          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+                          <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.28)" }}>PREMIUM TIERS</span>
+                          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+                        </div>
+                        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+                          {CREATOR_SUB_TIERS.slice(5, 10).map(renderCard)}
+                        </div>
+                        <div className="px-4 pb-4 text-center">
+                          <button
+                            onClick={() => setShowMoreTiers(false)}
+                            className="text-xs font-semibold flex items-center gap-1 mx-auto transition-all hover:opacity-70"
+                            style={{ color: "rgba(255,255,255,0.35)" }}>
+                            <ChevronDown className="w-3.5 h-3.5 rotate-180" /> Show fewer plans
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </>
                 );
-              })}
+              })()}
             </div>
 
             {/* Footer */}
