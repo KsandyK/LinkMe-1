@@ -1496,33 +1496,66 @@ export default function LegalPages() {
           <div
             className="text-gray-300 leading-relaxed space-y-4"
             dangerouslySetInnerHTML={{
-              __html: legal.content
-                .split("\n")
-                .map((line) => {
+              __html: (() => {
+                const lines = legal.content.split("\n");
+                const out: string[] = [];
+                const md = (s: string) =>
+                  s.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white'>$1</strong>")
+                   .replace(/\*(.*?)\*/g, "<em style='opacity:0.6'>$1</em>");
+                let i = 0;
+                while (i < lines.length) {
+                  const line = lines[i];
                   if (line.startsWith("# ")) {
-                    return `<h2 class="text-2xl font-bold text-white mt-8 mb-4">${line.replace("# ", "")}</h2>`;
+                    out.push(`<h2 class="text-2xl font-bold text-white mt-8 mb-4">${line.slice(2)}</h2>`);
+                  } else if (line.startsWith("## ")) {
+                    out.push(`<h3 class="text-xl font-bold text-white mt-6 mb-3">${line.slice(3)}</h3>`);
+                  } else if (line.startsWith("### ")) {
+                    out.push(`<h4 class="text-lg font-semibold mt-4 mb-2" style="color:#14b8a6">${line.slice(4)}</h4>`);
+                  } else if (line.startsWith("- ")) {
+                    out.push(`<li class="ml-4">${md(line.slice(2))}</li>`);
+                  } else if (/^-{3,}$/.test(line.trim())) {
+                    out.push('<hr class="my-8 border-slate-700" />');
+                  } else if (line.trim() === "") {
+                    // blank — skip
+                  } else if (line.startsWith("| ")) {
+                    // ── Table block: collect all consecutive pipe lines ──
+                    const tblLines: string[] = [];
+                    while (i < lines.length && lines[i].startsWith("| ")) {
+                      tblLines.push(lines[i]);
+                      i++;
+                    }
+                    // Drop separator rows (|---|:---|)
+                    const rows = tblLines.filter(l => !/^\|\s*[-: |]+\s*\|$/.test(l));
+                    const parseRow = (r: string) => r.split("|").slice(1, -1).map(c => c.trim());
+                    const cellMd = (s: string) =>
+                      s.replace(/\*\*(.*?)\*\*/g, "<strong style='color:#14b8a6'>$1</strong>")
+                       .replace(/\*(.*?)\*/g, "<em style='opacity:0.55'>$1</em>");
+                    let tbl = `<div style="overflow-x:auto;margin:1rem 0 1.5rem">` +
+                      `<table style="width:100%;border-collapse:collapse;font-size:13px;line-height:1.6">`;
+                    rows.forEach((row, ri) => {
+                      const cells = parseRow(row);
+                      if (ri === 0) {
+                        tbl += `<thead><tr>${cells.map(c =>
+                          `<th style="padding:10px 16px;text-align:left;background:rgba(20,184,166,0.1);` +
+                          `border:1px solid rgba(20,184,166,0.2);color:#14b8a6;font-weight:700;white-space:nowrap">` +
+                          `${cellMd(c)}</th>`).join("")}</tr></thead><tbody>`;
+                      } else {
+                        const bg = ri % 2 === 1 ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.035)";
+                        tbl += `<tr style="background:${bg}">${cells.map(c =>
+                          `<td style="padding:9px 16px;border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.82)">` +
+                          `${cellMd(c)}</td>`).join("")}</tr>`;
+                      }
+                    });
+                    tbl += `</tbody></table></div>`;
+                    out.push(tbl);
+                    continue; // i already advanced past the table block
+                  } else {
+                    out.push(`<p>${md(line)}</p>`);
                   }
-                  if (line.startsWith("## ")) {
-                    return `<h3 class="text-xl font-bold text-white mt-6 mb-3">${line.replace("## ", "")}</h3>`;
-                  }
-                  if (line.startsWith("### ")) {
-                    return `<h4 class="text-lg font-semibold text-teal-400 mt-4 mb-2">${line.replace("### ", "")}</h4>`;
-                  }
-                  if (line.startsWith("- ")) {
-                    return `<li class="ml-4">${line.replace("- ", "").replace(/\*\*(.*?)\*\*/g, "<strong class='text-white'>$1</strong>")}</li>`;
-                  }
-                  if (line.includes("---")) {
-                    return '<hr class="my-8 border-slate-700" />';
-                  }
-                  if (line.trim() === "") {
-                    return "";
-                  }
-                  if (line.startsWith("| ")) {
-                    return `<p class="font-mono text-xs" style="color:rgba(255,255,255,0.5)">${line}</p>`;
-                  }
-                  return `<p>${line.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white'>$1</strong>")}</p>`;
-                })
-                .join(""),
+                  i++;
+                }
+                return out.join("");
+              })()
             }}
           />
         </div>
