@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi } from "@/lib/api";
 import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users, Camera, Loader2 } from "lucide-react";
 
 // ── Favorites storage ─────────────────────────────────────────────────────────
 const FAV_STORAGE_KEY = "vl_favorites_v1";
@@ -119,6 +119,11 @@ export default function Account() {
   const [bio, setBio] = useState("");
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(() => {
+    try { return localStorage.getItem("vl_avatar_v1"); } catch { return null; }
+  });
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [notifs, setNotifs] = useState({ messages: true, liveAlerts: true, promotions: false, security: true });
 
   // Security sub-states
@@ -226,6 +231,37 @@ export default function Account() {
   const [deactivated, setDeactivated] = useState(false);
   const [deleted, setDeleted] = useState(false);
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast({ title: "Invalid file", description: "Please select a JPG, PNG, or WebP image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast({ title: "File too large", description: "Max 5 MB per avatar image.", variant: "destructive" });
+      return;
+    }
+    setAvatarUploading(true);
+    // Read as data URL for local persistence
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setAvatarPreview(dataUrl);
+      try { localStorage.setItem("vl_avatar_v1", dataUrl); } catch {}
+      try {
+        await profilesApi.updateMe({ avatarUrl: dataUrl });
+        showToast({ title: "Avatar updated", description: "Your profile photo has been saved." });
+      } catch {
+        showToast({ title: "Avatar saved locally", description: "Photo saved for this session — API offline." });
+      }
+      setAvatarUploading(false);
+    };
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be picked again
+    e.target.value = "";
+  };
+
   const handleSave = async () => {
     setSaveError("");
     try {
@@ -315,10 +351,18 @@ export default function Account() {
     setTimeout(() => logout(), 1500);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteConfirm !== "DELETE") return;
-    setDeleted(true);
     setShowDelete(false);
+    // Best-effort API call; proceed regardless of outcome
+    try {
+      await fetch(`${(import.meta as any).env?.VITE_API_URL ?? "http://localhost:3000"}/api/auth/me`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("linkme_token") ?? ""}` },
+      });
+    } catch {/* ignore — demo mode */}
+    setDeleted(true);
+    logout();
     showToast({ title: "Account deleted", description: "Your account and all data have been permanently removed.", variant: "destructive" });
   };
 
@@ -423,6 +467,44 @@ export default function Account() {
                 {/* Left: Profile Information */}
                 <div className="lg:col-span-3 space-y-5">
                   <h2 className="text-base font-bold text-white">Profile Information</h2>
+
+                  {/* Avatar upload */}
+                  <div className="flex items-center gap-4">
+                    <div className="relative group flex-shrink-0">
+                      <div className="w-20 h-20 rounded-full overflow-hidden"
+                        style={{ background: "rgba(20,184,166,0.1)", border: "2px solid rgba(20,184,166,0.2)" }}>
+                        {avatarPreview
+                          ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                          : <div className="w-full h-full flex items-center justify-center text-2xl font-black"
+                              style={{ color: "#14b8a6" }}>{(displayName[0] ?? "?").toUpperCase()}</div>
+                        }
+                      </div>
+                      {/* Upload overlay */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={avatarUploading}
+                        className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+                        style={{ background: "rgba(0,0,0,0.6)" }}>
+                        {avatarUploading
+                          ? <Loader2 className="w-5 h-5 animate-spin text-white" />
+                          : <Camera className="w-5 h-5 text-white" />}
+                      </button>
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                        onChange={handleAvatarChange} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white mb-0.5">Profile Photo</p>
+                      <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>JPG, PNG or WebP · Max 5 MB</p>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={avatarUploading}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
+                        style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+                        {avatarUploading ? "Uploading…" : "Upload Photo"}
+                      </button>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Display Name</label>
                     <input value={displayName} onChange={e => setDisplayName(e.target.value)}

@@ -192,15 +192,18 @@ export default function CreatorDashboard() {
   const [data, setData] = useState<CreatorDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDemoData, setIsDemoData] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) return;
     setLoading(true);
+    setIsDemoData(false);
 
     // Safety timeout: if the API hangs (e.g. server returns 503 on preflight),
     // fall back to demo data after 5 seconds rather than showing a spinner forever.
     const fallbackTimer = setTimeout(() => {
       setData(MOCK_DASHBOARD);
+      setIsDemoData(true);
       setLoading(false);
     }, 5000);
 
@@ -208,11 +211,13 @@ export default function CreatorDashboard() {
       .then(d => {
         clearTimeout(fallbackTimer);
         setData(d);
+        setIsDemoData(false);
       })
       .catch(() => {
         clearTimeout(fallbackTimer);
         // Any error (network, CORS, HTTP) → use demo data in offline/dev mode
         setData(MOCK_DASHBOARD);
+        setIsDemoData(true);
       })
       .finally(() => {
         clearTimeout(fallbackTimer);
@@ -283,7 +288,15 @@ export default function CreatorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-7">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">Creator Dashboard</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold text-white">Creator Dashboard</h1>
+              {isDemoData && (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.25)", color: "#fb923c" }}>
+                  Demo Data
+                </span>
+              )}
+            </div>
             <p className="text-base" style={{ color: "rgba(255,255,255,0.4)" }}>Welcome back — here's how you're doing</p>
           </div>
           <Link href="/creator/studio">
