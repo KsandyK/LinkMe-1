@@ -75,53 +75,102 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
   {
     id: "fan", name: "Fan", emoji: "❤️", price: 4.99, priceStr: "$4.99",
     color: "#f43f5e", popular: false,
-    perks: ["Fan badge in chat", "Subscriber-only posts", "Priority in chat queue"],
+    perks: [
+      "Fan ❤️ badge displayed next to your name in live chat",
+      "Access to subscriber-only posts & locked content",
+      "Priority placement in the live chat queue",
+    ],
   },
   {
     id: "supporter", name: "Supporter", emoji: "🔥", price: 9.99, priceStr: "$9.99",
     color: "#f97316", popular: false,
-    perks: ["All Fan perks", "Early content access", "Shoutout in live streams"],
+    perks: [
+      "Supporter 🔥 badge in live chat",
+      "Subscriber-only posts + content unlocked 48 hrs early",
+      "Priority placement in the live chat queue",
+      "Personal shoutout by name during live streams",
+    ],
   },
   {
     id: "vip", name: "VIP", emoji: "⭐", price: 19.99, priceStr: "$19.99",
     color: "#8b5cf6", popular: true,
-    perks: ["All Supporter perks", "Direct message access", "Exclusive VIP drops", "Private Q&A sessions"],
+    perks: [
+      "VIP ⭐ badge + direct message access to the creator",
+      "Subscriber-only posts + early content + VIP-exclusive drops",
+      "Priority chat placement in every live stream",
+      "Monthly private Q&A session with the creator",
+    ],
   },
   {
     id: "super_vip", name: "Super VIP", emoji: "👑", price: 49.99, priceStr: "$49.99",
     color: "#f59e0b", popular: false,
-    perks: ["All VIP perks", "Custom content requests", "Private stream invitations", "Monthly 1-on-1 session"],
+    perks: [
+      "Super VIP 👑 badge + DM access + all subscriber content",
+      "One custom content request per month",
+      "Invitations to private subscriber-only streams",
+      "Monthly 1-on-1 video call with the creator (15 min)",
+    ],
   },
   {
     id: "elite", name: "Elite", emoji: "💎", price: 99.99, priceStr: "$99.99",
     color: "#06b6d4", popular: false,
-    perks: ["All Super VIP perks", "Weekly 1-on-1 video calls", "Name featured in bio", "Priority 24hr DM response"],
+    perks: [
+      "Elite 💎 badge + DM access + all subscriber content",
+      "Weekly 1-on-1 video calls (30 min each)",
+      "Your name permanently featured in the creator's bio",
+      "Guaranteed DM reply within 24 hours",
+    ],
   },
   // ── Next 5 (revealed via Show More) ──────────────────────────────────────
   {
     id: "diamond", name: "Diamond", emoji: "💠", price: 149.99, priceStr: "$149.99",
     color: "#38bdf8", popular: false,
-    perks: ["All Elite perks", "Monthly custom video message", "Behind-the-scenes access", "Early merchandise drops"],
+    perks: [
+      "Diamond 💠 badge + weekly video calls + all subscriber content",
+      "Monthly personalized video message recorded just for you",
+      "Behind-the-scenes content not available anywhere else",
+      "First access to merchandise before public release",
+    ],
   },
   {
     id: "obsidian", name: "Obsidian", emoji: "🔮", price: 299.99, priceStr: "$299.99",
     color: "#a78bfa", popular: false,
-    perks: ["All Diamond perks", "Bi-weekly video calls", "Co-creation opportunities", "Exclusive signed merch"],
+    perks: [
+      "Obsidian 🔮 badge + bi-weekly video calls + all subscriber content",
+      "Opportunity to co-create or appear in the creator's content",
+      "Exclusive hand-signed physical merchandise shipped monthly",
+      "Vote on upcoming content topics and formats",
+    ],
   },
   {
     id: "platinum", name: "Platinum", emoji: "🪙", price: 499.99, priceStr: "$499.99",
     color: "#cbd5e1", popular: false,
-    perks: ["All Obsidian perks", "Daily direct messages", "Featured in content credits", "Guaranteed reply within 4hrs"],
+    perks: [
+      "Platinum 🪙 badge + bi-weekly calls + all subscriber content",
+      "Unlimited direct messages to the creator, any time",
+      "Your name credited in content descriptions & posts",
+      "Guaranteed reply to every message within 4 hours",
+    ],
   },
   {
     id: "legend", name: "Legend", emoji: "🏆", price: 999.99, priceStr: "$999.99",
     color: "#fbbf24", popular: false,
-    perks: ["All Platinum perks", "Monthly private stream", "Named character in content", "Direct video call access"],
+    perks: [
+      "Legend 🏆 badge + unlimited DMs + all subscriber content",
+      "Monthly exclusive private livestream for Legend members only",
+      "Named as a character or reference in the creator's content",
+      "On-request direct video call access with the creator",
+    ],
   },
   {
     id: "icon", name: "Icon", emoji: "⚡", price: 2499.99, priceStr: "$2,499.99",
     color: "#f43f5e", popular: false,
-    perks: ["All Legend perks", "Full creative collaboration", "Lifetime VIP fan status", "Personal dedication in all content"],
+    perks: [
+      "Icon ⚡ status badge + every benefit across all tiers included",
+      "Full creative collaboration — shape content direction together",
+      "Lifetime VIP fan status that never expires, even if you pause",
+      "Personal dedication in every new content release",
+    ],
   },
 ];
 
