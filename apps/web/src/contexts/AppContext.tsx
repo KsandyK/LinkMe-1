@@ -6,6 +6,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
 import { MEMBERSHIP_DISCOUNTS } from "@/lib/membership-tiers";
+import { credits as creditsApi, boosts as boostsApi } from "@/lib/api";
 
 // Use VITE_API_URL if set, otherwise same-origin (Vite proxy handles /api → localhost:3000)
 const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
@@ -148,6 +149,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setActiveMembership = (plan: string) => {
     setActiveMembershipState(plan);
     safeSet(STORAGE_KEYS.MEMBERSHIP, plan);
+    // Server-activate (fire and forget — local state is source of truth when API is offline)
+    if (plan !== "free") {
+      boostsApi.subscribe(plan).catch(() => {/* API offline — local-only */});
+    }
   };
   const membershipDiscount = MEMBERSHIP_DISCOUNTS[activeMembership] ?? 0;
 
@@ -158,6 +163,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setActiveBoost = (pkg: string | null) => {
     setActiveBoostState(pkg);
     safeSet(STORAGE_KEYS.BOOST, pkg);
+    // Server-activate (fire and forget)
+    if (pkg) {
+      boostsApi.subscribe(pkg).catch(() => {/* API offline — local-only */});
+    }
   };
 
   // Auth
@@ -192,6 +201,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error("Insufficient credits", { description: `You need ${amount} credits. Buy more in the Credits Store.` });
       return false;
     }
+    // 1. Optimistic deduction — instant UI feedback
     setCredits(prev => {
       const next = prev - amount;
       safeSet(STORAGE_KEYS.CREDITS, next);
@@ -199,6 +209,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     pushTx(-amount, "CREDIT_SPENT", reason ?? "Credits spent");
     toast.success(`Spent ${amount} credits`, { description: reason });
+
+    // 2. Server-persist (fire and forget; roll back on failure)
+    creditsApi.spend(amount, reason ?? "Credits spent")
+      .then(({ balance }) => {
+        // Sync with server-confirmed balance
+        setCredits(balance);
+        safeSet(STORAGE_KEYS.CREDITS, balance);
+      })
+      .catch(() => {
+        // API offline / error — local deduction stands (demo mode)
+        // No rollback: the offline spend is already reflected in localStorage
+      });
+
     return true;
   };
 
@@ -253,6 +276,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => { clearTimeout(timer); });
+  }, [token]);
+
+  // ── Boost/membership server sync on login ───────────────────────────────────
+  // After the token is confirmed, pull the active boost from the backend so the
+  // UI reflects server-side state even after the user refreshes or logs in on a
+  // new device.
+  useEffect(() => {
+    if (!token) return;
+    boostsApi.active()
+      .then(data => {
+        if (!data) return;
+        const d = data as any;
+        // Backend returns { packageId, type } or similar — adapt as backend shape solidifies
+        const packageId: string | null = d?.packageId ?? d?.tierId ?? d?.id ?? null;
+        const type: string = d?.type ?? "boost";
+        if (!packageId) return;
+        if (type === "membership") {
+          setActiveMembershipState(packageId);
+          safeSet(STORAGE_KEYS.MEMBERSHIP, packageId);
+        } else {
+          setActiveBoostState(packageId);
+          safeSet(STORAGE_KEYS.BOOST, packageId);
+        }
+      })
+      .catch(() => {/* API offline — keep local state */});
   }, [token]);
 
   const login = useCallback(async (username: string, password: string) => {

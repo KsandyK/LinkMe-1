@@ -257,6 +257,23 @@ export const credits = {
   /** POST /api/credits/purchase — returns CCBill redirect URL */
   purchase: (packId: string) =>
     post<{ redirectUrl: string }>("/api/credits/purchase", { packId }),
+  /**
+   * POST /api/credits/purchase — Stripe variant.
+   * Sends packId + Stripe paymentMethodId; backend creates/confirms PaymentIntent.
+   * Returns { credits, balance, clientSecret? } — clientSecret present if 3DS required.
+   */
+  purchaseWithStripe: (packId: string, paymentMethodId: string) =>
+    post<{ credits: number; balance: number; clientSecret?: string }>(
+      "/api/credits/purchase",
+      { packId, paymentMethodId }
+    ),
+  /**
+   * POST /api/credits/spend — server-confirmed spend.
+   * Optimistic UI already deducted; this records it server-side.
+   * Returns { balance } on success.
+   */
+  spend: (amount: number, reason: string) =>
+    post<{ balance: number }>("/api/credits/spend", { amount, reason }),
   /** GET /api/credits/transactions — returns array directly */
   transactions: (params?: { page?: number; limit?: number }) => {
     const qs = params ? "?" + new URLSearchParams(

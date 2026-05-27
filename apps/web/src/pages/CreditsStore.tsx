@@ -3,6 +3,7 @@ import { useApp } from "@/contexts/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
 import { credits as creditsApi } from "@/lib/api";
 import { Tag } from "lucide-react";
+import { StripeCheckoutModal, isStripeEnabled, type CheckoutPkg } from "@/components/StripeCheckoutModal";
 
 // Direct purchase packages intentionally offer modest bulk savings (2–15% max).
 // Membership plans unlock 5–25% off ALL credit purchases — always better value
@@ -21,6 +22,7 @@ const PACKAGES = [
 export default function CreditsStore() {
   const { credits, addCredits, isLoggedIn, showToast, activeMembership, membershipDiscount } = useApp();
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [stripeModal, setStripeModal] = useState<{ pkg: CheckoutPkg; finalPrice: number } | null>(null);
   const currentTier = CUSTOMER_TIERS.find(t => credits * 0.01 >= t.minSpend && credits * 0.01 <= t.maxSpend) || CUSTOMER_TIERS[0];
   const nextTier = CUSTOMER_TIERS[CUSTOMER_TIERS.indexOf(currentTier) + 1];
   const monthlySpend = 734;
@@ -35,8 +37,15 @@ export default function CreditsStore() {
 
   const handlePurchase = async (pkg: typeof PACKAGES[0]) => {
     const finalPrice = discountedPrice(pkg.price);
+
+    // ── Stripe path (when VITE_STRIPE_ENABLED + VITE_STRIPE_PUBLIC_KEY are set) ──
+    if (isStripeEnabled && isLoggedIn) {
+      setStripeModal({ pkg, finalPrice });
+      return;
+    }
+
+    // ── Demo / CCBill fallback path ────────────────────────────────────────────
     if (!isLoggedIn) {
-      // Demo mode — add credits locally
       const total = pkg.credits + pkg.bonusCredits;
       addCredits(total, `Purchased ${pkg.name} package (${pkg.credits} + ${pkg.bonusCredits} bonus credits)`);
       return;
@@ -46,13 +55,18 @@ export default function CreditsStore() {
       const { redirectUrl } = await creditsApi.purchase(pkg.id);
       window.location.href = redirectUrl;
     } catch {
-      // Fallback: add credits locally (useful during dev without CCBill configured)
       showToast({ title: "Payment redirect failed", description: `Adding ${pkg.credits + pkg.bonusCredits} credits locally for demo.`, variant: "destructive" });
       const total = pkg.credits + pkg.bonusCredits;
       addCredits(total, `[Demo] ${pkg.name} package`);
     } finally {
       setPurchasing(null);
     }
+  };
+
+  const handleStripeSuccess = (creditsEarned: number) => {
+    addCredits(creditsEarned, `${stripeModal?.pkg.name ?? "Credits"} package purchased via Stripe`);
+    setStripeModal(null);
+    showToast({ title: "Purchase complete!", description: `${creditsEarned.toLocaleString()} credits added to your balance.` });
   };
 
   return (
@@ -169,9 +183,20 @@ export default function CreditsStore() {
           <p className="text-muted-foreground text-sm">
             🔒 Secure payment — industry-standard encryption on every transaction.
             All transactions are discreet and statement-friendly.
+            {isStripeEnabled && " · Powered by Stripe"}
           </p>
         </div>
       </div>
+
+      {/* Stripe checkout modal */}
+      {stripeModal && (
+        <StripeCheckoutModal
+          pkg={stripeModal.pkg}
+          finalPrice={stripeModal.finalPrice}
+          onSuccess={handleStripeSuccess}
+          onClose={() => setStripeModal(null)}
+        />
+      )}
     </div>
   );
 }

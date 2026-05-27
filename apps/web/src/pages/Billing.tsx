@@ -1,7 +1,14 @@
 import { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Zap, Lock, CreditCard, Receipt, Star, ChevronRight, X, Plus, CheckCircle } from "lucide-react";
+import { Zap, Lock, CreditCard, Receipt, Star, ChevronRight, X, Plus, CheckCircle, Loader2 } from "lucide-react";
+import { isStripeEnabled } from "@/components/StripeCheckoutModal";
+
+// Stripe singleton (undefined if not configured)
+const STRIPE_PK: string | undefined = (import.meta as any).env?.VITE_STRIPE_PUBLIC_KEY;
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
 
 // ── Saved card helpers ────────────────────────────────────────────────────────
 interface SavedCard { id: string; last4: string; brand: string; expiry: string; name: string; isDefault: boolean }
@@ -74,6 +81,108 @@ function nextBillingDate() {
   const d = new Date();
   d.setMonth(d.getMonth() + 1, 1);
   return d.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
+}
+
+// ── Stripe "Add Card" sub-component (only used when Stripe is enabled) ─────────
+
+const CARD_STYLE: Parameters<typeof CardElement>[0]["options"] = {
+  style: {
+    base: {
+      color: "#ffffff", fontSize: "15px", fontSmoothing: "antialiased",
+      "::placeholder": { color: "rgba(255,255,255,0.28)" }, iconColor: "#14b8a6",
+    },
+    invalid: { color: "#f87171", iconColor: "#f87171" },
+  },
+  hidePostalCode: true,
+};
+
+interface StripeAddCardProps {
+  onSuccess: (card: SavedCard) => void;
+  onCancel: () => void;
+}
+
+function StripeAddCardForm({ onSuccess, onCancel }: StripeAddCardProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [name, setName] = useState("");
+  const [nameErr, setNameErr] = useState("");
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { setNameErr("Name on card is required"); return; }
+    if (!stripe || !elements || processing) return;
+    setProcessing(true);
+    setError(null);
+    const card = elements.getElement(CardElement);
+    if (!card) { setProcessing(false); return; }
+    try {
+      // Create a SetupIntent-less PaymentMethod to tokenise the card for future use
+      const { paymentMethod, error: pmErr } = await stripe.createPaymentMethod({
+        type: "card", card,
+        billing_details: { name: name.trim() },
+      });
+      if (pmErr) throw new Error(pmErr.message);
+      // In production: POST paymentMethod.id to /api/billing/cards so the backend
+      // attaches it to the Stripe Customer. For now we store a mock local record.
+      const last4 = paymentMethod!.card?.last4 ?? "????";
+      const brand = paymentMethod!.card?.brand ?? "card";
+      const brandName = brand.charAt(0).toUpperCase() + brand.slice(1);
+      const exp_month = paymentMethod!.card?.exp_month ?? 0;
+      const exp_year  = paymentMethod!.card?.exp_year  ?? 0;
+      const expiry = `${String(exp_month).padStart(2, "0")}/${String(exp_year).slice(-2)}`;
+      const newCard: SavedCard = {
+        id: paymentMethod!.id, // Stripe PM ID
+        last4, brand: brandName, expiry, name: name.trim(), isDefault: false,
+      };
+      onSuccess(newCard);
+    } catch (err: any) {
+      setError(err.message ?? "Card setup failed. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>Name on Card</label>
+        <input
+          type="text" placeholder="As it appears on your card" value={name}
+          onChange={e => { setName(e.target.value); setNameErr(""); }}
+          className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
+          style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${nameErr ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+        />
+        {nameErr && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{nameErr}</p>}
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>Card Details</label>
+        <div className="px-4 py-3.5 rounded-lg"
+          style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${error ? "#f87171" : "rgba(255,255,255,0.1)"}` }}>
+          <CardElement options={CARD_STYLE} />
+        </div>
+        {error && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{error}</p>}
+      </div>
+      <div className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <Lock className="w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
+        Secured by Stripe — card data never reaches our servers
+      </div>
+      <div className="flex gap-3 pt-1">
+        <button type="button" onClick={onCancel} disabled={processing}
+          className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>Cancel</button>
+        <button type="submit" disabled={!stripe || processing}
+          className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60"
+          style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+          {processing ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Card"}
+        </button>
+      </div>
+      <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
+        🔒 Processed securely via Stripe · Your full card number is never stored
+      </p>
+    </form>
+  );
 }
 
 export default function Billing() {
@@ -257,7 +366,14 @@ export default function Billing() {
             {showAddCard ? (
               <div className="vl-card p-5 space-y-4">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-sm font-bold text-white">Add a Card</h3>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Add a Card</h3>
+                    {isStripeEnabled && (
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Secured by Stripe
+                      </p>
+                    )}
+                  </div>
                   <button onClick={() => { setShowAddCard(false); setCardErrors({}); }}
                     className="p-1 rounded-lg hover:bg-white/10 transition-all"
                     style={{ color: "rgba(255,255,255,0.4)" }}>
@@ -265,83 +381,92 @@ export default function Billing() {
                   </button>
                 </div>
 
-                {/* Card number */}
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    Card Number
-                  </label>
-                  <input
-                    type="text" inputMode="numeric" placeholder="1234 5678 9012 3456"
-                    value={cardForm.number}
-                    onChange={e => setCardForm(f => ({ ...f, number: fmtCardNum(e.target.value) }))}
-                    className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
-                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.number ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
-                  />
-                  {cardErrors.number && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.number}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Expiry */}
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      Expiry (MM/YY)
-                    </label>
-                    <input
-                      type="text" inputMode="numeric" placeholder="MM/YY" maxLength={5}
-                      value={cardForm.expiry}
-                      onChange={e => setCardForm(f => ({ ...f, expiry: fmtExpiry(e.target.value) }))}
-                      className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
-                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.expiry ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+                {/* Route to Stripe CardElement or manual form */}
+                {isStripeEnabled && stripePromise ? (
+                  <Elements stripe={stripePromise} options={{ appearance: { theme: "night", variables: { colorPrimary: "#14b8a6" } } }}>
+                    <StripeAddCardForm
+                      onSuccess={newCard => {
+                        const next = [...cards, { ...newCard, isDefault: cards.length === 0 }];
+                        setCards(next); saveCards(next);
+                        setShowAddCard(false);
+                        setCardSaved(true);
+                        setTimeout(() => setCardSaved(false), 3000);
+                      }}
+                      onCancel={() => { setShowAddCard(false); setCardErrors({}); }}
                     />
-                    {cardErrors.expiry && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.expiry}</p>}
-                  </div>
-                  {/* CVV */}
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      CVV
-                    </label>
-                    <input
-                      type="password" inputMode="numeric" placeholder="•••" maxLength={4}
-                      value={cardForm.cvv}
-                      onChange={e => setCardForm(f => ({ ...f, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                      className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
-                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.cvv ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
-                    />
-                    {cardErrors.cvv && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.cvv}</p>}
-                  </div>
-                </div>
+                  </Elements>
+                ) : (
+                  <>
+                    {/* Card number */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        Card Number
+                      </label>
+                      <input
+                        type="text" inputMode="numeric" placeholder="1234 5678 9012 3456"
+                        value={cardForm.number}
+                        onChange={e => setCardForm(f => ({ ...f, number: fmtCardNum(e.target.value) }))}
+                        className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
+                        style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.number ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+                      />
+                      {cardErrors.number && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.number}</p>}
+                    </div>
 
-                {/* Name on card */}
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    Name on Card
-                  </label>
-                  <input
-                    type="text" placeholder="As it appears on your card"
-                    value={cardForm.name}
-                    onChange={e => setCardForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
-                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.name ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
-                  />
-                  {cardErrors.name && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.name}</p>}
-                </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>Expiry (MM/YY)</label>
+                        <input
+                          type="text" inputMode="numeric" placeholder="MM/YY" maxLength={5}
+                          value={cardForm.expiry}
+                          onChange={e => setCardForm(f => ({ ...f, expiry: fmtExpiry(e.target.value) }))}
+                          className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
+                          style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.expiry ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+                        />
+                        {cardErrors.expiry && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.expiry}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>CVV</label>
+                        <input
+                          type="password" inputMode="numeric" placeholder="•••" maxLength={4}
+                          value={cardForm.cvv}
+                          onChange={e => setCardForm(f => ({ ...f, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                          className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
+                          style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.cvv ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+                        />
+                        {cardErrors.cvv && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.cvv}</p>}
+                      </div>
+                    </div>
 
-                <div className="flex gap-3 pt-1">
-                  <button onClick={() => { setShowAddCard(false); setCardErrors({}); }}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>
-                    Cancel
-                  </button>
-                  <button onClick={handleSaveCard}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-                    Save Card
-                  </button>
-                </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>Name on Card</label>
+                      <input
+                        type="text" placeholder="As it appears on your card"
+                        value={cardForm.name}
+                        onChange={e => setCardForm(f => ({ ...f, name: e.target.value }))}
+                        className="w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none"
+                        style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${cardErrors.name ? "#f87171" : "rgba(255,255,255,0.1)"}`, color: "white" }}
+                      />
+                      {cardErrors.name && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.name}</p>}
+                    </div>
 
-                <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
-                  🔒 Processed securely · Your card details are encrypted and never stored on our servers
-                </p>
+                    <div className="flex gap-3 pt-1">
+                      <button onClick={() => { setShowAddCard(false); setCardErrors({}); }}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                        style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>
+                        Cancel
+                      </button>
+                      <button onClick={handleSaveCard}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+                        Save Card
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      🔒 Processed securely · Your card details are encrypted and never stored on our servers
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <button onClick={() => setShowAddCard(true)}
