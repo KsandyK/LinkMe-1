@@ -447,9 +447,14 @@ export default function Account() {
                       rows={3} placeholder="Tell creators a little about yourself..."
                       className="vl-input resize-none" />
                   </div>
-                  <button onClick={handleSave} className="vl-btn-primary px-6 py-2.5 text-sm">
-                    {saved ? "✓ Saved!" : "Save Changes"}
-                  </button>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button onClick={handleSave} className="vl-btn-primary px-6 py-2.5 text-sm">
+                      {saved ? "✓ Saved!" : "Save Changes"}
+                    </button>
+                    {saveError && (
+                      <p className="text-xs" style={{ color: "#f87171" }}>{saveError}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Right: Badge selection */}

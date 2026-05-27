@@ -83,6 +83,8 @@ export default function GiftsStore() {
           setSentGift(gift.id);
           showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
           setTimeout(() => setSentGift(null), 2000);
+        } else {
+          showToast({ title: "Insufficient credits", description: `You need ${gift.creditCost} credits to send this gift.`, variant: "destructive" });
         }
       } finally {
         setSending(null);
@@ -92,7 +94,10 @@ export default function GiftsStore() {
       const success = spendCredits(gift.creditCost, `${gift.emoji} ${gift.name} to ${recipientName}`);
       if (success) {
         setSentGift(gift.id);
+        showToast({ title: `${gift.emoji} Gift Sent!`, description: `You sent a ${gift.name} to ${recipientName}` });
         setTimeout(() => setSentGift(null), 2000);
+      } else {
+        showToast({ title: "Insufficient credits", description: `You need ${gift.creditCost} credits. Visit the Credits Store to top up.`, variant: "destructive" });
       }
     }
   };

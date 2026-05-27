@@ -354,8 +354,10 @@ export default function Messages() {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? sent : m));
       loadConversations();
     } catch {
+      // Keep the message in the chat but mark it as failed (local only)
       setMessages(prev => prev.map(m => m.id === optimistic.id
         ? { ...optimistic, id: `local-${Date.now()}` } : m));
+      showToast({ title: "Message queued locally", description: "The API is offline — your message was saved locally.", variant: "destructive" });
     } finally {
       setSending(false);
     }

@@ -316,8 +316,9 @@ export default function CreatorDashboard() {
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 mb-6 vl-card p-1.5 w-fit flex-wrap">
+        {/* Tabs — horizontally scrollable on narrow screens */}
+        <div className="overflow-x-auto pb-1 -mx-4 px-4 mb-6">
+        <div className="flex gap-1 vl-card p-1.5 w-fit min-w-full sm:min-w-0">
           {(["overview", "content", "fans", "analytics", "boosts", "referral"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all flex items-center gap-1.5"
@@ -340,6 +341,7 @@ export default function CreatorDashboard() {
               )}
             </button>
           ))}
+        </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
