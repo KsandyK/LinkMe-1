@@ -375,7 +375,7 @@ export default function BoostsPage() {
                       {plan.vipSessions > 0 && (
                         <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
-                          {plan.vipSessions === 999 ? "∞" : plan.vipSessions} VIP sessions
+                          {plan.vipSessions >= 9999 ? "Unlimited VIP" : `${plan.vipSessions} VIP sessions`}
                         </span>
                       )}
                     </div>
