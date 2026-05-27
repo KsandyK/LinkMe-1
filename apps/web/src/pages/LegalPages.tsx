@@ -1517,10 +1517,10 @@ export default function LegalPages() {
                     out.push('<hr class="my-8 border-slate-700" />');
                   } else if (line.trim() === "") {
                     // blank — skip
-                  } else if (line.startsWith("| ")) {
-                    // ── Table block: collect all consecutive pipe lines ──
+                  } else if (line.startsWith("|")) {
+                    // ── Table block: collect all consecutive pipe lines (including |---|--- separator rows) ──
                     const tblLines: string[] = [];
-                    while (i < lines.length && lines[i].startsWith("| ")) {
+                    while (i < lines.length && lines[i].startsWith("|")) {
                       tblLines.push(lines[i]);
                       i++;
                     }
