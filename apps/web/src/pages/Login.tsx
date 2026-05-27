@@ -9,7 +9,6 @@ export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Already logged in — redirect home
   if (isLoggedIn) {
@@ -21,15 +20,14 @@ export default function Login() {
     e.preventDefault();
     if (!form.username.trim() || !form.password) return;
     setLoading(true);
-    setError(null);
     try {
       await login(form.username.trim(), form.password);
-      navigate("/");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
+    } catch {
+      // login() handles all errors internally — falls through to demo mode and never re-throws
     } finally {
       setLoading(false);
     }
+    navigate("/");
   };
 
   return (
@@ -45,12 +43,6 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-border bg-card space-y-4">
-          {error && (
-            <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-              {error}
-            </div>
-          )}
-
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">
               Username or Email

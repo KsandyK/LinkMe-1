@@ -11,6 +11,15 @@ const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
 
 type AgeVerificationStatus = "unverified" | "pending" | "verified";
 
+export interface LocalTransaction {
+  id: string;
+  amount: number;
+  type: string;
+  description: string;
+  createdAt: string;
+  status: "COMPLETED";
+}
+
 interface ToastOptions {
   title: string;
   description?: string;
@@ -45,13 +54,12 @@ interface AppContextType {
   setActiveMembership: (plan: string) => void;
   membershipDiscount: number; // e.g. 0.05 for 5% off
 
-  // Gacha collection
-  gachaCollection: string[];
-  addGachaItem: (item: string) => void;
-
   // Active boost package (spark | flame | inferno | legend | null)
   activeBoost: string | null;
   setActiveBoost: (pkg: string | null) => void;
+
+  // Transaction log
+  transactions: LocalTransaction[];
 
   // Auth
   user: { id: string; username: string; role: string } | null;
@@ -64,7 +72,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 const MEMBERSHIP_DISCOUNTS: Record<string, number> = {
-  free: 0, fan: 0, supporter: 0.05, superfan: 0.10, allaccess: 0.15, creatorpass: 0.20,
+  free: 0, fan: 0, supporter: 0.05, superfan: 0.10, devotee: 0.12, allaccess: 0.15, elite: 0.18, creatorpass: 0.20, blackcard: 0.25,
+  diamond: 0.25, obsidian: 0.25, platinum_m: 0.25,
 };
 
 const STORAGE_KEYS = {
@@ -73,8 +82,8 @@ const STORAGE_KEYS = {
   CREDITS: "vl_credits_v1",
   UNLOCKED: "vl_unlocked_v1",
   MEMBERSHIP: "vl_membership_v1",
-  GACHA: "vl_gacha_v1",
   BOOST: "vl_active_boost_v1",
+  TRANSACTIONS: "vl_transactions_v1",
 };
 
 function safeGet<T>(key: string, fallback: T): T {
@@ -95,6 +104,17 @@ function safeSet(key: string, value: unknown) {
   }
 }
 
+function makeTx(amount: number, type: string, description: string): LocalTransaction {
+  return {
+    id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    amount,
+    type,
+    description: description || (amount > 0 ? "Credits added" : "Credits spent"),
+    createdAt: new Date().toISOString(),
+    status: "COMPLETED",
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [ageGateAccepted, setAgeGateAcceptedState] = useState<boolean>(() =>
     safeGet(STORAGE_KEYS.AGE_GATE, false)
@@ -110,6 +130,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return new Set(arr);
   });
   const [unlockedMediaUrls, setUnlockedMediaUrls] = useState<Record<string, string>>({});
+  const [transactions, setTransactions] = useState<LocalTransaction[]>(() =>
+    safeGet<LocalTransaction[]>(STORAGE_KEYS.TRANSACTIONS, [])
+  );
+
+  function pushTx(amount: number, type: string, description: string) {
+    setTransactions(prev => {
+      const next = [makeTx(amount, type, description), ...prev].slice(0, 100);
+      safeSet(STORAGE_KEYS.TRANSACTIONS, next);
+      return next;
+    });
+  }
 
   // Membership
   const [activeMembership, setActiveMembershipState] = useState<string>(() =>
@@ -120,18 +151,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     safeSet(STORAGE_KEYS.MEMBERSHIP, plan);
   };
   const membershipDiscount = MEMBERSHIP_DISCOUNTS[activeMembership] ?? 0;
-
-  // Gacha collection
-  const [gachaCollection, setGachaCollection] = useState<string[]>(() =>
-    safeGet<string[]>(STORAGE_KEYS.GACHA, [])
-  );
-  const addGachaItem = (item: string) => {
-    setGachaCollection(prev => {
-      const next = [...prev, item];
-      safeSet(STORAGE_KEYS.GACHA, next);
-      return next;
-    });
-  };
 
   // Active boost
   const [activeBoost, setActiveBoostState] = useState<string | null>(() =>
@@ -165,6 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       safeSet(STORAGE_KEYS.CREDITS, next);
       return next;
     });
+    pushTx(amount, "CREDIT_ADDED", reason ?? "Credits added");
     toast.success(`+${amount.toLocaleString()} credits added`, { description: reason });
   };
 
@@ -178,6 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       safeSet(STORAGE_KEYS.CREDITS, next);
       return next;
     });
+    pushTx(-amount, "CREDIT_SPENT", reason ?? "Credits spent");
     toast.success(`Spent ${amount} credits`, { description: reason });
     return true;
   };
@@ -303,8 +324,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unlockedContent, unlockContent, isUnlocked, getMediaUrl,
       showToast,
       activeMembership, setActiveMembership, membershipDiscount,
-      gachaCollection, addGachaItem,
       activeBoost, setActiveBoost,
+      transactions,
       user, token, isLoggedIn: !!token && !!user, login, logout,
     }}>
       {children}

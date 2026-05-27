@@ -18,11 +18,10 @@ const LOOKING_FOR = [
 ];
 
 export default function Register() {
-  const { login } = useApp();
+  const { login, addCredits } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("account");
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -83,30 +82,22 @@ export default function Register() {
       setErrors({});
       setStep("preferences");
     } else if (step === "preferences") {
-      // Call real API to create account
       setSubmitting(true);
-      setSubmitError(null);
+      // Try API registration; swallow any error — demo mode kicks in via login() below
       try {
         await authApi.register({
           username: form.username,
           email: form.email || undefined,
           password: form.password,
         });
-        // Log in immediately with the new credentials
-        await login(form.username, form.password);
-        setStep("done");
       } catch {
-        // Any error (network, HTTP 502/503) → backend offline → demo mode
-        // Skip registration, let login() create a demo session
-        try {
-          await login(form.username, form.password);
-          setStep("done");
-        } catch {
-          setSubmitError("Registration failed. Please try again.");
-        }
-      } finally {
-        setSubmitting(false);
+        // API offline or error — login() below will create a demo session automatically
       }
+      // login() never throws: catches all errors internally and falls through to demo mode
+      await login(form.username, form.password);
+      addCredits(200, "Welcome bonus — thanks for joining LinkMe!");
+      setStep("done");
+      setSubmitting(false);
     }
   };
 
@@ -343,11 +334,6 @@ export default function Register() {
           )}
 
           {/* Nav buttons */}
-          {submitError && (
-            <div className="mt-4 p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-              {submitError}
-            </div>
-          )}
           <div className="flex gap-3 mt-4">
             {step !== "account" && (
               <button

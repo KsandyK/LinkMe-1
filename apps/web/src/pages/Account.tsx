@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award } from "lucide-react";
+import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star } from "lucide-react";
+
+// ── Favorites storage ─────────────────────────────────────────────────────────
+const FAV_STORAGE_KEY = "vl_favorites_v1";
+interface FavoriteCreator {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  isLive: boolean;
+}
 
 // ── Badge definitions ─────────────────────────────────────────────────────────
 type BadgeDef = {
@@ -9,13 +19,11 @@ type BadgeDef = {
   emoji: string;
   name: string;
   desc: string;
-  type: "membership" | "credits" | "gacha";
+  type: "membership" | "credits";
   /** membership IDs that unlock this */
   levels?: string[];
   /** credit balance threshold to unlock */
   threshold?: number;
-  /** gacha collection size to unlock */
-  gachaMin?: number;
 };
 
 const ACCOUNT_BADGES: BadgeDef[] = [
@@ -29,16 +37,62 @@ const ACCOUNT_BADGES: BadgeDef[] = [
   { id: "credits_100",  emoji: "💰", name: "Tipped",       desc: "100+ credits",   type: "credits", threshold: 100 },
   { id: "credits_500",  emoji: "💸", name: "Big Spender",  desc: "500+ credits",   type: "credits", threshold: 500 },
   { id: "credits_2000", emoji: "🐋", name: "Whale",        desc: "2,000+ credits", type: "credits", threshold: 2000 },
-  // Gacha badges
-  { id: "gacha_1",  emoji: "🎴", name: "Puller",    desc: "First gacha pull",      type: "gacha", gachaMin: 1 },
-  { id: "gacha_5",  emoji: "🃏", name: "Collector", desc: "5+ gacha items",        type: "gacha", gachaMin: 5 },
-  { id: "gacha_10", emoji: "🎰", name: "Devoted",   desc: "10+ gacha items",       type: "gacha", gachaMin: 10 },
 ] as const;
 
+// ── Card helpers (mirrors Billing.tsx) ───────────────────────────────────────
+interface SavedCard { id: string; last4: string; brand: string; expiry: string; name: string; isDefault: boolean }
+const CARDS_KEY = "vl_saved_cards_v1";
+function loadCards(): SavedCard[] { try { return JSON.parse(localStorage.getItem(CARDS_KEY) ?? "[]"); } catch { return []; } }
+function saveCards(cards: SavedCard[]) { try { localStorage.setItem(CARDS_KEY, JSON.stringify(cards)); } catch {} }
+function detectBrand(num: string): string {
+  const n = num.replace(/\s/g, "");
+  if (/^4/.test(n)) return "Visa";
+  if (/^5[1-5]/.test(n)) return "Mastercard";
+  if (/^3[47]/.test(n)) return "Amex";
+  if (/^6(?:011|5)/.test(n)) return "Discover";
+  return "Card";
+}
+function brandIcon(b: string) { return b === "Visa" ? "💳" : b === "Mastercard" ? "🟠" : b === "Amex" ? "🔵" : b === "Discover" ? "🟡" : "💳"; }
+function fmtCardNum(v: string) { return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(); }
+function fmtExpiry(v: string) { const d = v.replace(/\D/g, "").slice(0, 4); return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; }
+
+// ── Subscription display helpers ─────────────────────────────────────────────
+const MEMBERSHIP_INFO: Record<string, { name: string; price: number; color: string; emoji: string }> = {
+  fan:         { name: "Fan",          price: 0,     color: "#9ca3af", emoji: "⭐"  },
+  supporter:   { name: "Supporter",    price: 4.99,  color: "#a78bfa", emoji: "💜"  },
+  superfan:    { name: "Superfan",     price: 9.99,  color: "#f97316", emoji: "🔥"  },
+  devotee:     { name: "Devotee",      price: 19.99, color: "#3b82f6", emoji: "💎"  },
+  allaccess:   { name: "All Access",   price: 29.99, color: "#14b8a6", emoji: "🌟"  },
+  elite:       { name: "Elite",        price: 39.99, color: "#f59e0b", emoji: "👑"  },
+  creatorpass: { name: "Creator Pass", price: 49.99, color: "#ec4899", emoji: "🎟️" },
+  blackcard:   { name: "Black Card",   price: 59.99, color: "#e8a87c", emoji: "🃏"  },
+  diamond:     { name: "Diamond",      price: 79.99, color: "#38bdf8", emoji: "💠"  },
+  obsidian:    { name: "Obsidian",     price: 99.99, color: "#8b5cf6", emoji: "🖤"  },
+};
+const BOOST_INFO: Record<string, { name: string; price: number; color: string; emoji: string }> = {
+  starter:   { name: "Starter Boost",   price: 4.99,  color: "#9ca3af", emoji: "🌱" },
+  spark:     { name: "Spark Boost",     price: 9.99,  color: "#fbbf24", emoji: "✨" },
+  flame:     { name: "Flame Boost",     price: 19.99, color: "#f97316", emoji: "🔥" },
+  blaze:     { name: "Blaze Boost",     price: 29.99, color: "#ef4444", emoji: "💥" },
+  inferno:   { name: "Inferno Boost",   price: 49.99, color: "#dc2626", emoji: "🌋" },
+  legend:    { name: "Legend Boost",    price: 79.99, color: "#a78bfa", emoji: "🏆" },
+  titan:     { name: "Titan Boost",     price: 99.99, color: "#38bdf8", emoji: "⚡" },
+  supernova: { name: "Supernova Boost", price: 149.99,color: "#f59e0b", emoji: "💫" },
+  colossus:  { name: "Colossus Boost",  price: 199.99,color: "#ec4899", emoji: "🗿" },
+  sovereign: { name: "Sovereign Boost", price: 299.99,color: "#e8a87c", emoji: "👑" },
+};
+function nextBillingDate() {
+  const d = new Date(); d.setMonth(d.getMonth() + 1);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 const TABS = [
-  { id: "profile", label: "Profile", icon: User },
-  { id: "security", label: "Security", icon: Lock },
-  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "profile",       label: "Profile",       icon: User       },
+  { id: "favorites",     label: "Favorites",     icon: Heart      },
+  { id: "billing",       label: "Billing",       icon: CreditCard },
+  { id: "transactions",  label: "Transactions",  icon: Receipt    },
+  { id: "security",      label: "Security",      icon: Lock       },
+  { id: "notifications", label: "Notifications", icon: Bell       },
 ] as const;
 type Tab = typeof TABS[number]["id"];
 
@@ -61,7 +115,8 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 }
 
 export default function Account() {
-  const { credits, ageVerificationStatus, showToast, user, logout, activeMembership, gachaCollection } = useApp();
+  const { credits, ageVerificationStatus, showToast, user, logout, activeMembership, setActiveMembership, activeBoost, setActiveBoost, transactions } = useApp();
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [displayName, setDisplayName] = useState(user?.username ?? "Member");
   const [username, setUsername] = useState(user?.username ?? "member_user");
@@ -85,13 +140,74 @@ export default function Account() {
   // Simulated OTP (always "123456" in demo)
   const DEMO_OTP = "123456";
 
+  // Favorites
+  const [favorites, setFavorites] = useState<FavoriteCreator[]>(() => {
+    try { return JSON.parse(localStorage.getItem(FAV_STORAGE_KEY) ?? "[]"); } catch { return []; }
+  });
+  const removeFavorite = (id: string) => {
+    const next = favorites.filter(f => f.id !== id);
+    setFavorites(next);
+    localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(next));
+  };
+
+  // Cards (billing tab)
+  const [cards, setCards] = useState<SavedCard[]>(loadCards);
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [cardForm, setCardForm] = useState({ number: "", expiry: "", cvv: "", name: "" });
+  const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
+  const [cardSaved, setCardSaved] = useState(false);
+
+  // Cancel plan confirmation modal
+  const [cancelPlanModal, setCancelPlanModal] = useState<{
+    type: "membership" | "boost";
+    name: string;
+    emoji: string;
+    color: string;
+    renewDate: string;
+    perks: string[];
+    onConfirm: () => void;
+  } | null>(null);
+
+  const handleAddCard = () => {
+    const errs: Record<string, string> = {};
+    const num = cardForm.number.replace(/\s/g, "");
+    if (num.length < 13) errs.number = "Invalid card number";
+    if (cardForm.expiry.length < 5) errs.expiry = "MM/YY required";
+    if (cardForm.cvv.length < 3) errs.cvv = "CVV required";
+    if (!cardForm.name.trim()) errs.name = "Name required";
+    setCardErrors(errs);
+    if (Object.keys(errs).length) return;
+    const last4 = num.slice(-4);
+    const brand = detectBrand(num);
+    const newCard: SavedCard = {
+      id: `card-${Date.now()}`, last4, brand, expiry: cardForm.expiry, name: cardForm.name.trim(), isDefault: cards.length === 0,
+    };
+    const next = [...cards, newCard];
+    setCards(next); saveCards(next);
+    setCardForm({ number: "", expiry: "", cvv: "", name: "" });
+    setShowAddCard(false);
+    setCardSaved(true);
+    showToast({ title: `${brandIcon(brand)} ${brand} ••••${last4} added` });
+    setTimeout(() => setCardSaved(false), 2000);
+  };
+  const handleSetDefault = (id: string) => {
+    const next = cards.map(c => ({ ...c, isDefault: c.id === id }));
+    setCards(next); saveCards(next);
+    showToast({ title: "Default card updated" });
+  };
+  const handleRemoveCard = (id: string) => {
+    const filtered = cards.filter(c => c.id !== id);
+    const next = filtered.map((c, i) => i === 0 ? { ...c, isDefault: true } : c);
+    setCards(next); saveCards(next);
+    showToast({ title: "Card removed" });
+  };
+
   // Badge selection
   const [equippedBadge, setEquippedBadge] = useState<string | null>(() => localStorage.getItem("vl_equipped_badge_v1"));
 
   const isBadgeUnlocked = (b: BadgeDef): boolean => {
     if (b.type === "membership") return (b.levels ?? []).includes(activeMembership);
     if (b.type === "credits")    return credits >= (b.threshold ?? 0);
-    if (b.type === "gacha")      return gachaCollection.length >= (b.gachaMin ?? 0);
     return false;
   };
 
@@ -170,6 +286,7 @@ export default function Account() {
     } catch {/* ignore */}
     logout();
     showToast({ title: "Signed out everywhere", description: "All sessions have been terminated." });
+    setTimeout(() => navigate("/login"), 800);
   };
 
   const handleDeactivate = () => {
@@ -380,15 +497,326 @@ export default function Account() {
                   </div>
 
                   <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
-                    Earn badges through memberships, credits & gacha pulls. Tap to equip.
+                    Earn badges through memberships &amp; credits. Tap to equip.
                   </p>
-                  <Link href="/gacha">
-                    <button className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-90"
-                      style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", color: "#a78bfa" }}>
-                      🎴 Open The Pull (Gacha)
-                    </button>
-                  </Link>
                 </div>
+              </div>
+            )}
+
+            {/* Favorites tab */}
+            {activeTab === "favorites" && (
+              <div>
+                <div className="flex items-center gap-2 mb-5">
+                  <Heart className="w-4 h-4" style={{ color: "#e8a87c" }} />
+                  <h2 className="text-base font-bold text-white">Favorite Creators</h2>
+                  {favorites.length > 0 && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-bold ml-1"
+                      style={{ background: "rgba(232,168,124,0.12)", color: "#e8a87c", border: "1px solid rgba(232,168,124,0.2)" }}>
+                      {favorites.length}
+                    </span>
+                  )}
+                </div>
+
+                {favorites.length === 0 ? (
+                  <div className="text-center py-14">
+                    <Heart className="w-12 h-12 mx-auto mb-4" style={{ color: "rgba(255,255,255,0.1)" }} />
+                    <p className="text-sm font-semibold text-white mb-1">No favorites yet</p>
+                    <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Tap the ❤️ on a creator's profile to save them here for quick access
+                    </p>
+                    <Link href="/profiles">
+                      <button className="vl-btn-primary px-5 py-2.5 text-sm">Browse Creators</button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {favorites.map(fav => {
+                      const name = fav.displayName ?? fav.username;
+                      const avatar = fav.avatarUrl
+                        ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${fav.username}`;
+                      return (
+                        <div key={fav.id}
+                          className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5"
+                          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                          {/* Avatar */}
+                          <div className="relative flex-shrink-0">
+                            <img src={avatar} alt={name}
+                              className="w-10 h-10 rounded-full object-cover"
+                              style={{ border: "2px solid rgba(20,184,166,0.3)" }} />
+                            {fav.isLive && (
+                              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                                style={{ background: "#ef4444", border: "2px solid #0f1622" }}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Name */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{name}</p>
+                            <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.4)" }}>
+                              @{fav.username}
+                            </p>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {fav.isLive && (
+                              <Link href={`/live/${fav.id}`}>
+                                <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
+                                  style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
+                                  <Radio className="w-3 h-3" />
+                                  LIVE
+                                </button>
+                              </Link>
+                            )}
+                            <Link href={`/profiles/${fav.id}`}>
+                              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-white/10"
+                                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+                                View
+                              </button>
+                            </Link>
+                            <button
+                              onClick={() => removeFavorite(fav.id)}
+                              title="Remove from favorites"
+                              className="p-1.5 rounded-lg transition-all hover:bg-white/10"
+                              style={{ color: "#e8a87c" }}>
+                              <Heart className="w-3.5 h-3.5 fill-current" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Billing tab */}
+            {activeTab === "billing" && (
+              <div className="space-y-6">
+                <h2 className="text-base font-bold text-white">Billing</h2>
+
+                {/* ── Payment Methods ────────────────────────────────────── */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold text-white">Payment Methods</p>
+                    {!showAddCard && (
+                      <button onClick={() => setShowAddCard(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                        style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
+                        <Plus className="w-3.5 h-3.5" /> Add Card
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Saved cards */}
+                  {cards.length === 0 && !showAddCard && (
+                    <div className="rounded-xl p-6 text-center"
+                      style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
+                      <CreditCard className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>No payment methods saved</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 mb-3">
+                    {cards.map(card => (
+                      <div key={card.id} className="flex items-center gap-3 p-3 rounded-xl"
+                        style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${card.isDefault ? "rgba(20,184,166,0.35)" : "rgba(255,255,255,0.08)"}` }}>
+                        <span className="text-xl">{brandIcon(card.brand)}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white">{card.brand} •••• {card.last4}</p>
+                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{card.name} · Exp {card.expiry}</p>
+                        </div>
+                        {card.isDefault
+                          ? <span className="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0"
+                              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>Default</span>
+                          : <button onClick={() => handleSetDefault(card.id)}
+                              className="text-xs px-2 py-0.5 rounded-lg transition-all hover:bg-white/10 flex-shrink-0"
+                              style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>Set Default</button>
+                        }
+                        <button onClick={() => handleRemoveCard(card.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors flex-shrink-0"
+                          style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add card form */}
+                  {showAddCard && (
+                    <div className="rounded-xl p-4 space-y-3"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(20,184,166,0.2)" }}>
+                      <p className="text-xs font-bold text-white mb-1">New Card</p>
+                      <div>
+                        <input value={cardForm.number} onChange={e => setCardForm(f => ({ ...f, number: fmtCardNum(e.target.value) }))}
+                          placeholder="Card number" maxLength={19}
+                          className="vl-input w-full font-mono"
+                          style={{ borderColor: cardErrors.number ? "rgba(239,68,68,0.5)" : undefined }} />
+                        {cardErrors.number && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.number}</p>}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <input value={cardForm.expiry} onChange={e => setCardForm(f => ({ ...f, expiry: fmtExpiry(e.target.value) }))}
+                            placeholder="MM/YY" maxLength={5}
+                            className="vl-input w-full"
+                            style={{ borderColor: cardErrors.expiry ? "rgba(239,68,68,0.5)" : undefined }} />
+                          {cardErrors.expiry && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.expiry}</p>}
+                        </div>
+                        <div>
+                          <input value={cardForm.cvv} onChange={e => setCardForm(f => ({ ...f, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                            placeholder="CVV" maxLength={4}
+                            className="vl-input w-full"
+                            style={{ borderColor: cardErrors.cvv ? "rgba(239,68,68,0.5)" : undefined }} />
+                          {cardErrors.cvv && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.cvv}</p>}
+                        </div>
+                      </div>
+                      <div>
+                        <input value={cardForm.name} onChange={e => setCardForm(f => ({ ...f, name: e.target.value }))}
+                          placeholder="Name on card"
+                          className="vl-input w-full"
+                          style={{ borderColor: cardErrors.name ? "rgba(239,68,68,0.5)" : undefined }} />
+                        {cardErrors.name && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.name}</p>}
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <button onClick={() => { setShowAddCard(false); setCardErrors({}); }}
+                          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
+                          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Cancel</button>
+                        <button onClick={handleAddCard}
+                          className="flex-1 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
+                          style={{ background: "#14b8a6", color: "white" }}>
+                          {cardSaved ? "✓ Saved" : "Save Card"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Active Subscriptions ───────────────────────────────── */}
+                <div>
+                  <p className="text-sm font-semibold text-white mb-3">Active Subscriptions</p>
+                  {activeMembership === "free" && !activeBoost ? (
+                    <div className="rounded-xl p-6 text-center"
+                      style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
+                      <Star className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>No active subscriptions</p>
+                      <Link href="/boosts">
+                        <button className="text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
+                          style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
+                          Browse Plans
+                        </button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {activeMembership !== "free" && MEMBERSHIP_INFO[activeMembership] && (() => {
+                        const m = MEMBERSHIP_INFO[activeMembership];
+                        return (
+                          <div className="flex items-center gap-3 p-3 rounded-xl"
+                            style={{ background: `${m.color}10`, border: `1px solid ${m.color}30` }}>
+                            <span className="text-xl">{m.emoji}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-white">{m.name} Membership</p>
+                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                                ${m.price}/mo · Renews {nextBillingDate()}
+                              </p>
+                            </div>
+                            <button onClick={() => setCancelPlanModal({
+                                type: "membership",
+                                name: m.name,
+                                emoji: m.emoji,
+                                color: m.color,
+                                renewDate: nextBillingDate(),
+                                perks: ["Credit discount", "Exclusive badge", "Tier-locked content access"],
+                                onConfirm: () => { setActiveMembership("free"); showToast({ title: `${m.name} membership cancelled` }); setCancelPlanModal(null); },
+                              })}
+                              className="text-xs px-2.5 py-1 rounded-lg transition-all hover:bg-red-500/10 flex-shrink-0"
+                              style={{ border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                              Cancel
+                            </button>
+                          </div>
+                        );
+                      })()}
+                      {activeBoost && BOOST_INFO[activeBoost] && (() => {
+                        const b = BOOST_INFO[activeBoost];
+                        return (
+                          <div className="flex items-center gap-3 p-3 rounded-xl"
+                            style={{ background: `${b.color}10`, border: `1px solid ${b.color}30` }}>
+                            <span className="text-xl">{b.emoji}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-white">{b.name}</p>
+                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                                ${b.price}/mo · Renews {nextBillingDate()}
+                              </p>
+                            </div>
+                            <button onClick={() => setCancelPlanModal({
+                                type: "boost",
+                                name: b.name,
+                                emoji: b.emoji,
+                                color: b.color,
+                                renewDate: nextBillingDate(),
+                                perks: ["Profile boost visibility", "Analytics access", "Featured placement in search"],
+                                onConfirm: () => { setActiveBoost(null); showToast({ title: `${b.name} cancelled` }); setCancelPlanModal(null); },
+                              })}
+                              className="text-xs px-2.5 py-1 rounded-lg transition-all hover:bg-red-500/10 flex-shrink-0"
+                              style={{ border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                              Cancel
+                            </button>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Transactions tab */}
+            {activeTab === "transactions" && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-base font-bold text-white">Transaction History</h2>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+                    {transactions.length} transactions
+                  </span>
+                </div>
+
+                {transactions.length === 0 ? (
+                  <div className="text-center py-14">
+                    <Receipt className="w-12 h-12 mx-auto mb-4" style={{ color: "rgba(255,255,255,0.1)" }} />
+                    <p className="text-sm font-semibold text-white mb-1">No transactions yet</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      Credits earned and spent will appear here
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {transactions.map(tx => {
+                      const isCredit = tx.amount > 0;
+                      return (
+                        <div key={tx.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5"
+                          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                            style={{ background: isCredit ? "rgba(20,184,166,0.12)" : "rgba(232,168,124,0.1)" }}>
+                            <Zap className="w-3.5 h-3.5" style={{ color: isCredit ? "#14b8a6" : "#e8a87c" }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-white truncate">{tx.description}</p>
+                            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                              {new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                          <span className="text-sm font-black flex-shrink-0"
+                            style={{ color: isCredit ? "#14b8a6" : "#e8a87c" }}>
+                            {isCredit ? "+" : ""}{tx.amount.toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -505,6 +933,64 @@ export default function Account() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Plan Disclaimer Modal */}
+      {cancelPlanModal && (
+        <Modal onClose={() => setCancelPlanModal(null)}>
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
+              style={{ background: `${cancelPlanModal.color}15`, border: `1px solid ${cancelPlanModal.color}35` }}>
+              {cancelPlanModal.emoji}
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Cancel {cancelPlanModal.name}?</h3>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {cancelPlanModal.type === "membership" ? "Membership" : "Boost"} cancellation
+              </p>
+            </div>
+          </div>
+
+          {/* What you'll lose */}
+          <div className="rounded-xl p-4 mb-4"
+            style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)" }}>
+            <p className="text-xs font-bold mb-2" style={{ color: "#fca5a5" }}>
+              ⚠️ The following perks will expire on {cancelPlanModal.renewDate}:
+            </p>
+            <ul className="space-y-1.5">
+              {cancelPlanModal.perks.map(perk => (
+                <li key={perk} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  <X className="w-3 h-3 flex-shrink-0" style={{ color: "#f87171" }} />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Info note */}
+          <div className="rounded-xl p-3 mb-5"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Your {cancelPlanModal.name} plan remains <strong className="text-white">active until {cancelPlanModal.renewDate}</strong>.
+              After that date, all associated perks, discounts, and earned status will be removed.
+              You can resubscribe at any time to restore access.
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={() => setCancelPlanModal(null)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+              style={{ background: `${cancelPlanModal.color}18`, border: `1px solid ${cancelPlanModal.color}40`, color: cancelPlanModal.color }}>
+              Keep Plan
+            </button>
+            <button onClick={cancelPlanModal.onConfirm}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-red-500/10"
+              style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+              Yes, Cancel
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* 2FA Setup Modal */}
       {show2FAModal && (
