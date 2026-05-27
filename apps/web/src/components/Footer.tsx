@@ -51,7 +51,6 @@ export function Footer() {
               {[
                 { href: "/become-creator", label: "Become a Creator" },
                 { href: "/creator", label: "Creator Dashboard" },
-                { href: "/legal/creator-agreement", label: "Creator Agreement" },
                 { href: "/boosts", label: "Boost Your Profile" },
               ].map(l => (
                 <li key={l.href}>
@@ -66,21 +65,9 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Legal</h4>
-            <ul className="space-y-2">
-              {[
-                { href: "/legal/terms", label: "Terms of Service" },
-                { href: "/legal/privacy", label: "Privacy Policy" },
-                { href: "/legal/conduct", label: "Code of Conduct" },
-                { href: "/legal/2257", label: "18 U.S.C. § 2257" },
-                { href: "/legal/dmca", label: "DMCA Policy" },
-              ].map(l => (
-                <li key={l.href}>
-                  <Link href={l.href}>
-                    <span className="text-xs cursor-pointer transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>{l.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <Link href="/legal">
+              <span className="text-xs cursor-pointer transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>Legal Centre</span>
+            </Link>
           </div>
         </div>
 

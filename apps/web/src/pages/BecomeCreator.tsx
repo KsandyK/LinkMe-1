@@ -7,7 +7,7 @@ import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
 const PERKS = [
-  { icon: DollarSign, title: "Keep 80% of Earnings", desc: "Industry-leading revenue share. You earn more here than anywhere else.", color: "#14b8a6" },
+  { icon: DollarSign, title: "Earn Your Way, Your Time", desc: "Industry-leading revenue share. You earn more here than anywhere else.", color: "#14b8a6" },
   { icon: Radio, title: "HD Live Streaming", desc: "Go live instantly with crystal-clear video and ultra-low latency.", color: "#ef4444" },
   { icon: Zap, title: "Real-Time Tips & Gifts", desc: "Fans send credits and gifts during your streams — instant income.", color: "#e8a87c" },
   { icon: Shield, title: "Creator Protection", desc: "DMCA takedown support, content watermarking, and privacy controls.", color: "#a78bfa" },

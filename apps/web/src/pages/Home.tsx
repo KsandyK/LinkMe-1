@@ -176,7 +176,7 @@ export default function Home() {
 
       {/* Age Verification Banner */}
       {ageVerificationStatus !== "verified" && (
-        <div className="py-3" style={{ background: "rgba(234,179,8,0.05)", borderBottom: "1px solid rgba(234,179,8,0.12)" }}>
+        <div className="py-3" style={{ borderBottom: "1px solid rgba(234,179,8,0.18)" }}>
           <div className="container flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Shield className="w-4 h-4 flex-shrink-0" style={{ color: "#fbbf24" }} />
@@ -248,7 +248,7 @@ export default function Home() {
       )}
 
       {/* ── Promoted Creators (Homepage Featured Spot) ── */}
-      <section className="py-10" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(249,115,22,0.02)" }}>
+      <section className="py-10">
         <div className="container">
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export default function Home() {
       </section>
 
       {/* Featured Creators */}
-      <section className="py-10" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+      <section className="py-10">
         <div className="container">
           <div className="flex items-center justify-between mb-5">
             <h2 className="vl-section-title">Featured Creators</h2>
@@ -330,7 +330,7 @@ export default function Home() {
       </section>
 
       {/* Why LinkMe */}
-      <section className="py-12" style={{ background: "rgba(20,184,166,0.02)", borderTop: "1px solid rgba(20,184,166,0.07)" }}>
+      <section className="py-12">
         <div className="container">
           <h2 className="vl-section-title text-center mb-8">Why LinkMe</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

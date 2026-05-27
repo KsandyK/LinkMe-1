@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Menu, X, Zap, MessageCircle, Users, Radio, Crown, User, LayoutDashboard, ShoppingBag, ChevronDown, Shield, Sparkles } from "lucide-react";
+import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ShoppingBag, ChevronDown, Shield } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/profiles", label: "Creators", icon: Users },
-  { href: "/live", label: "Live", icon: Radio, badge: "LIVE" },
-  { href: "/messages", label: "Messages", icon: MessageCircle },
-  { href: "/credits", label: "Credits", icon: Zap },
-  { href: "/gacha", label: "The Pull", icon: Sparkles, badge: "NEW" },
-  { href: "/vip-lounge", label: "VIP", icon: Crown },
+  { href: "/live",     label: "Live",     icon: Radio, badge: "LIVE" },
+  { href: "/credits",  label: "Credits",  icon: Zap   },
+  { href: "/vip-lounge", label: "VIP",    icon: Crown },
 ];
 
 export function Navigation() {

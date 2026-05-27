@@ -23,7 +23,13 @@ export default function ProfileDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
-  const [liked, setLiked] = useState(false);
+
+  // Persist heart/favourite to localStorage
+  const FAV_KEY = "vl_favorites_v1";
+  function loadFavs(): { id: string; username: string; displayName: string | null; avatarUrl: string | null; isLive: boolean }[] {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY) ?? "[]"); } catch { return []; }
+  }
+  const [liked, setLiked] = useState(() => loadFavs().some(f => f.id === id));
 
   useEffect(() => {
     if (!id) return;
@@ -82,10 +88,22 @@ export default function ProfileDetail() {
   }, [id]);
 
   const handleLike = () => {
-    setLiked(l => !l);
+    const adding = !liked;
+    setLiked(adding);
+    const favs = loadFavs().filter(f => f.id !== id);
+    if (adding && creator) {
+      favs.push({
+        id: creator.id,
+        username: creator.user.username,
+        displayName: creator.user.profile?.displayName ?? null,
+        avatarUrl: creator.user.profile?.avatarUrl ?? null,
+        isLive: creator.isLive,
+      });
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
     showToast({
-      title: liked ? "Removed from favourites" : "Added to favourites",
-      description: liked ? "" : `You liked ${creator?.user?.profile?.displayName ?? "this creator"}`,
+      title: adding ? "Added to favourites" : "Removed from favourites",
+      description: adding ? `You liked ${creator?.user?.profile?.displayName ?? creator?.user?.username ?? "this creator"}` : "",
     });
   };
 
@@ -114,12 +132,14 @@ export default function ProfileDetail() {
       const timeout = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000));
       await Promise.race([messagesApi.getOrCreate(creator.userId), timeout]);
     } catch {
-      // Any error (network, HTTP 502/503, timeout) → demo mode: just go to messages
-      // The messages page handles offline state gracefully
+      // Any error (network, HTTP 502/503, timeout) → demo mode: go to messages with context
     } finally {
       setMessaging(false);
     }
-    setLocation("/messages");
+    const dn = p?.displayName ?? creator.user.username;
+    setLocation(
+      `/messages?with=${encodeURIComponent(creator.userId)}&username=${encodeURIComponent(creator.user.username)}&name=${encodeURIComponent(dn)}`
+    );
   };
 
   if (loading) {

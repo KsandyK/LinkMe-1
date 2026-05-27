@@ -15,6 +15,34 @@ export default function TermsOfService() {
 
         <div className="space-y-4 text-muted-foreground text-sm leading-relaxed">
 
+          {/* ── Contact Directory ──────────────────────────────────────────── */}
+          <div className="p-5 rounded-xl border" style={{ background: "rgba(20,184,166,0.04)", borderColor: "rgba(20,184,166,0.25)" }}>
+            <h2 className="text-foreground font-bold text-base mb-1">📬 Contact Directory</h2>
+            <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Use the appropriate address below — routing your inquiry to the right team ensures the fastest response.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {[
+                { dept: "General Support",      email: "support@LinkMe.com",           desc: "Account issues, billing help, general questions" },
+                { dept: "Legal Department",     email: "legal@LinkMe.com",             desc: "Legal notices, subpoenas, contract matters" },
+                { dept: "Privacy & Data",       email: "privacy@LinkMe.com",           desc: "Data requests, GDPR/CCPA, privacy concerns" },
+                { dept: "DMCA / Copyright",     email: "dmca@LinkMe.com",              desc: "Copyright takedown notices & counter-notices" },
+                { dept: "Community & Trust",    email: "community@LinkMe.com",         desc: "Code of conduct, community standards, appeals" },
+                { dept: "Safety & Reporting",   email: "safety@LinkMe.com",            desc: "Abuse reports, harassment, urgent safety issues" },
+                { dept: "Billing",              email: "billing@LinkMe.com",           desc: "Payment disputes, refund requests, invoices" },
+                { dept: "Creator Support",      email: "creators@LinkMe.com",          desc: "Creator onboarding, payout questions, studio help" },
+                { dept: "GDPR — EU Residents",  email: "gdpr@LinkMe.com",              desc: "EU data subject rights requests" },
+                { dept: "Law Enforcement",      email: "law-enforcement@LinkMe.com",   desc: "Official law enforcement requests only" },
+              ].map(c => (
+                <div key={c.email} className="flex flex-col gap-0.5 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="text-xs font-bold text-foreground">{c.dept}</span>
+                  <a href={`mailto:${c.email}`} className="text-xs font-mono" style={{ color: "#14b8a6" }}>{c.email}</a>
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{c.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5">
             <p className="text-destructive font-bold text-sm">⚠️ IMPORTANT LEGAL NOTICE — READ CAREFULLY</p>
             <p className="mt-2 text-sm">LinkMe is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.</p>
@@ -193,10 +221,70 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 
 13.4 Assignment: You may not assign your rights or obligations under these Terms. LinkMe may freely assign its rights.
 
-13.5 Contact:
-LinkMe Inc. — Legal Department
-legal@LinkMe.com
-1234 Platform Way, Wilmington, DE 19801, USA`,
+13.5 Contact Information:
+LinkMe Inc.
+1234 Platform Way, Wilmington, DE 19801, USA
+
+General Support:       support@LinkMe.com
+Legal Department:      legal@LinkMe.com
+Privacy & Data:        privacy@LinkMe.com
+DMCA / Copyright:      dmca@LinkMe.com
+Community & Trust:     community@LinkMe.com
+Safety & Reporting:    safety@LinkMe.com
+Billing:               billing@LinkMe.com
+Creator Support:       creators@LinkMe.com
+GDPR (EU Residents):   gdpr@LinkMe.com
+Law Enforcement:       law-enforcement@LinkMe.com`,
+            },
+            {
+              title: "14. DMCA Policy & Copyright Takedowns (17 U.S.C. § 512)",
+              content: `14.1 Designated Copyright Agent
+LinkMe Inc. has designated the following agent to receive notifications of claimed copyright infringement under the Digital Millennium Copyright Act:
+
+  DMCA Designated Agent
+  LinkMe Inc. — Copyright Department
+  1234 Platform Way, Wilmington, DE 19801, USA
+  Email: dmca@LinkMe.com
+  Subject line: "DMCA Takedown Notice"
+
+14.2 Filing a Valid DMCA Takedown Notice
+To report alleged copyright infringement, you MUST provide a written notice containing ALL of the following elements (17 U.S.C. § 512(c)(3)):
+
+• Your physical or electronic signature (typed name is acceptable)
+• Identification of the copyrighted work(s) claimed to have been infringed
+• Identification of the allegedly infringing material and sufficient information to locate it on the platform (direct URL preferred)
+• Your contact information: full legal name, mailing address, telephone number, and email address
+• A statement that you have a good-faith belief that use of the material is not authorised by the copyright owner, its agent, or the law
+• A statement, made under penalty of perjury, that the information in your notice is accurate and that you are the copyright owner or are authorised to act on the copyright owner's behalf
+
+Incomplete notices will not be actioned. LinkMe will respond to valid notices within 3–5 business days.
+
+14.3 Counter-Notification Procedure
+If you believe your content was removed due to mistake or misidentification of the material, you may file a counter-notification under 17 U.S.C. § 512(g)(3) containing:
+
+• Your physical or electronic signature
+• Identification of the removed material and the location where it appeared before removal
+• A statement under penalty of perjury that you believe the material was removed by mistake or misidentification
+• Your full name, mailing address, and telephone number
+• A statement consenting to the jurisdiction of the Federal District Court for the District of Delaware (or your local jurisdiction if outside the US)
+• Email to: dmca@LinkMe.com with subject line "DMCA Counter-Notice"
+
+Upon receipt of a valid counter-notice, LinkMe will notify the original complainant. If the complainant does not file a court action within 10–14 business days, LinkMe may, at its discretion, restore the removed material.
+
+14.4 Repeat Infringer Policy
+LinkMe maintains a strict repeat-infringer policy in accordance with 17 U.S.C. § 512(i). Accounts that accumulate two or more substantiated DMCA complaints will be permanently terminated without refund of credits or fees. Terminated accounts may not re-register.
+
+14.5 Misuse & Abuse of Process
+Filing a knowingly false DMCA takedown notice constitutes perjury and may expose you to civil liability under 17 U.S.C. § 512(f), including damages, costs, and attorney's fees incurred by the alleged infringer, the account holder, and LinkMe. We actively investigate and report bad-faith notice filers to appropriate authorities.
+
+14.6 Safe Harbour Statement
+LinkMe operates as a service provider within the meaning of 17 U.S.C. § 512 and qualifies for the DMCA safe harbour. We act expeditiously to remove or disable access to infringing material upon receipt of a valid notice and do not have actual knowledge of infringing activity unless specifically notified through the procedure above.
+
+14.7 Non-Copyright Reports
+For content that violates our policies (harassment, illegal material, community standards violations) but does not constitute copyright infringement, please use:
+  safety@LinkMe.com — urgent safety or abuse reports
+  community@LinkMe.com — general policy violations
+  law-enforcement@LinkMe.com — official law enforcement requests only`,
             },
           ].map(section => (
             <div key={section.title} className="p-5 rounded-xl border border-border bg-card">

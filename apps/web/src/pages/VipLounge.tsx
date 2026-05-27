@@ -10,8 +10,15 @@ import { useApp } from "@/contexts/AppContext";
 
 // Session allowance per membership
 const SESSION_LIMITS: Record<string, number> = {
+  superfan: 2,
+  devotee: 4,
   allaccess: 10,
+  elite: 15,
   creatorpass: 20,
+  blackcard: 999,
+  diamond: 999,
+  obsidian: 999,
+  platinum_m: 999,
 };
 
 // VIP-exclusive content cards

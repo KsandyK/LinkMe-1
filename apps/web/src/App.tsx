@@ -31,10 +31,10 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import Billing from "./pages/Billing";
 import AgeVerification from "./pages/AgeVerification";
 import LegalPages from "./pages/LegalPages";
+import LegalHub from "./pages/LegalHub";
 import StreamView from "./pages/StreamView";
 import CreatorLiveStudio from "./pages/CreatorLiveStudio";
 import Login from "./pages/Login";
-import GachaPage from "./pages/GachaPage";
 
 function Router() {
   return (
@@ -56,8 +56,8 @@ function Router() {
       <Route path="/creator/studio" component={CreatorLiveStudio} />
       <Route path="/creator" component={CreatorDashboard} />
       <Route path="/billing" component={Billing} />
-      <Route path="/gacha" component={GachaPage} />
-      <Route path="/verify-age" component={AgeVerification} />
+<Route path="/verify-age" component={AgeVerification} />
+      <Route path="/legal" component={LegalHub} />
       <Route path="/legal/:page" component={LegalPages} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
