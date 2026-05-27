@@ -114,15 +114,18 @@ export default function BoostsPage() {
       try {
         await boostsApi.subscribe(pkg.id);
         setActiveBoost(pkg.id);
-        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
-        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month for 30 days` });
+        const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${boostLabel} for 30 days` });
       } catch {
-        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
+        const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
         setActiveBoost(pkg.id);
-        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${pkg.boosts} boosts/month activated` });
+        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${boostLabel} activated` });
       }
     } else {
-      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${pkg.boosts} boosts/month`);
+      const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
+      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
       setActiveBoost(pkg.id);
     }
     setLoadingBoost(null);
@@ -153,7 +156,7 @@ export default function BoostsPage() {
       name: `${pkg.name} Boost`,
       emoji: pkg.emoji,
       priceStr,
-      description: `${pkg.boosts} profile boosts/month`,
+      description: pkg.boosts >= 9999 ? "Unlimited profile boosts/month" : `${pkg.boosts} profile boosts/month`,
       onConfirm: () => { setPendingPurchase(null); _doSubscribeBoost(pkg); },
     });
   };
@@ -484,8 +487,8 @@ export default function BoostsPage() {
                   )}
                   <div className="text-3xl mb-1.5">{pkg.emoji}</div>
                   <h3 className="text-base font-bold text-white mb-0.5">{pkg.name}</h3>
-                  <p className="font-black text-2xl mb-0" style={{ color: pkg.color }}>{pkg.boosts}</p>
-                  <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>boosts/mo</p>
+                  <p className="font-black text-2xl mb-0" style={{ color: pkg.color }}>{pkg.boosts >= 9999 ? "∞" : pkg.boosts}</p>
+                  <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>{pkg.boosts >= 9999 ? "unlimited" : "boosts/mo"}</p>
                   <p className="text-xl font-bold text-white mb-3">
                     ${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}
                     <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
@@ -509,7 +512,7 @@ export default function BoostsPage() {
                     {loadingBoost === pkg.id
                       ? "Processing…"
                       : activeBoost === pkg.id
-                        ? `✓ Active — ${pkg.boosts}/mo`
+                        ? `✓ Active — ${pkg.boosts >= 9999 ? "Unlimited" : `${pkg.boosts}/mo`}`
                         : `$${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}/mo`}
                   </button>
                 </div>

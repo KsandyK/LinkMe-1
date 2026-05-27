@@ -191,8 +191,8 @@ export const BOOST_TIERS: BoostTier[] = [
     features: ["95 boosts/month — every slot except overnight", "Colossus partner badge", "Cross-platform promotion", "Custom boost campaigns", "Revenue & conversion analytics", "Dedicated account executive"],
   },
   {
-    id: "sovereign", name: "Sovereign", emoji: "🔱", price: 299.99, color: "#e2e8f0", boosts: 120, popular: false,
-    features: ["120 boosts/month — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr"],
+    id: "sovereign", name: "Sovereign", emoji: "🔱", price: 299.99, color: "#e2e8f0", boosts: 9999, popular: false,
+    features: ["Unlimited boosts — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr"],
   },
 ];
 
