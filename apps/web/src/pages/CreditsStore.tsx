@@ -4,15 +4,18 @@ import { CUSTOMER_TIERS } from "@/lib/mock-data";
 import { credits as creditsApi } from "@/lib/api";
 import { Tag } from "lucide-react";
 
+// Direct purchase packages intentionally offer modest bulk savings (2–15% max).
+// Membership plans unlock 5–25% off ALL credit purchases — always better value
+// than any direct package alone. Combine membership + bulk for maximum savings.
 const PACKAGES = [
-  { id: "starter", name: "Starter", credits: 100, bonusCredits: 0, price: 9.99, popular: false, emoji: "✨" },
-  { id: "popular", name: "Popular", credits: 300, bonusCredits: 30, price: 24.99, popular: true, savings: "Save 17%", emoji: "🔥" },
-  { id: "value", name: "Value", credits: 600, bonusCredits: 90, price: 44.99, popular: false, savings: "Save 25%", emoji: "💎" },
-  { id: "premium", name: "Premium", credits: 1250, bonusCredits: 250, price: 84.99, popular: false, savings: "Save 32%", emoji: "⭐" },
-  { id: "elite", name: "Elite", credits: 2500, bonusCredits: 600, price: 149.99, popular: false, savings: "Save 40%", emoji: "👑" },
-  { id: "ultimate", name: "Ultimate", credits: 5000, bonusCredits: 1500, price: 274.99, popular: false, savings: "Save 45%", emoji: "🚀" },
-  { id: "vip", name: "VIP", credits: 10000, bonusCredits: 4000, price: 499.99, popular: false, savings: "Save 50%", emoji: "💫" },
-  { id: "diamond", name: "Diamond", credits: 25000, bonusCredits: 12500, price: 999.99, popular: false, savings: "Save 57%", emoji: "🌟" },
+  { id: "starter",  name: "Starter",  credits: 100,   bonusCredits: 0,    price: 9.99,    popular: false,               emoji: "✨" },
+  { id: "basic",    name: "Basic",    credits: 250,   bonusCredits: 5,    price: 24.99,   popular: false, savings: "Save 2%",  emoji: "⚡" },
+  { id: "value",    name: "Value",    credits: 500,   bonusCredits: 25,   price: 49.99,   popular: true,  savings: "Save 5%",  emoji: "🔥" },
+  { id: "plus",     name: "Plus",     credits: 1000,  bonusCredits: 75,   price: 99.99,   popular: false, savings: "Save 7%",  emoji: "💎" },
+  { id: "pro",      name: "Pro",      credits: 2500,  bonusCredits: 250,  price: 249.99,  popular: false, savings: "Save 9%",  emoji: "⭐" },
+  { id: "max",      name: "Max",      credits: 5000,  bonusCredits: 600,  price: 499.99,  popular: false, savings: "Save 11%", emoji: "👑" },
+  { id: "ultra",    name: "Ultra",    credits: 10000, bonusCredits: 1500, price: 999.99,  popular: false, savings: "Save 13%", emoji: "💫" },
+  { id: "diamond",  name: "Diamond",  credits: 20000, bonusCredits: 3500, price: 1999.99, popular: false, savings: "Save 15%", emoji: "🌟" },
 ];
 
 export default function CreditsStore() {
