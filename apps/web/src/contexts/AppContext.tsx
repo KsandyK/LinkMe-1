@@ -5,6 +5,7 @@
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
+import { MEMBERSHIP_DISCOUNTS } from "@/lib/membership-tiers";
 
 // Use VITE_API_URL if set, otherwise same-origin (Vite proxy handles /api → localhost:3000)
 const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
@@ -72,10 +73,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const MEMBERSHIP_DISCOUNTS: Record<string, number> = {
-  free: 0, fan: 0, supporter: 0.05, superfan: 0.10, devotee: 0.12, allaccess: 0.15, elite: 0.18, creatorpass: 0.20, blackcard: 0.25,
-  diamond: 0.25, obsidian: 0.25, platinum_m: 0.25,
-};
+// MEMBERSHIP_DISCOUNTS imported from @/lib/membership-tiers — single source of truth
 
 const STORAGE_KEYS = {
   AGE_GATE: "vl_age_gate_v1",

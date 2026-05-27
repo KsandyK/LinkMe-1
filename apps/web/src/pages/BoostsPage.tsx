@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { boosts as boostsApi } from "@/lib/api";
 import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star, X, CreditCard } from "lucide-react";
+import { MEMBER_TIERS, BOOST_TIERS, MEMBER_BY_ID, type MemberTier, type BoostTier } from "@/lib/membership-tiers";
 
 // ── Boost tier helpers ────────────────────────────────────────────────────────
 const BOOST_TIER_RANK: Record<string, number> = { starter: 1, spark: 2, flame: 3, blaze: 4, inferno: 5, legend: 6, titan: 7, supernova: 8, colossus: 9, sovereign: 10 };
@@ -20,127 +21,24 @@ const SLOTS = [
 const PEAK_CELLS = new Set(["Mon-evening","Tue-evening","Wed-evening","Thu-evening","Fri-evening","Sat-afternoon","Sat-evening","Sun-afternoon"]);
 type ScheduleMap = Record<string, boolean>; // key: "Mon-morning"
 
-// ── Profile Boost tiers (creator visibility) ──────────────────────────────────
-// Max possible boosts = 4 slots/day × 30 days = 120/month. Tiers work backwards from that ceiling.
-const BOOST_PACKAGES = [
-  {
-    id: "starter", name: "Starter", emoji: "✨", boosts: 2, price: 4.99, color: "#64748b", popular: false,
-    features: ["2 profile boosts/month", "Search result bump", "Boost notification to followers"],
-  },
-  {
-    id: "spark", name: "Spark", emoji: "⚡", boosts: 4, price: 9.99, color: "#06b6d4", popular: false,
-    features: ["4 profile boosts/month (~1/week)", "Priority in search results", "Boost notification to followers", "Basic analytics"],
-  },
-  {
-    id: "flame", name: "Flame", emoji: "🔥", boosts: 8, price: 19.99, color: "#14B8A6", popular: true,
-    features: ["8 profile boosts/month (~2/week)", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"],
-  },
-  {
-    id: "blaze", name: "Blaze", emoji: "💥", boosts: 14, price: 29.99, color: "#f97316", popular: false,
-    features: ["14 profile boosts/month (~3–4/week)", "Category top placement", "Full analytics dashboard", "Boost scheduling"],
-  },
-  {
-    id: "inferno", name: "Inferno", emoji: "🌋", boosts: 22, price: 39.99, color: "#ef4444", popular: false,
-    features: ["22 boosts/month — covers all weekday evenings", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"],
-  },
-  {
-    id: "legend", name: "Legend", emoji: "👑", boosts: 36, price: 59.99, color: "#f59e0b", popular: false,
-    features: ["36 boosts/month — covers every recommended peak slot", "Homepage shoutout", "VIP badge on profile", "Custom boost scheduling", "Revenue analytics"],
-  },
-  {
-    id: "titan", name: "Titan", emoji: "🏆", boosts: 50, price: 99.99, color: "#a78bfa", popular: false,
-    features: ["50 boosts/month — peak + selected off-peak slots", "Top of every feed", "Dedicated account manager", "Custom profile frame", "Full revenue & analytics suite"],
-  },
-  // ── Ultra-premium tiers (120/mo = hard ceiling: 4 slots/day × 30 days) ──────
-  {
-    id: "supernova", name: "Supernova", emoji: "🌟", boosts: 70, price: 500, color: "#00d4ff", popular: false,
-    features: ["70 boosts/month — peak + daily evening slots", "White-glove account management", "Guaranteed homepage placement", "Real-time analytics suite", "Custom branded content slots", "Dedicated support line"],
-  },
-  {
-    id: "colossus", name: "Colossus", emoji: "💫", boosts: 95, price: 1000, color: "#7c3aed", popular: false,
-    features: ["95 boosts/month — every slot except overnight", "Colossus partner badge", "Cross-platform promotion", "Custom boost campaigns", "Revenue & conversion analytics", "Dedicated account executive"],
-  },
-  {
-    id: "sovereign", name: "Sovereign", emoji: "🔱", boosts: 120, price: 2500, color: "#e2e8f0", popular: false,
-    features: ["120 boosts/month — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr"],
-  },
-];
-
-// ── 9 Membership tiers (fan content access) ──────────────────────────────────
+// ── Boost & Membership data imported from single source of truth ──────────────
+// Prices defined in: src/lib/membership-tiers.ts
+const BOOST_PACKAGES = BOOST_TIERS;
 const MEMBERSHIP_PLANS = [
+  // Free default tier (not a paid subscription — shown for comparison only)
   {
     id: "free", name: "Free", emoji: "🌟", price: 0, billingPeriod: "Free forever",
     credits: 0, discount: 0, vipSessions: 0, color: "#64748b", popular: false, cta: "Current Plan",
-    features: ["Browse all public creator profiles", "Watch free-tier live streams", "750 starter credits on signup", "Send messages (2 credits each)", "Basic search & discovery"],
+    features: ["Browse all public creator profiles", "Watch free-tier live streams", "750 starter credits on signup", "Send messages (5 credits each)", "Basic search & discovery"],
     notIncluded: ["Bonus monthly credits", "Exclusive or PPV content", "VIP lounge access", "Credit discounts"],
   },
-  {
-    id: "fan", name: "Fan", emoji: "❤️", price: 4.99, billingPeriod: "per month",
-    credits: 50, discount: 0, vipSessions: 0, color: "#f43f5e", popular: false, cta: "Subscribe",
-    features: ["Everything in Free", "50 bonus credits/month", "Follow unlimited creators", "Fan badge on profile", "Priority message delivery", "Like & comment on all posts"],
-    notIncluded: ["PPV & exclusive content", "VIP lounge access", "Credit discounts"],
-  },
-  {
-    id: "supporter", name: "Supporter", emoji: "🔥", price: 9.99, billingPeriod: "per month",
-    credits: 150, discount: 5, vipSessions: 0, color: "#f97316", popular: false, cta: "Subscribe",
-    features: ["Everything in Fan", "150 bonus credits/month", "5% discount on credit purchases", "Access to supporter-only posts", "Supporter flame badge", "Early access to new content"],
-    notIncluded: ["PPV & exclusive content", "VIP lounge access"],
-  },
-  {
-    id: "superfan", name: "Super Fan", emoji: "💎", price: 14.99, billingPeriod: "per month",
-    credits: 200, discount: 10, vipSessions: 2, color: "#8b5cf6", popular: false, cta: "Subscribe",
-    features: ["Everything in Supporter", "200 bonus credits/month", "10% discount on credit purchases", "Unlock exclusive creator content", "2 VIP Lounge sessions/mo", "VIP queue in all live chats", "Super Fan diamond badge"],
-    notIncluded: ["PPV content bundle", "Personal account manager"],
-  },
-  {
-    id: "devotee", name: "Devotee", emoji: "💖", price: 19.99, billingPeriod: "per month",
-    credits: 300, discount: 12, vipSessions: 4, color: "#ec4899", popular: true, cta: "Subscribe",
-    features: ["Everything in Super Fan", "300 bonus credits/month", "12% discount on credit purchases", "4 VIP Lounge sessions/mo", "1 PPV content unlock/mo", "Devotee heart badge", "Creator DM priority"],
-    notIncluded: ["Personal account manager"],
-  },
-  {
-    id: "allaccess", name: "All-Access", emoji: "🏆", price: 24.99, billingPeriod: "per month",
-    credits: 400, discount: 15, vipSessions: 10, color: "#f59e0b", popular: false, cta: "Subscribe",
-    features: ["Everything in Devotee", "400 bonus credits/month", "15% discount on credit purchases", "10 VIP Lounge sessions/mo", "3 PPV content unlocks/mo", "All-Access gold trophy badge", "Dedicated support agent"],
-    notIncluded: ["Unlimited VIP access", "Personal account manager"],
-  },
-  {
-    id: "elite", name: "Elite", emoji: "⭐", price: 39.99, billingPeriod: "per month",
-    credits: 750, discount: 18, vipSessions: 15, color: "#6366f1", popular: false, cta: "Subscribe",
-    features: ["Everything in All-Access", "750 bonus credits/month", "18% discount on credit purchases", "15 VIP Lounge sessions/mo", "5 PPV content unlocks/mo", "Elite star badge", "Priority billing support"],
-    notIncluded: ["Personal account manager"],
-  },
-  {
-    id: "creatorpass", name: "Creator Pass", emoji: "👑", price: 49.99, billingPeriod: "per month",
-    credits: 1000, discount: 20, vipSessions: 20, color: "#14B8A6", popular: false, cta: "Get Creator Pass",
-    features: ["Everything in Elite", "1,000 bonus credits/month", "20% discount on credit purchases", "20 VIP Lounge sessions/mo", "10 PPV content unlocks/mo", "Exclusive Creator Pass events", "Custom profile crown frame"],
-    notIncluded: [],
-  },
-  {
-    id: "blackcard", name: "Black Card", emoji: "🖤", price: 99.99, billingPeriod: "per month",
-    credits: 2500, discount: 25, vipSessions: 999, color: "#d4af37", popular: false, cta: "Get Black Card",
-    features: ["Everything in Creator Pass", "2,500 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Unlimited PPV unlocks", "Personal account manager", "Black Card exclusive badge", "First access to all new features"],
-    notIncluded: [],
-  },
-  // ── Ultra-premium membership tiers ──────────────────────────────────────────
-  {
-    id: "diamond", name: "Diamond", emoji: "💠", price: 500, billingPeriod: "per month",
-    credits: 20000, discount: 25, vipSessions: 999, color: "#00d4ff", popular: false, cta: "Get Diamond",
-    features: ["Everything in Black Card", "20,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Diamond concierge service", "Quarterly gifting package", "Private creator events"],
-    notIncluded: [],
-  },
-  {
-    id: "obsidian", name: "Obsidian", emoji: "🔮", price: 1000, billingPeriod: "per month",
-    credits: 40000, discount: 25, vipSessions: 999, color: "#7c3aed", popular: false, cta: "Get Obsidian",
-    features: ["Everything in Diamond", "40,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Obsidian elite badge", "Monthly curated creator package", "Priority platform access"],
-    notIncluded: [],
-  },
-  {
-    id: "platinum_m", name: "Platinum", emoji: "🪙", price: 2500, billingPeriod: "per month",
-    credits: 250000, discount: 25, vipSessions: 999, color: "#e2e8f0", popular: false, cta: "Get Platinum",
-    features: ["Everything in Obsidian", "250,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Platinum crown profile frame", "Bi-weekly strategy sessions", "White-glove personal manager"],
-    notIncluded: [],
-  },
+  // All paid tiers from canonical source — prices always in sync
+  ...MEMBER_TIERS.map(t => ({
+    id: t.id, name: t.name, emoji: t.emoji, price: t.price, billingPeriod: "per month",
+    credits: t.bonusCredits, discount: Math.round(t.discount * 100), vipSessions: t.vipSessions,
+    color: t.color, popular: t.popular, cta: t.cta,
+    features: t.features, notIncluded: t.notIncluded,
+  })),
 ];
 
 const ULTRA_MEMBERSHIP_IDS = new Set(["diamond", "obsidian", "platinum_m"]);

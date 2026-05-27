@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
 import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star } from "lucide-react";
 
 // ── Favorites storage ─────────────────────────────────────────────────────────
@@ -56,31 +57,8 @@ function brandIcon(b: string) { return b === "Visa" ? "💳" : b === "Mastercard
 function fmtCardNum(v: string) { return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(); }
 function fmtExpiry(v: string) { const d = v.replace(/\D/g, "").slice(0, 4); return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; }
 
-// ── Subscription display helpers ─────────────────────────────────────────────
-const MEMBERSHIP_INFO: Record<string, { name: string; price: number; color: string; emoji: string }> = {
-  fan:         { name: "Fan",          price: 0,     color: "#9ca3af", emoji: "⭐"  },
-  supporter:   { name: "Supporter",    price: 4.99,  color: "#a78bfa", emoji: "💜"  },
-  superfan:    { name: "Superfan",     price: 9.99,  color: "#f97316", emoji: "🔥"  },
-  devotee:     { name: "Devotee",      price: 19.99, color: "#3b82f6", emoji: "💎"  },
-  allaccess:   { name: "All Access",   price: 29.99, color: "#14b8a6", emoji: "🌟"  },
-  elite:       { name: "Elite",        price: 39.99, color: "#f59e0b", emoji: "👑"  },
-  creatorpass: { name: "Creator Pass", price: 49.99, color: "#ec4899", emoji: "🎟️" },
-  blackcard:   { name: "Black Card",   price: 59.99, color: "#e8a87c", emoji: "🃏"  },
-  diamond:     { name: "Diamond",      price: 79.99, color: "#38bdf8", emoji: "💠"  },
-  obsidian:    { name: "Obsidian",     price: 99.99, color: "#8b5cf6", emoji: "🖤"  },
-};
-const BOOST_INFO: Record<string, { name: string; price: number; color: string; emoji: string }> = {
-  starter:   { name: "Starter Boost",   price: 4.99,  color: "#9ca3af", emoji: "🌱" },
-  spark:     { name: "Spark Boost",     price: 9.99,  color: "#fbbf24", emoji: "✨" },
-  flame:     { name: "Flame Boost",     price: 19.99, color: "#f97316", emoji: "🔥" },
-  blaze:     { name: "Blaze Boost",     price: 29.99, color: "#ef4444", emoji: "💥" },
-  inferno:   { name: "Inferno Boost",   price: 49.99, color: "#dc2626", emoji: "🌋" },
-  legend:    { name: "Legend Boost",    price: 79.99, color: "#a78bfa", emoji: "🏆" },
-  titan:     { name: "Titan Boost",     price: 99.99, color: "#38bdf8", emoji: "⚡" },
-  supernova: { name: "Supernova Boost", price: 149.99,color: "#f59e0b", emoji: "💫" },
-  colossus:  { name: "Colossus Boost",  price: 199.99,color: "#ec4899", emoji: "🗿" },
-  sovereign: { name: "Sovereign Boost", price: 299.99,color: "#e8a87c", emoji: "👑" },
-};
+// ── Subscription display helpers — imported from single source of truth ───────
+// MEMBERSHIP_INFO and BOOST_INFO are imported from @/lib/membership-tiers
 function nextBillingDate() {
   const d = new Date(); d.setMonth(d.getMonth() + 1);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });

@@ -14,6 +14,7 @@ import {
   Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
   Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
+import { MEMBER_TIERS } from "@/lib/membership-tiers";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -62,26 +63,16 @@ const DROP_RARITY_COLORS: Record<string, string> = {
   Common: "#9ca3af", Rare: "#3b82f6", Epic: "#8b5cf6", Legendary: "#f59e0b",
 };
 
-// ── Subscription tiers ────────────────────────────────────────────────────────
-const SUBSCRIBE_TIERS = [
-  { id: "fan",         name: "Fan",          emoji: "⭐",  price: 0,     priceStr: "Free",    color: "#9ca3af", perks: ["Follow creator", "Public chat access", "Fan badge"] },
-  { id: "supporter",   name: "Supporter",    emoji: "💜",  price: 4.99,  priceStr: "$4.99",   color: "#a78bfa", perks: ["5% credit discount", "Supporter badge", "Supporter-only posts"] },
-  { id: "superfan",    name: "Superfan",     emoji: "🔥",  price: 9.99,  priceStr: "$9.99",   color: "#f97316", perks: ["10% credit discount", "Superfan badge", "Priority chat visibility"] },
-  { id: "devotee",     name: "Devotee",      emoji: "💎",  price: 19.99, priceStr: "$19.99",  color: "#3b82f6", perks: ["12% credit discount", "Devotee badge", "Exclusive DM access"] },
-  { id: "allaccess",   name: "All Access",   emoji: "🌟",  price: 29.99, priceStr: "$29.99",  color: "#14b8a6", perks: ["15% credit discount", "All Access badge", "Monthly bonus credits"] },
-  { id: "elite",       name: "Elite",        emoji: "👑",  price: 39.99, priceStr: "$39.99",  color: "#f59e0b", perks: ["18% credit discount", "Elite badge", "VIP chat badge"] },
-  { id: "creatorpass", name: "Creator Pass", emoji: "🎟️", price: 49.99, priceStr: "$49.99",  color: "#ec4899", perks: ["20% credit discount", "Creator Pass badge", "Early access content"] },
-  { id: "blackcard",   name: "Black Card",   emoji: "🃏",  price: 59.99, priceStr: "$59.99",  color: "#e8a87c", perks: ["25% credit discount", "Black Card badge", "Private story access"] },
-  { id: "diamond",     name: "Diamond",      emoji: "💠",  price: 79.99, priceStr: "$79.99",  color: "#38bdf8", perks: ["25% credit discount", "Diamond badge", "Monthly private chat"] },
-  { id: "obsidian",    name: "Obsidian",     emoji: "🖤",  price: 99.99, priceStr: "$99.99",  color: "#8b5cf6", perks: ["25% credit discount", "Obsidian badge", "Priority DM + custom nickname"] },
-];
+// ── Subscription tiers — imported from single source of truth ─────────────────
+// Prices always in sync with BoostsPage and Account via @/lib/membership-tiers
+const SUBSCRIBE_TIERS = MEMBER_TIERS;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function StreamView() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { credits, spendCredits, token, user, isLoggedIn, showToast, setActiveMembership } = useApp();
+  const { credits, spendCredits, addCredits, recordPurchase, token, user, isLoggedIn, showToast, setActiveMembership } = useApp();
 
   // Auth gate — redirect to login if not signed in
   useEffect(() => {
@@ -955,7 +946,7 @@ export default function StreamView() {
                       <div>
                         <p className="text-sm font-black text-white">{tier.name}</p>
                         <p className="text-xs font-bold" style={{ color: tier.color }}>
-                          {tier.price === 0 ? "Free" : `${tier.priceStr}/mo`}
+                          {tier.priceStr}/mo
                         </p>
                       </div>
                     </div>
@@ -971,13 +962,6 @@ export default function StreamView() {
                     <button
                       onClick={() => {
                         if (isActive) return;
-                        if (tier.price === 0) {
-                          setActiveMembership(tier.id);
-                          setSubscribedTier(tier.id);
-                          setShowSubscribeModal(false);
-                          showToast({ title: `${tier.emoji} You're now a ${tier.name}!`, description: `Following ${hostName}` });
-                          return;
-                        }
                         if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
                         setSubscribePending({
                           tier: tier.id,
@@ -985,6 +969,12 @@ export default function StreamView() {
                           priceStr: tier.priceStr,
                           emoji: tier.emoji,
                           onConfirm: () => {
+                            // Record real-money transaction attributed to this creator
+                            recordPurchase(tier.price, `${tier.emoji} ${tier.name} Subscription — ${hostName} — ${tier.priceStr}/mo`);
+                            // Award monthly bonus credits included in this tier
+                            if (tier.bonusCredits > 0) {
+                              addCredits(tier.bonusCredits, `${tier.emoji} ${tier.name} monthly bonus credits`);
+                            }
                             setActiveMembership(tier.id);
                             setSubscribedTier(tier.id);
                             setSubscribePending(null);
@@ -998,7 +988,7 @@ export default function StreamView() {
                         ? { background: `${tier.color}20`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
                         : { background: `linear-gradient(135deg, ${tier.color}cc, ${tier.color}88)`, color: "white" }
                       }>
-                      {isActive ? "✓ Subscribed" : tier.price === 0 ? "Follow Free" : `Subscribe ${tier.priceStr}/mo`}
+                      {isActive ? "✓ Subscribed" : `Subscribe ${tier.priceStr}/mo`}
                     </button>
                   </div>
                 );
