@@ -783,6 +783,18 @@ export default function CreatorDashboard() {
               const totalViews       = MOCK_BOOST_LOG.reduce((s, e) => s + e.views, 0);
               const totalFollows     = MOCK_BOOST_LOG.reduce((s, e) => s + e.follows, 0);
 
+              // Cost-per-boost derived values for spend clarity
+              const costPerBoost  = (activePkg && !isUnlimited) ? +(activePkg.price / activePkg.boosts).toFixed(2) : 0;
+              const dollarSpent   = +(costPerBoost * used).toFixed(2);
+              const dollarLeft    = (remaining !== null && remaining !== undefined) ? +(costPerBoost * remaining).toFixed(2) : null;
+
+              // Placement breakdown for the activity log
+              const placementBreakdown = MOCK_BOOST_LOG.reduce<Record<string, { count: number; color: string }>>((acc, e) => {
+                if (!acc[e.placement]) acc[e.placement] = { count: 0, color: e.placementColor };
+                acc[e.placement].count++;
+                return acc;
+              }, {});
+
               if (!activePkg) {
                 return (
                   <div className="vl-card p-8 text-center">
@@ -803,12 +815,13 @@ export default function CreatorDashboard() {
 
               return (
                 <div className="space-y-5">
-                  {/* ── Monthly Usage ─────────────────────────────── */}
-                  <div className="vl-card p-4">
-                    <div className="flex items-center justify-between mb-2">
+                  {/* ── Boost Balance ─────────────────────────────── */}
+                  <div className="vl-card p-5">
+                    {/* Header row */}
+                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Zap className="w-4 h-4" style={{ color: activePkg.color }} />
-                        <p className="text-sm font-bold text-white">Monthly Boost Usage</p>
+                        <p className="text-sm font-bold text-white">Boost Balance</p>
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{ background: `${activePkg.color}18`, border: `1px solid ${activePkg.color}35`, color: activePkg.color }}>
                           {activePkg.emoji} {activePkg.name}
@@ -816,18 +829,61 @@ export default function CreatorDashboard() {
                       </div>
                       <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Resets {resetDate}</p>
                     </div>
-                    <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${usagePct}%`, background: `linear-gradient(90deg, ${activePkg.color}, ${activePkg.color}bb)` }} />
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: "rgba(255,255,255,0.5)" }}><strong className="text-white">{used}</strong> boosts fired this month</span>
-                      <span style={{ color: activePkg.color, fontWeight: 700 }}>
-                        {isUnlimited ? "∞ unlimited" : <><strong>{remaining}</strong> remaining of {activePkg.boosts}</>}
-                      </span>
-                    </div>
+
+                    {isUnlimited ? (
+                      /* Unlimited plan — flat indicator */
+                      <div className="flex items-center justify-between p-3 rounded-xl mb-3"
+                        style={{ background: `${activePkg.color}10`, border: `1px solid ${activePkg.color}25` }}>
+                        <span className="text-sm font-bold text-white">{used} boosts spent this month</span>
+                        <span className="text-sm font-black" style={{ color: activePkg.color }}>∞ Unlimited</span>
+                      </div>
+                    ) : (
+                      /* Limited plan — two-segment bar */
+                      <>
+                        {/* Segmented bar: spent | remaining */}
+                        <div className="h-3 rounded-full overflow-hidden flex mb-3" style={{ background: "rgba(255,255,255,0.05)" }}>
+                          {used > 0 && (
+                            <div className="h-full transition-all duration-700 rounded-l-full"
+                              style={{ width: `${usagePct}%`, background: `linear-gradient(90deg, ${activePkg.color}, ${activePkg.color}cc)` }} />
+                          )}
+                          {(remaining ?? 0) > 0 && used > 0 && (
+                            <div className="h-full w-px" style={{ background: "rgba(0,0,0,0.4)" }} />
+                          )}
+                        </div>
+
+                        {/* Spend breakdown */}
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="rounded-xl p-3"
+                            style={{ background: `${activePkg.color}0d`, border: `1px solid ${activePkg.color}22` }}>
+                            <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Spent</p>
+                            <p className="text-lg font-black text-white">{used} <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>boosts</span></p>
+                            {!isUnlimited && costPerBoost > 0 && (
+                              <p className="text-xs mt-0.5 font-semibold" style={{ color: activePkg.color }}>${dollarSpent} of ${activePkg.price}</p>
+                            )}
+                          </div>
+                          <div className="rounded-xl p-3"
+                            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                            <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Remaining</p>
+                            <p className="text-lg font-black text-white">{remaining} <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>boosts</span></p>
+                            {dollarLeft !== null && costPerBoost > 0 && (
+                              <p className="text-xs mt-0.5 font-semibold" style={{ color: "#4ade80" }}>${dollarLeft} value left</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Cost-per-boost label */}
+                        {costPerBoost > 0 && (
+                          <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.28)" }}>
+                            ${costPerBoost}/boost · {activePkg.boosts} boosts/month included in your {activePkg.name} plan
+                          </p>
+                        )}
+                      </>
+                    )}
+
+                    {/* Next boost */}
                     {(autoBoost || scheduledCount > 0) && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <div className="mt-3 flex items-center gap-1.5 text-xs pt-3"
+                        style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
                         <Clock className="w-3 h-3" style={{ color: activePkg.color }} />
                         Next boost: <span style={{ color: activePkg.color }}>
                           {autoBoost ? "Tonight, 6:00 PM (Evening)" : "Next scheduled slot"}
@@ -904,7 +960,7 @@ export default function CreatorDashboard() {
                         <div className="rounded-lg px-3 py-2 mb-4 text-xs flex items-center gap-2"
                           style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", color: "#fb923c" }}>
                           <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-                          Auto-Boost active — firing at peak engagement windows (highlighted below).
+                          Auto-Boost active — boosts are spent automatically at peak engagement windows (highlighted below).
                         </div>
                       )}
                       <div className="overflow-x-auto">
@@ -953,15 +1009,33 @@ export default function CreatorDashboard() {
                           </tbody>
                         </table>
                       </div>
-                      <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        <span className="flex items-center gap-1">
-                          <span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.2)", border: "1px solid rgba(249,115,22,0.4)" }} />
-                          Scheduled
-                        </span>
-                        {hasAutomation
-                          ? <span className="flex items-center gap-1"><span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.25)" }} />Peak (auto)</span>
-                          : <span>Upgrade to Inferno+ for auto-scheduling</span>
-                        }
+                      <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                        <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <span className="flex items-center gap-1">
+                            <span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.2)", border: "1px solid rgba(249,115,22,0.4)" }} />
+                            Scheduled
+                          </span>
+                          {hasAutomation
+                            ? <span className="flex items-center gap-1"><span className="w-3 h-3 rounded inline-block" style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.25)" }} />Peak (auto)</span>
+                            : <span>Upgrade to Inferno+ for auto-scheduling</span>
+                          }
+                        </div>
+                        {/* Projected weekly spend */}
+                        {(scheduledCount > 0 || autoBoost) && (
+                          <div className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
+                            style={{ background: "rgba(249,115,22,0.07)", border: "1px solid rgba(249,115,22,0.18)" }}>
+                            <Zap className="w-3 h-3" style={{ color: "#f97316" }} />
+                            <span style={{ color: "rgba(255,255,255,0.5)" }}>This week:</span>
+                            <span className="font-bold" style={{ color: "#f97316" }}>
+                              {autoBoost ? "14 boosts" : `${scheduledCount} boost${scheduledCount !== 1 ? "s" : ""}`}
+                              {!isUnlimited && costPerBoost > 0 && (
+                                <span className="font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>
+                                  {" "}· est. ${(costPerBoost * (autoBoost ? 14 : scheduledCount)).toFixed(2)}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -984,8 +1058,22 @@ export default function CreatorDashboard() {
                       </h3>
                       <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
                         style={{ background: `${logColor}14`, border: `1px solid ${logColor}30`, color: logColor }}>
-                        {MOCK_BOOST_LOG.length} boosts this month
+                        {MOCK_BOOST_LOG.length} boosts spent this month
                       </span>
+                    </div>
+
+                    {/* Spent by placement */}
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>Spent by placement</p>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(placementBreakdown).map(([name, { count, color }]) => (
+                          <span key={name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                            style={{ background: `${color}12`, border: `1px solid ${color}30`, color }}>
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                            {name}: {count} boost{count !== 1 ? "s" : ""}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Totals */}
@@ -1005,8 +1093,9 @@ export default function CreatorDashboard() {
 
                     {/* Column headings */}
                     <div className="hidden sm:grid text-xs font-semibold mb-1 px-3"
-                      style={{ color: "rgba(255,255,255,0.25)", gridTemplateColumns: "1fr 90px 72px 72px" }}>
-                      <span>Fired · Placement</span>
+                      style={{ color: "rgba(255,255,255,0.25)", gridTemplateColumns: "1fr 64px 90px 60px 60px" }}>
+                      <span>Spent · Placement</span>
+                      <span className="text-right">Cost</span>
                       <span className="text-right">Impressions</span>
                       <span className="text-right">Views</span>
                       <span className="text-right">Follows</span>
@@ -1017,7 +1106,7 @@ export default function CreatorDashboard() {
                       {visibleLog.map(entry => (
                         <div key={entry.id}
                           className="flex sm:grid items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5"
-                          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", gridTemplateColumns: "1fr 90px 72px 72px" }}>
+                          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", gridTemplateColumns: "1fr 64px 90px 60px 60px" }}>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-xs font-semibold text-white">{entry.firedAt}</span>
@@ -1029,6 +1118,14 @@ export default function CreatorDashboard() {
                             <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{entry.slot} slot</p>
                           </div>
                           <div className="flex sm:contents items-center gap-3 flex-shrink-0">
+                            {/* Cost column */}
+                            <span className="text-xs font-mono font-bold sm:text-right" style={{ color: "rgba(255,255,255,0.35)" }}>
+                              −1{!isUnlimited && costPerBoost > 0 && (
+                                <span className="block text-xs font-normal" style={{ color: "rgba(255,255,255,0.2)", fontSize: 9 }}>
+                                  ${costPerBoost}
+                                </span>
+                              )}
+                            </span>
                             <span className="text-xs font-mono font-bold sm:text-right" style={{ color: logColor }}>+{entry.impressions.toLocaleString()}</span>
                             <span className="text-xs font-mono sm:text-right" style={{ color: "rgba(255,255,255,0.6)" }}>{entry.views}</span>
                             <span className="text-xs font-mono font-bold sm:text-right" style={{ color: entry.follows > 0 ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
