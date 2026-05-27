@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare } from "lucide-react";
 
 // ── Analytics mock data ───────────────────────────────────────────────────────
 const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -83,16 +83,19 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
   );
 }
 
-// Boost tier rank helper
-const BOOST_RANK: Record<string, number> = { spark: 1, flame: 2, inferno: 3, legend: 4 };
+// Boost tier rank helper — must stay in sync with BOOST_PACKAGES in BoostsPage
+const BOOST_RANK: Record<string, number> = {
+  starter: 1, spark: 2, flame: 3, blaze: 4, inferno: 5, legend: 6,
+  titan: 7, supernova: 8, colossus: 9, sovereign: 10,
+};
 type AnalyticsTier = "none" | "basic" | "full" | "premium" | "revenue";
 function getAnalyticsTier(activeBoost: string | null): AnalyticsTier {
   const r = activeBoost ? (BOOST_RANK[activeBoost] ?? 0) : 0;
   if (r === 0) return "none";
-  if (r === 1) return "basic";
-  if (r === 2) return "full";
-  if (r === 3) return "premium";
-  return "revenue";
+  if (r <= 2) return "basic";   // starter, spark
+  if (r <= 4) return "full";    // flame, blaze
+  if (r <= 5) return "premium"; // inferno
+  return "revenue";             // legend, titan, supernova, colossus, sovereign
 }
 
 // Mock dashboard data for demo mode (API offline)
@@ -109,18 +112,15 @@ const MOCK_DASHBOARD = {
     { amount: 150, createdAt: new Date(Date.now() - 7200000).toISOString(), metadata: null },
     { amount: 1000, createdAt: new Date(Date.now() - 14400000).toISOString(), metadata: null },
   ],
-  recentSubs: [
-    {
-      id: "s1",
-      createdAt: new Date(Date.now() - 1800000).toISOString(),
-      subscriber: { username: "fan_marco", profile: { displayName: "Marco F." } },
+  recentSubs: MOCK_PROFILES.slice(2, 8).map((p, i) => ({
+    id: `s${i + 1}`,
+    createdAt: new Date(Date.now() - i * 86400000 * 2).toISOString(),
+    subscriber: {
+      id: p.id,
+      username: p.username,
+      profile: { displayName: p.displayName, avatarUrl: p.avatarUrl },
     },
-    {
-      id: "s2",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      subscriber: { username: "chloe_xo", profile: { displayName: "Chloe" } },
-    },
-  ],
+  })),
   liveFeeds: [
     { id: "lf1", title: "Evening Chat & Chill ☀️", startedAt: new Date(Date.now() - 3600000).toISOString(), isLive: false, viewerCount: 1247, peakViewers: 1580, endedAt: null },
     { id: "lf2", title: "Late Night Vibes 🔥", startedAt: new Date(Date.now() - 86400000).toISOString(), isLive: false, viewerCount: 892, peakViewers: 1120, endedAt: null },
@@ -362,27 +362,56 @@ export default function CreatorDashboard() {
 
             {activeTab === "fans" && (
               <div className="vl-card p-5">
-                <h3 className="text-base font-bold text-white mb-4">Recent Subscribers</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-bold text-white">Recent Subscribers</h3>
+                  <Link href="/messages">
+                    <button className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+                      style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+                      <MessageSquare className="w-3.5 h-3.5" /> All Messages
+                    </button>
+                  </Link>
+                </div>
                 {(data?.recentSubs ?? []).length === 0 ? (
                   <p className="text-base text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>No subscribers yet</p>
                 ) : (
-                  (data?.recentSubs ?? []).map((sub, i) => (
-                    <div key={sub.id} className="flex items-center justify-between py-3 border-b"
-                      style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                          style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6" }}>
-                          {(sub.subscriber.profile?.displayName ?? sub.subscriber.username)[0].toUpperCase()}
+                  <div className="space-y-1">
+                    {(data?.recentSubs ?? []).map((sub: any) => {
+                      const name = sub.subscriber.profile?.displayName ?? sub.subscriber.username;
+                      const initial = name[0].toUpperCase();
+                      const av = sub.subscriber.profile?.avatarUrl ?? null;
+                      const subId = sub.subscriber.id ?? sub.subscriber.username;
+                      const chatHref = `/messages?with=${encodeURIComponent(subId)}&username=${encodeURIComponent(sub.subscriber.username)}&name=${encodeURIComponent(name)}`;
+                      return (
+                        <div key={sub.id}
+                          className="flex items-center justify-between py-3 px-2 rounded-xl transition-all hover:bg-white/5"
+                          style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div className="flex items-center gap-3">
+                            {av
+                              ? <img src={av} alt={name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                              : (
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                                  style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6" }}>
+                                  {initial}
+                                </div>
+                              )
+                            }
+                            <div>
+                              <p className="text-sm font-semibold text-white">{name}</p>
+                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                                @{sub.subscriber.username} · {new Date(sub.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <Link href={chatHref}>
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                              style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
+                              <MessageSquare className="w-3.5 h-3.5" /> Chat
+                            </button>
+                          </Link>
                         </div>
-                        <span className="text-base text-white">
-                          {sub.subscriber.profile?.displayName ?? sub.subscriber.username}
-                        </span>
-                      </div>
-                      <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        {new Date(sub.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  ))
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             )}

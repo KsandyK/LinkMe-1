@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { boosts as boostsApi } from "@/lib/api";
-import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star } from "lucide-react";
+import { Calendar, Zap, Clock, ToggleLeft, ToggleRight, TrendingUp, Home, Radio, Star, X, CreditCard } from "lucide-react";
 
 // ── Boost tier helpers ────────────────────────────────────────────────────────
-const BOOST_TIER_RANK: Record<string, number> = { spark: 1, flame: 2, inferno: 3, legend: 4 };
+const BOOST_TIER_RANK: Record<string, number> = { starter: 1, spark: 2, flame: 3, blaze: 4, inferno: 5, legend: 6, titan: 7, supernova: 8, colossus: 9, sovereign: 10 };
 function boostRank(id: string | null) { return id ? (BOOST_TIER_RANK[id] ?? 0) : 0; }
 
 // ── Schedule helpers ──────────────────────────────────────────────────────────
@@ -20,142 +20,131 @@ const SLOTS = [
 const PEAK_CELLS = new Set(["Mon-evening","Tue-evening","Wed-evening","Thu-evening","Fri-evening","Sat-afternoon","Sat-evening","Sun-afternoon"]);
 type ScheduleMap = Record<string, boolean>; // key: "Mon-morning"
 
+// ── Profile Boost tiers (creator visibility) ──────────────────────────────────
+// Max possible boosts = 4 slots/day × 30 days = 120/month. Tiers work backwards from that ceiling.
 const BOOST_PACKAGES = [
-  { id: "spark", name: "Spark", emoji: "✨", boosts: 5, price: 9.99, features: ["5 profile boosts/month", "Priority in search results", "Boost notification to followers", "Basic analytics"], popular: false, color: "#64748b" },
-  { id: "flame", name: "Flame", emoji: "🔥", boosts: 12, price: 19.99, features: ["12 profile boosts/month", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"], popular: true, color: "#14B8A6" },
-  { id: "inferno", name: "Inferno", emoji: "💥", boosts: 20, price: 34.99, features: ["20 profile boosts/month", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"], popular: false, color: "#f97316" },
-  { id: "legend", name: "Legend", emoji: "👑", boosts: 35, price: 59.99, features: ["35 boosts/month (MAX)", "Homepage shoutout", "VIP badge on profile", "Custom boost scheduling", "Revenue analytics"], popular: false, color: "#f59e0b" },
+  {
+    id: "starter", name: "Starter", emoji: "✨", boosts: 2, price: 4.99, color: "#64748b", popular: false,
+    features: ["2 profile boosts/month", "Search result bump", "Boost notification to followers"],
+  },
+  {
+    id: "spark", name: "Spark", emoji: "⚡", boosts: 4, price: 9.99, color: "#06b6d4", popular: false,
+    features: ["4 profile boosts/month (~1/week)", "Priority in search results", "Boost notification to followers", "Basic analytics"],
+  },
+  {
+    id: "flame", name: "Flame", emoji: "🔥", boosts: 8, price: 19.99, color: "#14B8A6", popular: true,
+    features: ["8 profile boosts/month (~2/week)", "Top search placement", "Featured on Live Feeds", "Full analytics dashboard", "Boost scheduling"],
+  },
+  {
+    id: "blaze", name: "Blaze", emoji: "💥", boosts: 14, price: 29.99, color: "#f97316", popular: false,
+    features: ["14 profile boosts/month (~3–4/week)", "Category top placement", "Full analytics dashboard", "Boost scheduling"],
+  },
+  {
+    id: "inferno", name: "Inferno", emoji: "🌋", boosts: 22, price: 39.99, color: "#ef4444", popular: false,
+    features: ["22 boosts/month — covers all weekday evenings", "Homepage featured spot", "Category top placement", "Premium analytics", "Priority support", "Boost scheduling & automation"],
+  },
+  {
+    id: "legend", name: "Legend", emoji: "👑", boosts: 36, price: 59.99, color: "#f59e0b", popular: false,
+    features: ["36 boosts/month — covers every recommended peak slot", "Homepage shoutout", "VIP badge on profile", "Custom boost scheduling", "Revenue analytics"],
+  },
+  {
+    id: "titan", name: "Titan", emoji: "🏆", boosts: 50, price: 99.99, color: "#a78bfa", popular: false,
+    features: ["50 boosts/month — peak + selected off-peak slots", "Top of every feed", "Dedicated account manager", "Custom profile frame", "Full revenue & analytics suite"],
+  },
+  // ── Ultra-premium tiers (120/mo = hard ceiling: 4 slots/day × 30 days) ──────
+  {
+    id: "supernova", name: "Supernova", emoji: "🌟", boosts: 70, price: 500, color: "#00d4ff", popular: false,
+    features: ["70 boosts/month — peak + daily evening slots", "White-glove account management", "Guaranteed homepage placement", "Real-time analytics suite", "Custom branded content slots", "Dedicated support line"],
+  },
+  {
+    id: "colossus", name: "Colossus", emoji: "💫", boosts: 95, price: 1000, color: "#7c3aed", popular: false,
+    features: ["95 boosts/month — every slot except overnight", "Colossus partner badge", "Cross-platform promotion", "Custom boost campaigns", "Revenue & conversion analytics", "Dedicated account executive"],
+  },
+  {
+    id: "sovereign", name: "Sovereign", emoji: "🔱", boosts: 120, price: 2500, color: "#e2e8f0", popular: false,
+    features: ["120 boosts/month — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr"],
+  },
 ];
 
+// ── 9 Membership tiers (fan content access) ──────────────────────────────────
 const MEMBERSHIP_PLANS = [
   {
-    id: "free",
-    name: "Free",
-    emoji: "🌟",
-    price: 0,
-    billingPeriod: "Free forever",
-    credits: 0,
-    features: [
-      "Browse all public creator profiles",
-      "Watch free-tier live streams",
-      "750 starter credits on signup",
-      "Send messages (2 credits each)",
-      "Basic search & discovery",
-    ],
+    id: "free", name: "Free", emoji: "🌟", price: 0, billingPeriod: "Free forever",
+    credits: 0, discount: 0, vipSessions: 0, color: "#64748b", popular: false, cta: "Current Plan",
+    features: ["Browse all public creator profiles", "Watch free-tier live streams", "750 starter credits on signup", "Send messages (2 credits each)", "Basic search & discovery"],
     notIncluded: ["Bonus monthly credits", "Exclusive or PPV content", "VIP lounge access", "Credit discounts"],
-    color: "#64748b",
-    popular: false,
-    cta: "Current Plan",
   },
   {
-    id: "fan",
-    name: "Fan",
-    emoji: "❤️",
-    price: 4.99,
-    billingPeriod: "per month",
-    credits: 150,
-    features: [
-      "Everything in Free",
-      "50 bonus credits/month",
-      "Follow unlimited creators",
-      "Fan badge on profile",
-      "Priority message delivery",
-      "Like & comment on all posts",
-    ],
+    id: "fan", name: "Fan", emoji: "❤️", price: 4.99, billingPeriod: "per month",
+    credits: 50, discount: 0, vipSessions: 0, color: "#f43f5e", popular: false, cta: "Subscribe",
+    features: ["Everything in Free", "50 bonus credits/month", "Follow unlimited creators", "Fan badge on profile", "Priority message delivery", "Like & comment on all posts"],
     notIncluded: ["PPV & exclusive content", "VIP lounge access", "Credit discounts"],
-    color: "#f43f5e",
-    popular: false,
-    cta: "Subscribe",
   },
   {
-    id: "supporter",
-    name: "Supporter",
-    emoji: "🔥",
-    price: 9.99,
-    billingPeriod: "per month",
-    credits: 150,
-    features: [
-      "Everything in Fan",
-      "100 bonus credits/month",
-      "5% discount on credit purchases",
-      "Access to supporter-only posts",
-      "2 profile boosts/month",
-      "Supporter flame badge",
-      "Early access to new creator content",
-    ],
+    id: "supporter", name: "Supporter", emoji: "🔥", price: 9.99, billingPeriod: "per month",
+    credits: 150, discount: 5, vipSessions: 0, color: "#f97316", popular: false, cta: "Subscribe",
+    features: ["Everything in Fan", "150 bonus credits/month", "5% discount on credit purchases", "Access to supporter-only posts", "Supporter flame badge", "Early access to new content"],
     notIncluded: ["PPV & exclusive content", "VIP lounge access"],
-    color: "#f97316",
-    popular: false,
-    cta: "Subscribe",
   },
   {
-    id: "superfan",
-    name: "Super Fan",
-    emoji: "💎",
-    price: 14.99,
-    billingPeriod: "per month",
-    credits: 750,
-    features: [
-      "Everything in Supporter",
-      "150 bonus credits/month",
-      "10% discount on credit purchases",
-      "Unlock exclusive creator content",
-      "5 profile boosts/month",
-      "VIP queue in all live chats",
-      "Creator DM priority",
-      "Super Fan diamond badge",
-    ],
-    notIncluded: ["VIP lounge access", "Personal account manager"],
-    color: "#8b5cf6",
-    popular: true,
-    cta: "Subscribe",
+    id: "superfan", name: "Super Fan", emoji: "💎", price: 14.99, billingPeriod: "per month",
+    credits: 200, discount: 10, vipSessions: 2, color: "#8b5cf6", popular: false, cta: "Subscribe",
+    features: ["Everything in Supporter", "200 bonus credits/month", "10% discount on credit purchases", "Unlock exclusive creator content", "2 VIP Lounge sessions/mo", "VIP queue in all live chats", "Super Fan diamond badge"],
+    notIncluded: ["PPV content bundle", "Personal account manager"],
   },
   {
-    id: "allaccess",
-    name: "All-Access",
-    emoji: "🏆",
-    price: 24.99,
-    billingPeriod: "per month",
-    credits: 750,
-    features: [
-      "Everything in Super Fan",
-      "250 bonus credits/month",
-      "15% discount on credit purchases",
-      "VIP Lounge access (3 sessions/mo)",
-      "10 profile boosts/month",
-      "PPV content bundle (3 unlocks/mo)",
-      "All-Access gold trophy badge",
-      "Dedicated support agent",
-    ],
+    id: "devotee", name: "Devotee", emoji: "💖", price: 19.99, billingPeriod: "per month",
+    credits: 300, discount: 12, vipSessions: 4, color: "#ec4899", popular: true, cta: "Subscribe",
+    features: ["Everything in Super Fan", "300 bonus credits/month", "12% discount on credit purchases", "4 VIP Lounge sessions/mo", "1 PPV content unlock/mo", "Devotee heart badge", "Creator DM priority"],
+    notIncluded: ["Personal account manager"],
+  },
+  {
+    id: "allaccess", name: "All-Access", emoji: "🏆", price: 24.99, billingPeriod: "per month",
+    credits: 400, discount: 15, vipSessions: 10, color: "#f59e0b", popular: false, cta: "Subscribe",
+    features: ["Everything in Devotee", "400 bonus credits/month", "15% discount on credit purchases", "10 VIP Lounge sessions/mo", "3 PPV content unlocks/mo", "All-Access gold trophy badge", "Dedicated support agent"],
     notIncluded: ["Unlimited VIP access", "Personal account manager"],
-    color: "#f59e0b",
-    popular: false,
-    cta: "Subscribe",
   },
   {
-    id: "creatorpass",
-    name: "Creator Pass",
-    emoji: "👑",
-    price: 49.99,
-    billingPeriod: "per month",
-    credits: 1500,
-    features: [
-      "Everything in All-Access",
-      "1,500 bonus credits/month",
-      "20% discount on credit purchases",
-      "20 VIP Lounge sessions/month",
-      "20 profile boosts/month",
-      "Exclusive Creator Pass events",
-      "Custom profile crown frame",
-      "Creator Pass crown badge",
-      "Priority billing support",
-    ],
+    id: "elite", name: "Elite", emoji: "⭐", price: 39.99, billingPeriod: "per month",
+    credits: 750, discount: 18, vipSessions: 15, color: "#6366f1", popular: false, cta: "Subscribe",
+    features: ["Everything in All-Access", "750 bonus credits/month", "18% discount on credit purchases", "15 VIP Lounge sessions/mo", "5 PPV content unlocks/mo", "Elite star badge", "Priority billing support"],
+    notIncluded: ["Personal account manager"],
+  },
+  {
+    id: "creatorpass", name: "Creator Pass", emoji: "👑", price: 49.99, billingPeriod: "per month",
+    credits: 1000, discount: 20, vipSessions: 20, color: "#14B8A6", popular: false, cta: "Get Creator Pass",
+    features: ["Everything in Elite", "1,000 bonus credits/month", "20% discount on credit purchases", "20 VIP Lounge sessions/mo", "10 PPV content unlocks/mo", "Exclusive Creator Pass events", "Custom profile crown frame"],
     notIncluded: [],
-    color: "#14B8A6",
-    popular: false,
-    cta: "Get Creator Pass",
+  },
+  {
+    id: "blackcard", name: "Black Card", emoji: "🖤", price: 99.99, billingPeriod: "per month",
+    credits: 2500, discount: 25, vipSessions: 999, color: "#d4af37", popular: false, cta: "Get Black Card",
+    features: ["Everything in Creator Pass", "2,500 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Unlimited PPV unlocks", "Personal account manager", "Black Card exclusive badge", "First access to all new features"],
+    notIncluded: [],
+  },
+  // ── Ultra-premium membership tiers ──────────────────────────────────────────
+  {
+    id: "diamond", name: "Diamond", emoji: "💠", price: 500, billingPeriod: "per month",
+    credits: 20000, discount: 25, vipSessions: 999, color: "#00d4ff", popular: false, cta: "Get Diamond",
+    features: ["Everything in Black Card", "20,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Diamond concierge service", "Quarterly gifting package", "Private creator events"],
+    notIncluded: [],
+  },
+  {
+    id: "obsidian", name: "Obsidian", emoji: "🔮", price: 1000, billingPeriod: "per month",
+    credits: 40000, discount: 25, vipSessions: 999, color: "#7c3aed", popular: false, cta: "Get Obsidian",
+    features: ["Everything in Diamond", "40,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Obsidian elite badge", "Monthly curated creator package", "Priority platform access"],
+    notIncluded: [],
+  },
+  {
+    id: "platinum_m", name: "Platinum", emoji: "🪙", price: 2500, billingPeriod: "per month",
+    credits: 250000, discount: 25, vipSessions: 999, color: "#e2e8f0", popular: false, cta: "Get Platinum",
+    features: ["Everything in Obsidian", "250,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Platinum crown profile frame", "Bi-weekly strategy sessions", "White-glove personal manager"],
+    notIncluded: [],
   },
 ];
+
+const ULTRA_MEMBERSHIP_IDS = new Set(["diamond", "obsidian", "platinum_m"]);
+const ULTRA_BOOST_IDS      = new Set(["supernova", "colossus", "sovereign"]);
 
 export default function BoostsPage() {
   const { spendCredits, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
@@ -163,6 +152,19 @@ export default function BoostsPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
+
+  // ── Payment method guard ──────────────────────────────────────────────────
+  type SavedCardSnippet = { id: string; last4: string; brand: string; isDefault: boolean };
+  const [savedCards] = useState<SavedCardSnippet[]>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_saved_cards_v1") ?? "[]"); } catch { return []; }
+  });
+  const defaultCard = savedCards.find(c => c.isDefault) ?? savedCards[0] ?? null;
+
+  // Modals
+  const [noCardModal, setNoCardModal] = useState(false);
+  const [pendingPurchase, setPendingPurchase] = useState<{
+    name: string; emoji: string; priceStr: string; description: string; onConfirm: () => void;
+  } | null>(null);
 
   // Scheduler state
   const [schedule, setSchedule] = useState<ScheduleMap>(() => {
@@ -182,7 +184,6 @@ export default function BoostsPage() {
     setAutoBoost(next);
     try { localStorage.setItem("vl_boost_auto_v1", JSON.stringify(next)); } catch {}
     if (next) {
-      // Auto-fill peak cells
       const auto: ScheduleMap = {};
       PEAK_CELLS.forEach(k => { auto[k] = true; });
       saveSchedule(auto);
@@ -192,13 +193,12 @@ export default function BoostsPage() {
 
   const scheduledCount = Object.values(schedule).filter(Boolean).length;
   const rank = boostRank(activeBoost);
-  const hasScheduling  = rank >= 2; // Flame+
-  const hasAutomation  = rank >= 3; // Inferno+
-  const hasFeaturedHome = rank >= 3; // Inferno+
-  const hasFeaturedLive = rank >= 2; // Flame+
-  const hasCategoryTop  = rank >= 3; // Inferno+
+  const hasScheduling   = rank >= 3; // Flame+
+  const hasAutomation   = rank >= 5; // Inferno+
+  const hasFeaturedHome = rank >= 5; // Inferno+
+  const hasFeaturedLive = rank >= 3; // Flame+
+  const hasCategoryTop  = rank >= 4; // Blaze+
 
-  // Load active boost on mount (try API, fall back to context)
   useEffect(() => {
     if (!isLoggedIn) return;
     boostsApi.active()
@@ -208,8 +208,8 @@ export default function BoostsPage() {
       .catch(() => null);
   }, [isLoggedIn]);
 
-  const handleSubscribeBoost = async (pkg: typeof BOOST_PACKAGES[0]) => {
-    if (activeBoost === pkg.id) return;
+  // ── Internal purchase executors (called after confirmation) ─────────────
+  const _doSubscribeBoost = async (pkg: typeof BOOST_PACKAGES[0]) => {
     setLoadingBoost(pkg.id);
     if (isLoggedIn) {
       try {
@@ -228,93 +228,265 @@ export default function BoostsPage() {
     setLoadingBoost(null);
   };
 
-  const handleSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {
-    if (plan.id === "free" || activeMembership === plan.id) return;
+  const _doSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {
     setLoadingMembership(plan.id);
     setTimeout(() => {
       setLoadingMembership(null);
       setActiveMembership(plan.id);
       const price = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
-      spendCredits(Math.round(price * 10), `${plan.name} Membership — $${price.toFixed(2)}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
+      const priceStr = price % 1 === 0 ? price.toLocaleString() : price.toFixed(2);
+      spendCredits(Math.round(price * 10), `${plan.name} Membership — $${priceStr}/${billingCycle === "annual" ? "yr" : "mo"} via CCBill`);
       showToast({ title: `${plan.emoji} ${plan.name} Activated!`, description: `Your membership benefits are now active.` });
     }, 800);
   };
 
-  return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Subscriptions & Boosts</h1>
-        <p className="text-muted-foreground mb-6">Enhance your LinkMe experience</p>
+  // ── Purchase interceptors — check card, then show confirm modal ──────────
+  const handleSubscribeBoost = (pkg: typeof BOOST_PACKAGES[0]) => {
+    if (activeBoost === pkg.id) return;
+    if (!defaultCard) { setNoCardModal(true); return; }
+    const priceStr = pkg.price % 1 === 0 ? `$${pkg.price.toLocaleString()}` : `$${pkg.price}`;
+    setPendingPurchase({
+      name: `${pkg.name} Boost`,
+      emoji: pkg.emoji,
+      priceStr,
+      description: `${pkg.boosts} profile boosts/month`,
+      onConfirm: () => { setPendingPurchase(null); _doSubscribeBoost(pkg); },
+    });
+  };
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-border mb-8">
-          {[
-            { id: "memberships" as const, label: "Membership Plans", emoji: "💎" },
-            { id: "boosts" as const, label: "Profile Boosts", emoji: "🚀" },
-          ].map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === t.id ? "text-primary border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
-              }`}>
-              {t.emoji} {t.label}
-            </button>
-          ))}
+  const handleSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {
+    if (plan.id === "free" || activeMembership === plan.id) return;
+    if (!defaultCard) { setNoCardModal(true); return; }
+    const rawPrice = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
+    const priceStr = rawPrice % 1 === 0 ? `$${rawPrice.toLocaleString()}` : `$${rawPrice.toFixed(2)}`;
+    setPendingPurchase({
+      name: `${plan.name} Membership`,
+      emoji: plan.emoji,
+      priceStr,
+      description: plan.credits > 0 ? `+${plan.credits.toLocaleString()} credits/month` : "Membership benefits",
+      onConfirm: () => { setPendingPurchase(null); _doSubscribeMembership(plan); },
+    });
+  };
+
+  // Dark text needed on light-coloured buttons (amber, gold, platinum, apex)
+  const btnTextColor = (color: string) =>
+    ["#f59e0b", "#d4af37", "#e2e8f0", "#ffd700"].includes(color) ? "#000" : "#fff";
+
+  return (
+    <>
+    <div className="min-h-screen py-8 px-4" style={{ background: "#09091a" }}>
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-1">Plans & Boosts</h1>
+        <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.4)" }}>Two separate products — choose what fits your goals</p>
+
+        {/* ── Two-product callout ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab("memberships")}
+            className="text-left p-5 rounded-xl border transition-all duration-200 hover:scale-[1.01]"
+            style={{
+              background: activeTab === "memberships" ? "rgba(236,72,153,0.08)" : "rgba(236,72,153,0.03)",
+              borderColor: activeTab === "memberships" ? "rgba(236,72,153,0.4)" : "rgba(236,72,153,0.15)",
+            }}>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">💎</span>
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: "rgba(236,72,153,0.2)", color: "#ec4899" }}>FOR FANS</span>
+                <span className="text-base font-bold text-white">Membership Plans</span>
+              </div>
+            </div>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Unlock exclusive content, earn bonus credits every month, and access VIP live sessions with your favourite creators.
+            </p>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("boosts")}
+            className="text-left p-5 rounded-xl border transition-all duration-200 hover:scale-[1.01]"
+            style={{
+              background: activeTab === "boosts" ? "rgba(249,115,22,0.08)" : "rgba(249,115,22,0.03)",
+              borderColor: activeTab === "boosts" ? "rgba(249,115,22,0.4)" : "rgba(249,115,22,0.15)",
+            }}>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">🚀</span>
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: "rgba(249,115,22,0.2)", color: "#f97316" }}>FOR CREATORS</span>
+                <span className="text-base font-bold text-white">Profile Boosts</span>
+              </div>
+            </div>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Get discovered faster. Rank higher in search, appear on the homepage, and be featured on live feeds with monthly boost credits.
+            </p>
+          </button>
         </div>
 
+        {/* ── Tab bar ─────────────────────────────────────────────────────── */}
+        <div className="flex gap-1 border-b mb-8" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+          <button
+            onClick={() => setActiveTab("memberships")}
+            className="px-5 py-2.5 text-sm font-medium border-b-2 transition-colors"
+            style={{
+              color: activeTab === "memberships" ? "#ec4899" : "rgba(255,255,255,0.4)",
+              borderBottomColor: activeTab === "memberships" ? "#ec4899" : "transparent",
+            }}>
+            💎 Membership Plans
+          </button>
+          <button
+            onClick={() => setActiveTab("boosts")}
+            className="px-5 py-2.5 text-sm font-medium border-b-2 transition-colors"
+            style={{
+              color: activeTab === "boosts" ? "#f97316" : "rgba(255,255,255,0.4)",
+              borderBottomColor: activeTab === "boosts" ? "#f97316" : "transparent",
+            }}>
+            🚀 Profile Boosts
+          </button>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            MEMBERSHIPS TAB
+        ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "memberships" && (
           <>
-            {/* Billing toggle */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-3 p-1 rounded-xl bg-card border border-border">
+            {/* Section header + billing toggle */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+              <div>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full mr-2"
+                  style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899", border: "1px solid rgba(236,72,153,0.25)" }}>
+                  FOR FANS
+                </span>
+                <p className="mt-1.5 text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Unlock content · Earn credits · Access VIP sessions
+                </p>
+              </div>
+              <div className="flex items-center gap-1 p-1 rounded-xl self-start sm:self-auto"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <button onClick={() => setBillingCycle("monthly")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingCycle === "monthly" ? "text-white" : "text-muted-foreground"}`}
-                  style={billingCycle === "monthly" ? { background: "#14B8A6" } : {}}>
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                  style={billingCycle === "monthly"
+                    ? { background: "#ec4899", color: "#fff" }
+                    : { color: "rgba(255,255,255,0.4)" }}>
                   Monthly
                 </button>
                 <button onClick={() => setBillingCycle("annual")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${billingCycle === "annual" ? "text-white" : "text-muted-foreground"}`}
-                  style={billingCycle === "annual" ? { background: "#14B8A6" } : {}}>
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5"
+                  style={billingCycle === "annual"
+                    ? { background: "#ec4899", color: "#fff" }
+                    : { color: "rgba(255,255,255,0.4)" }}>
                   Annual
-                  <span className="px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs">Save 20%</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full"
+                    style={{ background: "rgba(34,197,94,0.2)", color: "#4ade80" }}>-20%</span>
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {MEMBERSHIP_PLANS.map(plan => {
-                const price = billingCycle === "annual" ? (plan.price * 0.8).toFixed(2) : plan.price.toFixed(2);
+              {MEMBERSHIP_PLANS.map((plan, i) => {
+                const rawPrice = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
+                const price = rawPrice % 1 === 0 ? rawPrice.toLocaleString() : rawPrice.toFixed(2);
+                const annualTotal = rawPrice * 12;
+                const annualTotalStr = annualTotal % 1 === 0 ? annualTotal.toLocaleString() : annualTotal.toFixed(2);
+                const isBlackCard = plan.id === "blackcard";
+                const isUltra = ULTRA_MEMBERSHIP_IDS.has(plan.id);
+                const isFirstUltra = isUltra && !ULTRA_MEMBERSHIP_IDS.has(MEMBERSHIP_PLANS[i - 1]?.id ?? "");
                 return (
-                  <div key={plan.id}
-                    className={`relative flex flex-col p-5 rounded-2xl border transition-all ${plan.popular ? "shadow-xl" : ""}`}
-                    style={{ borderColor: plan.popular ? plan.color : "hsl(var(--border))", background: plan.popular ? `linear-gradient(135deg, ${plan.color}15, ${plan.color}08)` : "" }}>
-                    {plan.popular && (
+                  <Fragment key={plan.id}>
+                    {isFirstUltra && (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex items-center gap-4 pt-6 pb-3">
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1))" }} />
+                        <span className="text-xs font-bold px-4 py-1.5 rounded-full tracking-widest"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)", letterSpacing: "0.12em" }}>
+                          ✦ ULTRA-PREMIUM
+                        </span>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.1), transparent)" }} />
+                      </div>
+                    )}
+                  <div
+                    className={`relative flex flex-col p-5 rounded-2xl border transition-all ${plan.popular ? "shadow-2xl" : ""}`}
+                    style={{
+                      borderColor: isBlackCard
+                        ? "rgba(212,175,55,0.45)"
+                        : isUltra
+                          ? `${plan.color}55`
+                          : plan.popular
+                            ? plan.color
+                            : "rgba(255,255,255,0.07)",
+                      background: isBlackCard
+                        ? "linear-gradient(135deg, rgba(12,10,4,0.97), rgba(25,20,8,0.9))"
+                        : isUltra
+                          ? `linear-gradient(135deg, rgba(6,6,18,0.98) 0%, ${plan.color}18 100%)`
+                          : plan.popular
+                            ? `linear-gradient(135deg, ${plan.color}18, ${plan.color}07)`
+                            : "rgba(255,255,255,0.02)",
+                    }}>
+                    {plan.popular && !isUltra && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold whitespace-nowrap"
                         style={{ background: plan.color }}>MOST POPULAR</div>
+                    )}
+                    {isBlackCard && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
+                        style={{ background: "linear-gradient(90deg, #d4af37, #b8962a)", color: "#000" }}>
+                        ✦ EXCLUSIVE
+                      </div>
+                    )}
+                    {isUltra && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
+                        style={{ background: `linear-gradient(90deg, ${plan.color}, ${plan.color}bb)`, color: btnTextColor(plan.color) }}>
+                        ✦ ULTRA-PREMIUM
+                      </div>
                     )}
                     <div className="flex items-center gap-3 mb-4">
                       <span className="text-3xl">{plan.emoji}</span>
                       <div>
-                        <h3 className="text-lg font-black text-foreground">{plan.name}</h3>
-                        {plan.credits > 0 && <p className="text-xs" style={{ color: plan.color }}>+{plan.credits.toLocaleString()} credits/mo</p>}
+                        <h3 className="text-lg font-black text-white">{plan.name}</h3>
+                        {plan.credits > 0 && (
+                          <p className="text-xs" style={{ color: isBlackCard ? "#d4af37" : plan.color }}>
+                            +{plan.credits >= 999999 ? "∞" : plan.credits.toLocaleString()} credits/mo
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div className="mb-4">
-                      <span className="text-3xl font-black text-foreground">{plan.price === 0 ? "Free" : `$${price}`}</span>
-                      {plan.price > 0 && <span className="text-muted-foreground text-sm ml-1">/mo</span>}
+                    <div className="mb-3">
+                      <span className="text-3xl font-black text-white">{plan.price === 0 ? "Free" : `$${price}`}</span>
+                      {plan.price > 0 && <span className="text-sm ml-1" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>}
                       {billingCycle === "annual" && plan.price > 0 && (
-                        <p className="text-green-400 text-xs mt-0.5">Billed ${(parseFloat(price) * 12).toFixed(2)}/year</p>
+                        <p className="text-xs mt-0.5" style={{ color: "#4ade80" }}>
+                          Billed ${annualTotalStr}/year
+                        </p>
+                      )}
+                    </div>
+                    {/* Perks chips */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {plan.discount > 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            background: `${isBlackCard ? "#d4af37" : plan.color}20`,
+                            color: isBlackCard ? "#d4af37" : plan.color,
+                            border: `1px solid ${isBlackCard ? "#d4af37" : plan.color}30`,
+                          }}>
+                          {plan.discount}% off credits
+                        </span>
+                      )}
+                      {plan.vipSessions > 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
+                          {plan.vipSessions === 999 ? "∞" : plan.vipSessions} VIP sessions
+                        </span>
                       )}
                     </div>
                     <ul className="space-y-1.5 flex-1 mb-4">
                       {plan.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                          <span className="mt-0.5 font-bold" style={{ color: plan.color }}>✓</span>
+                        <li key={f} className="flex items-start gap-2 text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
+                          <span className="mt-0.5 font-bold flex-shrink-0"
+                            style={{ color: isBlackCard ? "#d4af37" : plan.color }}>✓</span>
                           {f}
                         </li>
                       ))}
                       {plan.notIncluded.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground opacity-40">
-                          <span className="mt-0.5">✗</span>
+                        <li key={f} className="flex items-start gap-2 text-xs opacity-35"
+                          style={{ color: "rgba(255,255,255,0.6)" }}>
+                          <span className="mt-0.5 flex-shrink-0">✗</span>
                           {f}
                         </li>
                       ))}
@@ -323,73 +495,129 @@ export default function BoostsPage() {
                       onClick={() => handleSubscribeMembership(plan)}
                       disabled={plan.id === "free" || activeMembership === plan.id || loadingMembership === plan.id}
                       className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-default"
-                      style={plan.id === "free" || activeMembership === plan.id
-                        ? { background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }
-                        : { background: plan.color, color: plan.color === "#f59e0b" ? "#000" : "#fff" }}>
+                      style={
+                        plan.id === "free" || activeMembership === plan.id
+                          ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                          : isBlackCard
+                            ? { background: "linear-gradient(90deg, #d4af37, #b8962a)", color: "#000" }
+                            : { background: plan.color, color: btnTextColor(plan.color) }
+                      }>
                       {loadingMembership === plan.id
                         ? "Processing…"
                         : activeMembership === plan.id
-                          ? `✓ Active Plan`
+                          ? "✓ Active Plan"
                           : plan.id === "free"
                             ? "Current (Free)"
                             : plan.cta}
                     </button>
                   </div>
+                  </Fragment>
                 );
               })}
             </div>
 
-            <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">
-              <p className="text-muted-foreground text-sm">
-                🔒 Memberships billed monthly via <strong className="text-foreground">CCBill</strong>. Cancel anytime. Statement shows "CCBILL*LinkMe".
+            <div className="mt-8 p-4 rounded-xl text-center"
+              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                🔒 Memberships billed monthly via <strong className="text-white">CCBill</strong>. Cancel anytime. Statement shows "CCBILL*LinkMe".
               </p>
             </div>
           </>
         )}
 
+        {/* ══════════════════════════════════════════════════════════════════
+            BOOSTS TAB
+        ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "boosts" && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              {BOOST_PACKAGES.map(pkg => (
-                <div key={pkg.id} className={`relative flex flex-col p-5 rounded-xl border transition-all duration-200 ${
-                  pkg.popular ? "border-primary shadow-lg" : "border-border bg-card"
-                }`} style={pkg.popular ? { background: "linear-gradient(135deg, hsl(173 60% 12%), hsl(173 60% 8%))", borderColor: "#14B8A6" } : {}}>
-                  {pkg.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold"
-                      style={{ background: "#14B8A6" }}>MOST POPULAR</div>
+            {/* Section header */}
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.25)" }}>
+                FOR CREATORS
+              </span>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Rank higher · Get discovered · Grow your audience
+              </p>
+            </div>
+
+            {/* Boost cards grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+              {BOOST_PACKAGES.map((pkg, i) => {
+                const isUltraBoost = ULTRA_BOOST_IDS.has(pkg.id);
+                const isFirstUltraBoost = isUltraBoost && !ULTRA_BOOST_IDS.has(BOOST_PACKAGES[i - 1]?.id ?? "");
+                return (
+                <Fragment key={pkg.id}>
+                  {isFirstUltraBoost && (
+                    <div className="col-span-2 sm:col-span-3 lg:col-span-4 flex items-center gap-4 pt-6 pb-3">
+                      <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.25))" }} />
+                      <span className="text-xs font-bold px-4 py-1.5 rounded-full tracking-widest"
+                        style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.18)", color: "rgba(249,115,22,0.7)", letterSpacing: "0.12em" }}>
+                        ✦ ULTRA-PREMIUM
+                      </span>
+                      <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(249,115,22,0.25), transparent)" }} />
+                    </div>
                   )}
-                  <div className="text-4xl mb-2">{pkg.emoji}</div>
-                  <h3 className="text-xl font-bold text-foreground mb-1">{pkg.name}</h3>
-                  <p className="text-3xl font-black text-primary mb-1">{pkg.boosts}</p>
-                  <p className="text-muted-foreground text-xs mb-4">boosts per month</p>
-                  <p className="text-2xl font-bold text-foreground mb-4">${pkg.price}<span className="text-sm text-muted-foreground">/mo</span></p>
-                  <ul className="space-y-2 flex-1 mb-5">
+                <div
+                  className="relative flex flex-col p-4 rounded-xl border transition-all duration-200"
+                  style={{
+                    borderColor: isUltraBoost ? `${pkg.color}55` : pkg.popular ? pkg.color : "rgba(255,255,255,0.08)",
+                    background: isUltraBoost
+                      ? `linear-gradient(135deg, rgba(6,6,18,0.98) 0%, ${pkg.color}18 100%)`
+                      : pkg.popular
+                        ? `linear-gradient(135deg, ${pkg.color}18, ${pkg.color}07)`
+                        : "rgba(255,255,255,0.02)",
+                  }}>
+                  {pkg.popular && !isUltraBoost && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold whitespace-nowrap"
+                      style={{ background: pkg.color }}>MOST POPULAR</div>
+                  )}
+                  {isUltraBoost && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
+                      style={{ background: `linear-gradient(90deg, ${pkg.color}, ${pkg.color}bb)`, color: btnTextColor(pkg.color) }}>
+                      ✦ ULTRA
+                    </div>
+                  )}
+                  <div className="text-3xl mb-1.5">{pkg.emoji}</div>
+                  <h3 className="text-base font-bold text-white mb-0.5">{pkg.name}</h3>
+                  <p className="font-black text-2xl mb-0" style={{ color: pkg.color }}>{pkg.boosts}</p>
+                  <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>boosts/mo</p>
+                  <p className="text-xl font-bold text-white mb-3">
+                    ${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}
+                    <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
+                  </p>
+                  <ul className="space-y-1.5 flex-1 mb-4">
                     {pkg.features.map(f => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="text-primary mt-0.5">✓</span>{f}
+                      <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <span className="flex-shrink-0 font-bold mt-0.5" style={{ color: pkg.color }}>✓</span>
+                        {f}
                       </li>
                     ))}
                   </ul>
                   <button
                     onClick={() => handleSubscribeBoost(pkg)}
                     disabled={activeBoost === pkg.id || loadingBoost === pkg.id}
-                    className="w-full py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-70 disabled:cursor-default"
+                    className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-70 disabled:cursor-default"
                     style={{
-                      background: activeBoost === pkg.id ? "hsl(var(--muted))" : pkg.color,
-                      color: activeBoost === pkg.id ? "hsl(var(--muted-foreground))" : "#fff",
+                      background: activeBoost === pkg.id ? "rgba(255,255,255,0.06)" : pkg.color,
+                      color: activeBoost === pkg.id ? "rgba(255,255,255,0.4)" : btnTextColor(pkg.color),
                     }}>
                     {loadingBoost === pkg.id
                       ? "Processing…"
                       : activeBoost === pkg.id
-                        ? `✓ Active — ${pkg.boosts} boosts/mo`
-                        : `Subscribe — $${pkg.price}/mo`}
+                        ? `✓ Active — ${pkg.boosts}/mo`
+                        : `$${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}/mo`}
                   </button>
                 </div>
-              ))}
+                </Fragment>
+                );
+              })}
             </div>
 
-            <div className="p-6 rounded-xl border border-border bg-card">
-              <h2 className="text-lg font-bold text-foreground mb-4">How Boosts Work</h2>
+            {/* How Boosts Work */}
+            <div className="p-6 rounded-xl border mb-6"
+              style={{ background: "rgba(249,115,22,0.03)", borderColor: "rgba(249,115,22,0.12)" }}>
+              <h2 className="text-base font-bold text-white mb-4">How Boosts Work</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { step: "1", icon: "🚀", title: "Activate a Boost", desc: "Use one of your monthly boosts to push your profile to the top of search results and feeds." },
@@ -397,50 +625,139 @@ export default function BoostsPage() {
                   { step: "3", icon: "❤️", title: "Gain Followers", desc: "More visibility means more followers, messages, and connection opportunities." },
                 ].map(step => (
                   <div key={step.step} className="text-center p-4">
-                    <div className="w-10 h-10 rounded-full border-2 border-primary text-primary font-bold text-lg flex items-center justify-center mx-auto mb-3">{step.step}</div>
+                    <div className="w-8 h-8 rounded-full border-2 font-bold text-sm flex items-center justify-center mx-auto mb-3"
+                      style={{ borderColor: "#f97316", color: "#f97316" }}>{step.step}</div>
                     <div className="text-3xl mb-2">{step.icon}</div>
-                    <h4 className="font-semibold text-foreground mb-1">{step.title}</h4>
-                    <p className="text-xs text-muted-foreground">{step.desc}</p>
+                    <h4 className="font-semibold text-white mb-1 text-sm">{step.title}</h4>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{step.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* ── Active Placement Status ───────────────────────────────────── */}
+            {/* ── Auto-Boost Explainer ─────────────────────────────────────── */}
+            <div className="p-6 rounded-xl border mb-6"
+              style={{ background: "rgba(249,115,22,0.03)", borderColor: "rgba(249,115,22,0.12)" }}>
+              <h2 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+                <Zap className="w-4 h-4" style={{ color: "#f97316" }} />
+                How Auto-Boost Works
+              </h2>
+              <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Available on <strong style={{ color: "#ef4444" }}>Inferno</strong> and above. Here's exactly what happens when you turn it on.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                {[
+                  {
+                    step: "1", icon: "📊",
+                    title: "We read the data",
+                    desc: "Our system tracks when fans are most active on LINKME — by day, time slot, and category — and identifies your personal peak windows.",
+                  },
+                  {
+                    step: "2", icon: "⚡",
+                    title: "Boosts fire automatically",
+                    desc: "At the start of each peak window, one of your monthly boosts is spent. Your profile jumps to the top of search and discovery feeds right when traffic is highest.",
+                  },
+                  {
+                    step: "3", icon: "📈",
+                    title: "You gain followers while idle",
+                    desc: "You don't have to be online. Auto-Boost works in the background so you wake up to new followers, messages, and views every morning.",
+                  },
+                ].map(step => (
+                  <div key={step.step} className="rounded-xl p-4"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-5 h-5 rounded-full text-xs font-black flex items-center justify-center flex-shrink-0"
+                        style={{ background: "rgba(249,115,22,0.18)", color: "#f97316" }}>{step.step}</span>
+                      <span className="text-lg">{step.icon}</span>
+                    </div>
+                    <p className="text-xs font-bold text-white mb-1">{step.title}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>{step.desc}</p>
+                  </div>
+                ))}
+              </div>
+              {/* FAQ-style answers */}
+              <div className="space-y-2">
+                {[
+                  {
+                    q: "What are the peak windows?",
+                    a: "Monday–Friday evenings (6–10 pm), Saturday–Sunday afternoons (12–6 pm) and evenings. There are ~35 peak slots per month — the Legend tier (36 boosts) is designed to cover every single one.",
+                  },
+                  {
+                    q: "Will it use all my boosts at once?",
+                    a: "No. One boost fires per scheduled window. The hard ceiling is 120 slots per month (4 time slots/day × 30 days). Any boosts not used by auto-scheduling stay available as manual boosts.",
+                  },
+                  {
+                    q: "Can I override it?",
+                    a: "Yes. Toggle Auto-Boost off in the Boost Scheduler below at any time. Your manually selected slots take over instantly — nothing is lost.",
+                  },
+                  {
+                    q: "Do I need to be logged in when it fires?",
+                    a: "No. Boosts run server-side on our infrastructure. Your profile is promoted even when you're offline, asleep, or not streaming.",
+                  },
+                ].map(item => (
+                  <div key={item.q} className="rounded-lg px-4 py-3"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <p className="text-xs font-semibold text-white mb-0.5">{item.q}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>{item.a}</p>
+                  </div>
+                ))}
+              </div>
+              {!hasAutomation && (
+                <div className="mt-4 flex items-center gap-2 text-xs"
+                  style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <ToggleLeft className="w-4 h-4 flex-shrink-0" />
+                  Upgrade to <strong style={{ color: "#ef4444" }}>&nbsp;Inferno&nbsp;</strong> or higher to unlock Auto-Boost.
+                </div>
+              )}
+            </div>
+
+            {/* Active Placement Status */}
             {activeBoost && (
-              <div className="p-6 rounded-xl border" style={{ borderColor: "rgba(20,184,166,0.25)", background: "rgba(20,184,166,0.04)" }}>
-                <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" style={{ color: "#14b8a6" }} />
+              <div className="p-6 rounded-xl border mb-6"
+                style={{ borderColor: "rgba(249,115,22,0.2)", background: "rgba(249,115,22,0.04)" }}>
+                <h2 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" style={{ color: "#f97316" }} />
                   Your Active Placements
                 </h2>
-                <p className="text-xs text-muted-foreground mb-5">
-                  Active boost: <strong style={{ color: BOOST_PACKAGES.find(p => p.id === activeBoost)?.color }}>{BOOST_PACKAGES.find(p => p.id === activeBoost)?.emoji} {BOOST_PACKAGES.find(p => p.id === activeBoost)?.name}</strong>
+                <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Active boost: <strong style={{ color: BOOST_PACKAGES.find(p => p.id === activeBoost)?.color }}>
+                    {BOOST_PACKAGES.find(p => p.id === activeBoost)?.emoji}{" "}
+                    {BOOST_PACKAGES.find(p => p.id === activeBoost)?.name}
+                  </strong>
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { icon: Radio,       label: "Featured on Live Feeds",   active: hasFeaturedLive,  href: "/live",     desc: "Your streams appear in the Featured row" },
-                    { icon: Home,        label: "Homepage Featured Spot",   active: hasFeaturedHome,  href: "/",         desc: "Your profile is pinned at the top of Home" },
-                    { icon: Star,        label: "Category Top Placement",   active: hasCategoryTop,   href: "/profiles", desc: "Your profile ranks first in category browsing" },
+                    { icon: Radio, label: "Featured on Live Feeds",  active: hasFeaturedLive,  href: "/live",     reqTier: "Flame" },
+                    { icon: Home,  label: "Homepage Featured Spot",  active: hasFeaturedHome,  href: "/",         reqTier: "Inferno" },
+                    { icon: Star,  label: "Category Top Placement",  active: hasCategoryTop,   href: "/profiles", reqTier: "Blaze" },
                   ].map(item => (
                     <div key={item.label} className="rounded-xl p-4"
-                      style={{ background: item.active ? "rgba(20,184,166,0.07)" : "rgba(255,255,255,0.02)", border: `1px solid ${item.active ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.06)"}` }}>
+                      style={{
+                        background: item.active ? "rgba(249,115,22,0.07)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${item.active ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.06)"}`,
+                      }}>
                       <div className="flex items-center gap-2 mb-2">
-                        <item.icon className="w-4 h-4" style={{ color: item.active ? "#14b8a6" : "rgba(255,255,255,0.25)" }} />
-                        <span className="text-xs font-bold" style={{ color: item.active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)" }}>{item.label}</span>
+                        <item.icon className="w-4 h-4" style={{ color: item.active ? "#f97316" : "rgba(255,255,255,0.2)" }} />
+                        <span className="text-xs font-bold"
+                          style={{ color: item.active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)" }}>
+                          {item.label}
+                        </span>
                       </div>
                       {item.active ? (
                         <>
-                          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>{item.desc}</p>
+                          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                            Your profile is featured here right now.
+                          </p>
                           <Link href={item.href}>
                             <button className="text-xs font-semibold px-3 py-1 rounded-lg"
-                              style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                              style={{ background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.2)" }}>
                               View Page →
                             </button>
                           </Link>
                         </>
                       ) : (
                         <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-                          Requires {item.icon === Radio ? "Flame" : "Inferno"}+ boost
+                          Requires {item.reqTier}+ boost
                         </p>
                       )}
                     </div>
@@ -449,18 +766,20 @@ export default function BoostsPage() {
               </div>
             )}
 
-            {/* ── Boost Scheduler ─────────────────────────────────────────── */}
+            {/* Boost Scheduler */}
             {activeBoost ? (
               hasScheduling ? (
-                <div className="p-6 rounded-xl border border-border bg-card">
+                <div className="p-6 rounded-xl border"
+                  style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.07)" }}>
                   <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
                     <div>
-                      <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                        <Calendar className="w-5 h-5" style={{ color: "#f97316" }} />
+                      <h2 className="text-base font-bold text-white flex items-center gap-2">
+                        <Calendar className="w-4 h-4" style={{ color: "#f97316" }} />
                         Boost Scheduler
                       </h2>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Choose when your boosts fire. {scheduledCount > 0 ? `${scheduledCount} slot${scheduledCount !== 1 ? "s" : ""} scheduled.` : "No slots selected yet."}
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        Choose when your boosts fire.{" "}
+                        {scheduledCount > 0 ? `${scheduledCount} slot${scheduledCount !== 1 ? "s" : ""} scheduled.` : "No slots selected yet."}
                       </p>
                     </div>
                     {hasAutomation && (
@@ -485,20 +804,19 @@ export default function BoostsPage() {
                     </div>
                   )}
 
-                  {/* Grid */}
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
                         <tr>
-                          <th className="text-left pb-2 pr-3 font-semibold" style={{ color: "rgba(255,255,255,0.35)", width: 100 }}>
+                          <th className="text-left pb-2 pr-3 font-semibold" style={{ color: "rgba(255,255,255,0.3)", width: 100 }}>
                             <Clock className="w-3.5 h-3.5 inline mr-1" />Slot
                           </th>
                           {DAYS.map(d => (
-                            <th key={d} className="text-center pb-2 font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>{d}</th>
+                            <th key={d} className="text-center pb-2 font-semibold" style={{ color: "rgba(255,255,255,0.3)" }}>{d}</th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="space-y-1">
+                      <tbody>
                         {SLOTS.map(slot => (
                           <tr key={slot.id}>
                             <td className="pr-3 py-1.5">
@@ -518,15 +836,15 @@ export default function BoostsPage() {
                                     className="w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all"
                                     style={{
                                       background: isOn
-                                        ? isPeak ? "rgba(249,115,22,0.3)" : "rgba(20,184,166,0.2)"
+                                        ? isPeak ? "rgba(249,115,22,0.3)" : "rgba(249,115,22,0.15)"
                                         : isPeak ? "rgba(249,115,22,0.06)" : "rgba(255,255,255,0.03)",
                                       border: isOn
-                                        ? isPeak ? "1px solid rgba(249,115,22,0.5)" : "1px solid rgba(20,184,166,0.4)"
+                                        ? isPeak ? "1px solid rgba(249,115,22,0.5)" : "1px solid rgba(249,115,22,0.3)"
                                         : "1px solid rgba(255,255,255,0.07)",
                                       cursor: autoBoost ? "default" : "pointer",
                                     }}>
                                     {isOn ? (
-                                      <Zap className="w-3.5 h-3.5" style={{ color: isPeak ? "#f97316" : "#14b8a6" }} />
+                                      <Zap className="w-3.5 h-3.5" style={{ color: "#f97316" }} />
                                     ) : isPeak ? (
                                       <span style={{ color: "rgba(249,115,22,0.35)", fontSize: 10 }}>⬡</span>
                                     ) : null}
@@ -540,24 +858,26 @@ export default function BoostsPage() {
                     </table>
                   </div>
 
-                  <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
                     <span className="flex items-center gap-1">
-                      <span className="w-3 h-3 rounded" style={{ background: "rgba(20,184,166,0.25)", border: "1px solid rgba(20,184,166,0.5)", display: "inline-block" }} />
+                      <span className="w-3 h-3 rounded inline-block"
+                        style={{ background: "rgba(249,115,22,0.2)", border: "1px solid rgba(249,115,22,0.4)" }} />
                       Scheduled
                     </span>
-                    {hasAutomation && (
+                    {hasAutomation ? (
                       <span className="flex items-center gap-1">
-                        <span className="w-3 h-3 rounded" style={{ background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.4)", display: "inline-block" }} />
+                        <span className="w-3 h-3 rounded inline-block"
+                          style={{ background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.4)" }} />
                         Peak hours (auto)
                       </span>
-                    )}
-                    {!hasAutomation && (
-                      <span>Upgrade to Inferno for auto-scheduling at peak hours</span>
+                    ) : (
+                      <span>Upgrade to Inferno+ to enable auto-scheduling at peak hours</span>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="p-6 rounded-xl border border-border bg-card text-center">
+                <div className="p-6 rounded-xl text-center"
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
                   <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>Boost Scheduling</p>
                   <p className="text-xs mt-1 mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -566,15 +886,127 @@ export default function BoostsPage() {
                 </div>
               )
             ) : (
-              <div className="p-6 rounded-xl border border-border bg-card text-center">
+              <div className="p-6 rounded-xl text-center"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
                 <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>Boost Scheduler</p>
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Subscribe to a boost package above to unlock scheduling</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Subscribe to a boost package above to unlock scheduling
+                </p>
               </div>
             )}
           </>
         )}
       </div>
     </div>
+
+    {/* ── No Payment Method Modal ───────────────────────────────────────── */}
+    {noCardModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(6px)" }}
+        onClick={e => { if (e.target === e.currentTarget) setNoCardModal(false); }}>
+        <div className="w-full max-w-sm rounded-2xl p-6"
+          style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 70px rgba(0,0,0,0.7)" }}>
+          <div className="text-center mb-5">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)" }}>
+              <CreditCard className="w-7 h-7" style={{ color: "#14b8a6" }} />
+            </div>
+            <h2 className="text-lg font-bold text-white mb-2">Payment Method Required</h2>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+              You need a saved card before subscribing to a plan or boost package. Add one in Billing &amp; Payments.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setNoCardModal(false)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>
+              Cancel
+            </button>
+            <Link href="/billing" className="flex-1">
+              <button onClick={() => setNoCardModal(false)}
+                className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+                Add Card →
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ── Purchase Confirmation Modal ───────────────────────────────────── */}
+    {pendingPurchase && defaultCard && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(6px)" }}
+        onClick={e => { if (e.target === e.currentTarget) setPendingPurchase(null); }}>
+        <div className="w-full max-w-sm rounded-2xl p-6 relative"
+          style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 70px rgba(0,0,0,0.7)" }}>
+          <button onClick={() => setPendingPurchase(null)}
+            className="absolute top-4 right-4 p-1.5 rounded-lg transition-all hover:bg-white/10"
+            style={{ color: "rgba(255,255,255,0.35)" }}>
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Header */}
+          <div className="text-center mb-5">
+            <div className="text-5xl mb-3">{pendingPurchase.emoji}</div>
+            <h2 className="text-lg font-bold text-white mb-1">Confirm Purchase</h2>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Review your order before confirming
+            </p>
+          </div>
+
+          {/* Order summary */}
+          <div className="rounded-xl p-4 space-y-3 mb-4"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Plan</span>
+              <span className="text-sm font-bold text-white">{pendingPurchase.name}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Amount</span>
+              <span className="text-base font-black" style={{ color: "#14b8a6" }}>
+                {pendingPurchase.priceStr}<span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Includes</span>
+              <span className="text-xs font-medium text-white text-right max-w-[60%]">{pendingPurchase.description}</span>
+            </div>
+            <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Charged to</span>
+              <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.4)" }} />
+                {defaultCard.brand} •••• {defaultCard.last4}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Billing</span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Monthly · Cancel anytime</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-center mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+            🔒 Processed securely via CCBill · Statement shows "CCBILL*LinkMe"
+          </p>
+
+          <div className="flex gap-3">
+            <button onClick={() => setPendingPurchase(null)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)" }}>
+              Cancel
+            </button>
+            <button onClick={pendingPurchase.onConfirm}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+              Confirm Purchase
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
