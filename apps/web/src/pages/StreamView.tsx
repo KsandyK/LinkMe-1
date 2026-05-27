@@ -11,7 +11,8 @@ import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
 import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
-  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart,
+  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
+  Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -25,12 +26,62 @@ interface ChatMsg {
   createdAt: string;
 }
 
+// ── Drop types ────────────────────────────────────────────────────────────────
+const DROP_STORAGE_KEY = "vl_active_drop_v1";
+
+interface DropItem  { id: string; name: string; emoji: string; rarity: "Common" | "Rare" | "Epic" | "Legendary"; desc: string; }
+interface DropPull  { id: string; username: string; item: DropItem; pulledAt: number; }
+interface DropState { id: string; creatorName: string; startedAt: number; durationMs: number; pullCost: number; isActive: boolean; pulls: DropPull[]; totalRevenue: number; }
+
+const DROP_ITEMS_VIEWER: DropItem[] = [
+  { id: "d1",  name: "Signed Photo",         emoji: "📸", rarity: "Common",    desc: "A digital signed photo" },
+  { id: "d2",  name: "Shoutout",             emoji: "📢", rarity: "Common",    desc: "A personal shoutout in chat" },
+  { id: "d3",  name: "Thank You Note",       emoji: "💌", rarity: "Common",    desc: "A heartfelt personal note" },
+  { id: "d4",  name: "Fan Badge",            emoji: "🎖️", rarity: "Common",    desc: "Exclusive stream fan badge" },
+  { id: "d5",  name: "Stream Sticker",       emoji: "🌟", rarity: "Common",    desc: "This stream's custom sticker" },
+  { id: "d6",  name: "VIP Chat Access",      emoji: "💬", rarity: "Rare",      desc: "30-day VIP chat emotes" },
+  { id: "d7",  name: "Exclusive Wallpaper",  emoji: "🖼️", rarity: "Rare",      desc: "Creator exclusive wallpaper" },
+  { id: "d8",  name: "Custom Emoji Pack",    emoji: "😍", rarity: "Rare",      desc: "Stream-exclusive emojis" },
+  { id: "d9",  name: "Priority DM",          emoji: "✉️", rarity: "Rare",      desc: "Jump the DM queue" },
+  { id: "d10", name: "Custom Nickname",      emoji: "✨", rarity: "Epic",      desc: "Creator names you on stream" },
+  { id: "d11", name: "Private Story Access", emoji: "🔒", rarity: "Epic",      desc: "30 days private stories" },
+  { id: "d12", name: "Collab Entry",         emoji: "🎬", rarity: "Epic",      desc: "Entered into collab raffle" },
+  { id: "d13", name: "1-on-1 Chat",          emoji: "💎", rarity: "Legendary", desc: "15-min private chat" },
+  { id: "d14", name: "Lifetime Fan Card",    emoji: "👑", rarity: "Legendary", desc: "Permanent VIP fan status" },
+  { id: "d15", name: "Creator Collectible",  emoji: "🏆", rarity: "Legendary", desc: "One-of-a-kind digital item" },
+];
+
+function weightedDropPull(): DropItem {
+  const r = Math.random();
+  const rarity: DropItem["rarity"] = r < 0.50 ? "Common" : r < 0.80 ? "Rare" : r < 0.95 ? "Epic" : "Legendary";
+  const pool = DROP_ITEMS_VIEWER.filter(i => i.rarity === rarity);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const DROP_RARITY_COLORS: Record<string, string> = {
+  Common: "#9ca3af", Rare: "#3b82f6", Epic: "#8b5cf6", Legendary: "#f59e0b",
+};
+
+// ── Subscription tiers ────────────────────────────────────────────────────────
+const SUBSCRIBE_TIERS = [
+  { id: "fan",         name: "Fan",          emoji: "⭐",  price: 0,     priceStr: "Free",    color: "#9ca3af", perks: ["Follow creator", "Public chat access", "Fan badge"] },
+  { id: "supporter",   name: "Supporter",    emoji: "💜",  price: 4.99,  priceStr: "$4.99",   color: "#a78bfa", perks: ["5% credit discount", "Supporter badge", "Supporter-only posts"] },
+  { id: "superfan",    name: "Superfan",     emoji: "🔥",  price: 9.99,  priceStr: "$9.99",   color: "#f97316", perks: ["10% credit discount", "Superfan badge", "Priority chat visibility"] },
+  { id: "devotee",     name: "Devotee",      emoji: "💎",  price: 19.99, priceStr: "$19.99",  color: "#3b82f6", perks: ["12% credit discount", "Devotee badge", "Exclusive DM access"] },
+  { id: "allaccess",   name: "All Access",   emoji: "🌟",  price: 29.99, priceStr: "$29.99",  color: "#14b8a6", perks: ["15% credit discount", "All Access badge", "Monthly bonus credits"] },
+  { id: "elite",       name: "Elite",        emoji: "👑",  price: 39.99, priceStr: "$39.99",  color: "#f59e0b", perks: ["18% credit discount", "Elite badge", "VIP chat badge"] },
+  { id: "creatorpass", name: "Creator Pass", emoji: "🎟️", price: 49.99, priceStr: "$49.99",  color: "#ec4899", perks: ["20% credit discount", "Creator Pass badge", "Early access content"] },
+  { id: "blackcard",   name: "Black Card",   emoji: "🃏",  price: 59.99, priceStr: "$59.99",  color: "#e8a87c", perks: ["25% credit discount", "Black Card badge", "Private story access"] },
+  { id: "diamond",     name: "Diamond",      emoji: "💠",  price: 79.99, priceStr: "$79.99",  color: "#38bdf8", perks: ["25% credit discount", "Diamond badge", "Monthly private chat"] },
+  { id: "obsidian",    name: "Obsidian",     emoji: "🖤",  price: 99.99, priceStr: "$99.99",  color: "#8b5cf6", perks: ["25% credit discount", "Obsidian badge", "Priority DM + custom nickname"] },
+];
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function StreamView() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { credits, spendCredits, token, user, isLoggedIn, showToast } = useApp();
+  const { credits, spendCredits, token, user, isLoggedIn, showToast, setActiveMembership } = useApp();
 
   // Auth gate — redirect to login if not signed in
   useEffect(() => {
@@ -54,6 +105,24 @@ export default function StreamView() {
   const [sentGift, setSentGift] = useState<string | null>(null);
   const [streamEnded, setStreamEnded] = useState(false);
   const [showTipMenu, setShowTipMenu] = useState(false);
+
+  // Subscribe modal state
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [subscribedTier, setSubscribedTier] = useState<string | null>(null);
+  const [subscribeNoCard, setSubscribeNoCard] = useState(false);
+  const [subscribePending, setSubscribePending] = useState<{
+    tier: string; name: string; priceStr: string; emoji: string; onConfirm: () => void;
+  } | null>(null);
+  const [savedCards] = useState<{ id: string; last4: string; brand: string; isDefault: boolean }[]>(() => {
+    try { return JSON.parse(localStorage.getItem("vl_saved_cards_v1") ?? "[]"); } catch { return []; }
+  });
+  const defaultCard = savedCards.find(c => c.isDefault) ?? savedCards[0] ?? null;
+
+  // Drop state
+  const [activeDrop, setActiveDrop] = useState<DropState | null>(null);
+  const [dropSecsLeft, setDropSecsLeft] = useState(0);
+  const [dropPullResult, setDropPullResult] = useState<DropItem | null>(null);
+  const [dropPullAnim, setDropPullAnim] = useState(false);
 
   // Demo tip goal (simulates creator having set a goal — visible to viewers)
   const [tipGoal] = useState({ title: "Special Show 🔥", target: 1000, current: 347 });
@@ -152,6 +221,37 @@ export default function StreamView() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
+
+  // Poll localStorage for active drop (every 2 s)
+  useEffect(() => {
+    const poll = () => {
+      try {
+        const stored = localStorage.getItem(DROP_STORAGE_KEY);
+        if (!stored) { setActiveDrop(null); return; }
+        const state: DropState = JSON.parse(stored);
+        if (!state.isActive || Date.now() > state.startedAt + state.durationMs) {
+          setActiveDrop(null);
+        } else {
+          setActiveDrop(state);
+        }
+      } catch { setActiveDrop(null); }
+    };
+    poll();
+    const interval = setInterval(poll, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Drop countdown (1-second tick when a drop is active)
+  useEffect(() => {
+    if (!activeDrop) { setDropSecsLeft(0); return; }
+    const tick = () => {
+      const left = Math.max(0, Math.round((activeDrop.startedAt + activeDrop.durationMs - Date.now()) / 1000));
+      setDropSecsLeft(left);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [activeDrop?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── WebSocket connection ────────────────────────────────────────────────────
   useEffect(() => {
@@ -282,6 +382,52 @@ export default function StreamView() {
     showToast({ title: `${item.emoji} Sent!`, description: `You sent ${item.name} (${item.credits} cr)` });
   }, [feed, spendCredits, user, tipGoal.target, showToast]);
 
+  // ── Pull in an active Drop ───────────────────────────────────────────────
+  const handleDropPull = useCallback(() => {
+    if (!activeDrop || !activeDrop.isActive) return;
+    const ok = spendCredits(activeDrop.pullCost, "🔮 Drop pull");
+    if (!ok) return;
+
+    const item = weightedDropPull();
+    const pull: DropPull = {
+      id: `${Date.now()}-${Math.random()}`,
+      username: user?.username ?? "Viewer",
+      item,
+      pulledAt: Date.now(),
+    };
+
+    // Write pull to shared localStorage so Studio picks it up
+    try {
+      const stored = localStorage.getItem(DROP_STORAGE_KEY);
+      if (stored) {
+        const state: DropState = JSON.parse(stored);
+        const updated: DropState = {
+          ...state,
+          pulls: [...state.pulls, pull],
+          totalRevenue: state.totalRevenue + activeDrop.pullCost,
+        };
+        localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify(updated));
+        setActiveDrop(updated);
+      }
+    } catch {}
+
+    // Show reveal animation
+    setDropPullResult(item);
+    setDropPullAnim(true);
+    setTimeout(() => setDropPullAnim(false), 2600);
+    setTimeout(() => setDropPullResult(null), 3000);
+
+    // Announce in chat
+    setMsgs(prev => [...prev, {
+      id: String(Date.now()),
+      userId: user?.id ?? "me",
+      username: user?.username ?? "You",
+      text: `🔮 Drop: pulled ${item.emoji} ${item.name} [${item.rarity}]!`,
+      creditTip: 0,
+      createdAt: new Date().toISOString(),
+    }]);
+  }, [activeDrop, spendCredits, user]);
+
   // ── Loading / 404 ────────────────────────────────────────────────────────────
   if (loadingFeed) {
     return (
@@ -343,7 +489,7 @@ export default function StreamView() {
           </button>
         </Link>
 
-        {/* Center: LIVE + viewer count */}
+        {/* Center: LIVE + viewer count + Subscribe */}
         <div className="flex items-center gap-2">
           <span className="vl-badge-live flex items-center gap-1 text-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
@@ -352,6 +498,20 @@ export default function StreamView() {
             style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)" }}>
             <Eye className="w-3 h-3" /> {viewerCount.toLocaleString()}
           </div>
+          {/* Subscribe button */}
+          <button
+            onClick={() => setShowSubscribeModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+            style={subscribedTier
+              ? { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.4)", color: "#14b8a6" }
+              : { background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "white", boxShadow: "0 0 12px rgba(236,72,153,0.35)" }
+            }
+          >
+            {subscribedTier
+              ? <><CheckCircle2 className="w-3 h-3" /> Subscribed</>
+              : <><Bell className="w-3 h-3" /> Subscribe</>
+            }
+          </button>
         </div>
 
         {/* Right: gift dropdown + credits */}
@@ -473,56 +633,101 @@ export default function StreamView() {
         </div>
       </div>
 
-      {/* Tip goal bar — visible to all viewers when creator has set a goal */}
-      <div className="px-4 py-2 flex items-center gap-4 flex-shrink-0"
-        style={{ background: "rgba(20,184,166,0.07)", borderBottom: "1px solid rgba(20,184,166,0.15)" }}>
-        <Target className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#14b8a6" }} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-white">{tipGoal.title}</span>
-            <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>
-              {goalProgress.toLocaleString()} / {tipGoal.target.toLocaleString()} cr
-            </span>
+      {/* Tip goal bar + floating tip menu */}
+      <div className="relative flex-shrink-0">
+        <div className="px-4 py-2 flex items-center gap-4"
+          style={{ background: "rgba(20,184,166,0.07)", borderBottom: "1px solid rgba(20,184,166,0.15)" }}>
+          <Target className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#14b8a6" }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-semibold text-white">{tipGoal.title}</span>
+              <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>
+                {goalProgress.toLocaleString()} / {tipGoal.target.toLocaleString()} cr
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (goalProgress / tipGoal.target) * 100)}%`, background: "linear-gradient(90deg, #14b8a6, #0d9488)" }} />
+            </div>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (goalProgress / tipGoal.target) * 100)}%`, background: "linear-gradient(90deg, #14b8a6, #0d9488)" }} />
-          </div>
+          {/* Tip menu toggle */}
+          <button onClick={() => setShowTipMenu(s => !s)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
+            style={showTipMenu
+              ? { background: "rgba(232,168,124,0.18)", border: "1px solid rgba(232,168,124,0.4)", color: "#e8a87c" }
+              : { background: "rgba(232,168,124,0.07)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }
+            }>
+            <BarChart className="w-3.5 h-3.5" /> Tip Menu
+          </button>
         </div>
-        {/* Tip menu toggle */}
-        <button onClick={() => setShowTipMenu(s => !s)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
-          style={showTipMenu
-            ? { background: "rgba(232,168,124,0.18)", border: "1px solid rgba(232,168,124,0.4)", color: "#e8a87c" }
-            : { background: "rgba(232,168,124,0.07)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }
-          }>
-          <BarChart className="w-3.5 h-3.5" /> Tip Menu
-        </button>
+
+        {/* Tip menu — absolute overlay so it floats over video, never shifts layout */}
+        {showTipMenu && (
+          <div className="absolute left-0 right-0 z-40 px-4 py-3"
+            style={{
+              top: "100%",
+              background: "rgba(13,13,30,0.97)",
+              borderBottom: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+            }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-white">💸 Tip Menu — tap to send:</p>
+              <button onClick={() => setShowTipMenu(false)}
+                className="p-1 rounded hover:bg-white/10 transition-colors"
+                style={{ color: "rgba(255,255,255,0.35)" }}>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {DEMO_TIP_MENU.map(item => (
+                <button
+                  key={item.name}
+                  onClick={() => { sendTipItem(item); setShowTipMenu(false); }}
+                  disabled={credits < item.credits}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{
+                    background: sentGift === `tip-${item.name}` ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                    border: sentGift === `tip-${item.name}` ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                  }}>
+                  <span className="text-base">{item.emoji}</span>
+                  <div className="text-left">
+                    <p className="text-xs font-semibold text-white">{item.name}</p>
+                    <p className="text-xs font-mono" style={{ color: "#14b8a6" }}>{item.credits} cr</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Tip menu dropdown */}
-      {showTipMenu && (
-        <div className="px-4 py-3 flex-shrink-0" style={{ background: "rgba(13,13,30,0.97)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p className="text-xs font-bold text-white mb-2">💸 Tip Menu — tap to send:</p>
-          <div className="flex flex-wrap gap-2">
-            {DEMO_TIP_MENU.map(item => (
-              <button
-                key={item.name}
-                onClick={() => sendTipItem(item)}
-                disabled={credits < item.credits}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  background: sentGift === `tip-${item.name}` ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
-                  border: sentGift === `tip-${item.name}` ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
-                }}>
-                <span className="text-base">{item.emoji}</span>
-                <div className="text-left">
-                  <p className="text-xs font-semibold text-white">{item.name}</p>
-                  <p className="text-xs font-mono" style={{ color: "#14b8a6" }}>{item.credits} cr</p>
-                </div>
-              </button>
-            ))}
+      {/* ── DROP ACTIVE banner ─────────────────────────────────────────────── */}
+      {activeDrop && (
+        <div className="px-4 py-2.5 flex items-center gap-3 flex-shrink-0"
+          style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.1), rgba(245,158,11,0.06))", borderBottom: "1px solid rgba(139,92,246,0.2)" }}>
+          <Sparkles className="w-4 h-4 animate-pulse flex-shrink-0" style={{ color: "#a78bfa" }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-white">🔮 DROP ACTIVE</span>
+              <span className="text-xs font-mono px-1.5 py-0.5 rounded"
+                style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa" }}>
+                {Math.floor(dropSecsLeft / 60)}m {dropSecsLeft % 60}s left
+              </span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                · {activeDrop.pulls.length} pulls
+              </span>
+            </div>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Pull exclusive {activeDrop.creatorName} collectibles — {activeDrop.pullCost} credits each
+            </p>
           </div>
+          <button
+            onClick={handleDropPull}
+            disabled={credits < activeDrop.pullCost}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", color: "white" }}>
+            <Sparkles className="w-3.5 h-3.5" /> Pull ({activeDrop.pullCost} cr)
+          </button>
         </div>
       )}
 
@@ -593,6 +798,40 @@ export default function StreamView() {
                 </span>
               ))}
             </div>
+
+            {/* Drop pull result overlay */}
+            {dropPullResult && (
+              <div
+                className={`absolute inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-300 ${dropPullAnim ? "opacity-100" : "opacity-0"}`}
+                style={{ background: "rgba(9,9,26,0.75)" }}
+              >
+                <div
+                  className={`flex flex-col items-center gap-3 px-8 py-6 rounded-2xl text-center transition-transform duration-300 ${dropPullAnim ? "scale-100" : "scale-90"}`}
+                  style={{
+                    background: "rgba(13,13,30,0.97)",
+                    border: `2px solid ${DROP_RARITY_COLORS[dropPullResult.rarity]}`,
+                    boxShadow: `0 0 48px ${DROP_RARITY_COLORS[dropPullResult.rarity]}40`,
+                  }}
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: DROP_RARITY_COLORS[dropPullResult.rarity] }}>
+                    🔮 Drop Pull
+                  </p>
+                  <span className="text-6xl leading-none">{dropPullResult.emoji}</span>
+                  <div>
+                    <p className="text-lg font-black text-white mb-0.5">{dropPullResult.name}</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{dropPullResult.desc}</p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold"
+                    style={{
+                      background: `${DROP_RARITY_COLORS[dropPullResult.rarity]}20`,
+                      color: DROP_RARITY_COLORS[dropPullResult.rarity],
+                      border: `1px solid ${DROP_RARITY_COLORS[dropPullResult.rarity]}50`,
+                    }}>
+                    {dropPullResult.rarity}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -667,6 +906,184 @@ export default function StreamView() {
           </div>
         </div>
       </div>
+
+      {/* ── Subscribe Modal ─────────────────────────────────────────────────── */}
+      {showSubscribeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowSubscribeModal(false); }}>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
+            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 24px 64px rgba(0,0,0,0.7)" }}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div>
+                <h2 className="text-lg font-black text-white flex items-center gap-2">
+                  <Bell className="w-5 h-5" style={{ color: "#ec4899" }} />
+                  Subscribe to {hostName}
+                </h2>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Choose a tier to unlock exclusive perks and support your favorite creator
+                </p>
+              </div>
+              <button onClick={() => setShowSubscribeModal(false)}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                style={{ color: "rgba(255,255,255,0.4)" }}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tier grid */}
+            <div className="p-5 grid grid-cols-2 gap-3">
+              {SUBSCRIBE_TIERS.map(tier => {
+                const isActive = subscribedTier === tier.id;
+                return (
+                  <div key={tier.id}
+                    className="relative p-4 rounded-xl transition-all"
+                    style={{
+                      background: isActive ? `${tier.color}18` : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${isActive ? tier.color + "55" : "rgba(255,255,255,0.08)"}`,
+                    }}>
+                    {isActive && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold"
+                        style={{ background: `${tier.color}25`, color: tier.color }}>
+                        <CheckCircle2 className="w-3 h-3" /> Active
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl leading-none">{tier.emoji}</span>
+                      <div>
+                        <p className="text-sm font-black text-white">{tier.name}</p>
+                        <p className="text-xs font-bold" style={{ color: tier.color }}>
+                          {tier.price === 0 ? "Free" : `${tier.priceStr}/mo`}
+                        </p>
+                      </div>
+                    </div>
+                    <ul className="space-y-1 mb-3">
+                      {tier.perks.map(perk => (
+                        <li key={perk} className="flex items-start gap-1.5 text-xs"
+                          style={{ color: "rgba(255,255,255,0.6)" }}>
+                          <Star className="w-2.5 h-2.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
+                          {perk}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => {
+                        if (isActive) return;
+                        if (tier.price === 0) {
+                          setActiveMembership(tier.id);
+                          setSubscribedTier(tier.id);
+                          setShowSubscribeModal(false);
+                          showToast({ title: `${tier.emoji} You're now a ${tier.name}!`, description: `Following ${hostName}` });
+                          return;
+                        }
+                        if (!defaultCard) { setShowSubscribeModal(false); setSubscribeNoCard(true); return; }
+                        setSubscribePending({
+                          tier: tier.id,
+                          name: tier.name,
+                          priceStr: tier.priceStr,
+                          emoji: tier.emoji,
+                          onConfirm: () => {
+                            setActiveMembership(tier.id);
+                            setSubscribedTier(tier.id);
+                            setSubscribePending(null);
+                            setShowSubscribeModal(false);
+                            showToast({ title: `${tier.emoji} Subscribed — ${tier.name}!`, description: `Welcome to ${hostName}'s ${tier.name} tier` });
+                          },
+                        });
+                      }}
+                      className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+                      style={isActive
+                        ? { background: `${tier.color}20`, border: `1px solid ${tier.color}40`, color: tier.color, cursor: "default" }
+                        : { background: `linear-gradient(135deg, ${tier.color}cc, ${tier.color}88)`, color: "white" }
+                      }>
+                      {isActive ? "✓ Subscribed" : tier.price === 0 ? "Follow Free" : `Subscribe ${tier.priceStr}/mo`}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── No Card Modal ─────────────────────────────────────────────────────── */}
+      {subscribeNoCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={e => { if (e.target === e.currentTarget) setSubscribeNoCard(false); }}>
+          <div className="w-full max-w-sm p-6 rounded-2xl text-center"
+            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 24px 64px rgba(0,0,0,0.7)" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "rgba(232,168,124,0.12)", border: "1px solid rgba(232,168,124,0.3)" }}>
+              <CreditCard className="w-7 h-7" style={{ color: "#e8a87c" }} />
+            </div>
+            <h3 className="text-lg font-black text-white mb-2">Payment Method Required</h3>
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Add a payment method in Billing to subscribe to paid tiers.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setSubscribeNoCard(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-white/5"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)" }}>
+                Cancel
+              </button>
+              <button onClick={() => { setSubscribeNoCard(false); window.location.href = "/billing"; }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #e8a87c, #d97706)", color: "white" }}>
+                Go to Billing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Subscribe Confirmation Modal ──────────────────────────────────────── */}
+      {subscribePending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={e => { if (e.target === e.currentTarget) setSubscribePending(null); }}>
+          <div className="w-full max-w-sm p-6 rounded-2xl"
+            style={{ background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 24px 64px rgba(0,0,0,0.7)" }}>
+            <div className="text-center mb-5">
+              <span className="text-5xl">{subscribePending.emoji}</span>
+              <h3 className="text-lg font-black text-white mt-3 mb-1">{subscribePending.name} Subscription</h3>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                You're subscribing to {hostName}'s <strong className="text-white">{subscribePending.name}</strong> tier
+              </p>
+            </div>
+            <div className="p-3 rounded-xl mb-5"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: "rgba(255,255,255,0.5)" }}>Billed monthly</span>
+                <span className="font-black text-white">{subscribePending.priceStr}/mo</span>
+              </div>
+              {defaultCard && (
+                <div className="flex items-center gap-2 mt-2 pt-2"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                  <CreditCard className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    {defaultCard.brand} •••• {defaultCard.last4}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setSubscribePending(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-white/5"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)" }}>
+                Cancel
+              </button>
+              <button onClick={subscribePending.onConfirm}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "white" }}>
+                Confirm Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
