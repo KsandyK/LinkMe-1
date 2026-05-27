@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi } from "@/lib/api";
-import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check } from "lucide-react";
+import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check, CheckCircle, AlertTriangle } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -22,16 +22,18 @@ const HOW_STEPS = [
   { num: "04", title: "Go Live & Earn", desc: "Hit Go Live and start connecting with fans who pay to spend time with you." },
 ];
 
-type ApplyStep = "prompt" | "intro" | "form" | "review";
+type ApplyStep = "prompt" | "intro" | "verify" | "form" | "review";
 
 const APPLY_STEPS: { key: ApplyStep; label: string }[] = [
-  { key: "intro",  label: "Overview"    },
-  { key: "form",   label: "Your Profile" },
-  { key: "review", label: "Review"       },
+  { key: "intro",  label: "Overview"          },
+  { key: "verify", label: "Verify Identity"   },
+  { key: "form",   label: "Your Profile"      },
+  { key: "review", label: "Review"            },
 ];
 
 export default function BecomeCreator() {
   const { isLoggedIn, ageVerificationStatus, showToast } = useApp();
+  const [, navigate] = useLocation();
   const [applying, setApplying]     = useState(false);
   const [applied, setApplied]       = useState(false);
   const [applyStep, setApplyStep]   = useState<ApplyStep>("prompt");
@@ -58,6 +60,42 @@ export default function BecomeCreator() {
       setApplying(false);
     }
   };
+
+  // ── Full-page success screen — hides all marketing content ──────────────
+  if (applied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: "rgba(20,184,166,0.15)", border: "2px solid #14b8a6", boxShadow: "0 0 30px rgba(20,184,166,0.25)" }}>
+            <Check className="w-10 h-10" style={{ color: "#14b8a6" }} />
+          </div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", marginBottom: "0.75rem" }}>
+            Application Submitted!
+          </h2>
+          <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>
+            We'll review your application within 1–2 business days. You'll receive a notification when you're approved and your creator features are unlocked.
+          </p>
+          <div className="vl-card p-4 mb-6 text-left">
+            <p className="text-xs font-semibold mb-2" style={{ color: "#5eead4" }}>What happens next:</p>
+            <ul className="text-xs space-y-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <li>✓ Our team reviews your profile & bio</li>
+              <li>✓ Identity verification is confirmed</li>
+              <li>✓ You'll be notified by email when approved</li>
+              <li>✓ Creator dashboard & Go Live unlock instantly</li>
+            </ul>
+          </div>
+          <Link href="/creator">
+            <button className="vl-btn-primary w-full py-3 text-sm">View Creator Dashboard</button>
+          </Link>
+          <button onClick={() => navigate("/")} className="mt-3 text-xs w-full py-2"
+            style={{ color: "rgba(255,255,255,0.3)" }}>
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -151,23 +189,7 @@ export default function BecomeCreator() {
       <section className="py-14" style={{ background: "rgba(20,184,166,0.03)", borderTop: "1px solid rgba(20,184,166,0.08)" }}>
         <div className="container max-w-lg mx-auto text-center">
 
-          {/* ── Success state */}
-          {applied ? (
-            <>
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ background: "rgba(20,184,166,0.15)", border: "2px solid #14b8a6" }}>
-                <Check className="w-8 h-8" style={{ color: "#14b8a6" }} />
-              </div>
-              <h2 className="vl-section-title text-2xl mb-3">Application Submitted!</h2>
-              <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                We'll review your application within 1–2 business days. You'll receive a notification when you're approved.
-              </p>
-              <Link href="/creator">
-                <button className="vl-btn-primary px-8 py-3 text-sm">View Creator Dashboard</button>
-              </Link>
-            </>
-
-          ) : isLoggedIn ? (
+          {isLoggedIn ? (
             <div className="max-w-lg mx-auto w-full">
 
               {/* Progress bar — shown when in multi-step flow */}
@@ -209,22 +231,14 @@ export default function BecomeCreator() {
                 <>
                   <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
                   <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    You're logged in! Apply now to start earning as a creator.
+                    You're logged in! Apply now to start earning as a creator. Identity verification is required as part of the process.
                   </p>
-                  {ageVerificationStatus !== "verified" && (
-                    <div className="mb-5 p-3 rounded-xl text-sm"
-                      style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", color: "#fbbf24" }}>
-                      Age verification required before applying.{" "}
-                      <Link href="/verify-age" className="underline ml-1">Verify now →</Link>
-                    </div>
-                  )}
                   <button
                     onClick={() => setApplyStep("intro")}
-                    disabled={ageVerificationStatus !== "verified"}
-                    className="vl-btn-primary px-10 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="vl-btn-primary px-10 py-3 text-sm">
                     Apply as Creator
                   </button>
-                  <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90%</p>
+                  <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90% · ID verification required</p>
                 </>
               )}
 
@@ -239,10 +253,10 @@ export default function BecomeCreator() {
                   </p>
                   <div className="space-y-3 mb-6">
                     {[
-                      { icon: "✓",  title: "Verified Age",   desc: "You must have completed age verification before applying." },
-                      { icon: "📝", title: "Creator Bio",    desc: "A short bio (min. 20 characters) telling fans about your content." },
-                      { icon: "🎨", title: "Display Name",   desc: "The name fans will see on your public creator profile." },
-                      { icon: "⚡", title: "Quick Review",   desc: "Applications are reviewed within 1–2 business days." },
+                      { icon: "🪪", title: "Government-Issued ID", desc: "All creators must verify their identity and age before going live." },
+                      { icon: "📝", title: "Creator Bio",          desc: "A short bio (min. 20 characters) telling fans about your content." },
+                      { icon: "🎨", title: "Display Name",         desc: "The name fans will see on your public creator profile." },
+                      { icon: "⚡", title: "Quick Review",         desc: "Applications are reviewed within 1–2 business days." },
                     ].map(item => (
                       <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl"
                         style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -254,9 +268,85 @@ export default function BecomeCreator() {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => setApplyStep("form")} className="vl-btn-primary w-full py-3 flex items-center justify-center gap-2">
-                    Begin Application <ChevronRight className="w-4 h-4" />
+                  <button onClick={() => setApplyStep("verify")} className="vl-btn-primary w-full py-3 flex items-center justify-center gap-2">
+                    Continue <ChevronRight className="w-4 h-4" />
                   </button>
+                </div>
+              )}
+
+              {/* ── Step: Verify Identity */}
+              {applyStep === "verify" && (
+                <div className="vl-card p-6 animate-fade-up text-left">
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>
+                    Identity Verification
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
+                    Creators must be age-verified before publishing content or going live. This is required by law.
+                  </p>
+
+                  {ageVerificationStatus === "verified" ? (
+                    /* Already verified */
+                    <>
+                      <div className="flex items-center gap-3 p-4 rounded-xl mb-6"
+                        style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.25)" }}>
+                        <CheckCircle className="w-6 h-6 flex-shrink-0" style={{ color: "#14b8a6" }} />
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: "#14b8a6" }}>Identity Verified ✓</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                            Your age and identity have been confirmed. You're good to proceed.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => setApplyStep("intro")}
+                          className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                          Back
+                        </button>
+                        <button onClick={() => setApplyStep("form")} className="flex-1 vl-btn-primary py-3 text-sm flex items-center justify-center gap-2">
+                          Continue <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    /* Not yet verified */
+                    <>
+                      <div className="flex items-start gap-3 p-4 rounded-xl mb-4"
+                        style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.2)" }}>
+                        <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#fbbf24" }} />
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: "#fbbf24" }}>Verification Required</p>
+                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
+                            You must complete age & ID verification before submitting a creator application. The process takes 2–5 minutes.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-6">
+                        {[
+                          "Government-issued photo ID (passport, driver's licence, or national ID)",
+                          "A selfie holding your ID — face and document must both be visible",
+                          "You must be 18 years of age or older",
+                        ].map(req => (
+                          <div key={req} className="flex items-start gap-2 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                            <span className="mt-0.5 flex-shrink-0" style={{ color: "#14b8a6" }}>•</span>
+                            {req}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => setApplyStep("intro")}
+                          className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                          Back
+                        </button>
+                        <Link href="/verify-age" className="flex-1">
+                          <button className="w-full vl-btn-primary py-3 text-sm flex items-center justify-center gap-2">
+                            <Shield className="w-4 h-4" /> Verify My Identity
+                          </button>
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -310,7 +400,7 @@ export default function BecomeCreator() {
                       </p>
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={() => setApplyStep("intro")}
+                      <button onClick={() => setApplyStep("verify")}
                         className="flex-1 py-3 rounded-xl text-sm font-semibold"
                         style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
                         Back
