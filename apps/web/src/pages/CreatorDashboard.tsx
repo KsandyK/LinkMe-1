@@ -89,14 +89,39 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
 const BOOST_RANK: Record<string, number> = Object.fromEntries(
   BOOST_TIERS.map((t, i) => [t.id, i + 1])
 );
-type AnalyticsTier = "none" | "basic" | "full" | "premium" | "revenue";
-function getAnalyticsTier(activeBoost: string | null): AnalyticsTier {
+
+// Membership plans that unlock analytics (higher memberships grant higher tiers)
+// This lets ultra-premium members get analytics without a separate boost purchase.
+const MEMBERSHIP_ANALYTICS: Record<string, number> = {
+  // free / fan / supporter / superfan → 0 (no analytics, boost required)
+  devotee:     1, // basic
+  allaccess:   1, // basic
+  elite:       2, // full
+  creatorpass: 2, // full
+  blackcard:   3, // premium
+  diamond:     4, // revenue
+  obsidian:    4, // revenue
+  platinum_m:  4, // revenue — $4,999/mo absolutely includes revenue analytics
+};
+
+const TIER_LEVELS = ["none", "basic", "full", "premium", "revenue"] as const;
+type AnalyticsTier = typeof TIER_LEVELS[number];
+
+function getAnalyticsTier(activeBoost: string | null, activeMembership: string): AnalyticsTier {
+  // Boost-based level
   const r = activeBoost ? (BOOST_RANK[activeBoost] ?? 0) : 0;
-  if (r === 0) return "none";
-  if (r <= 2) return "basic";   // starter, spark
-  if (r <= 4) return "full";    // flame, blaze
-  if (r <= 5) return "premium"; // inferno
-  return "revenue";             // legend, titan, supernova, colossus, sovereign
+  let boostLevel = 0;
+  if (r > 0)  boostLevel = 1; // basic
+  if (r > 2)  boostLevel = 2; // full  (flame, blaze)
+  if (r > 4)  boostLevel = 3; // premium (inferno)
+  if (r > 5)  boostLevel = 4; // revenue (legend+)
+
+  // Membership-based level (caps at 4 = revenue)
+  const membershipLevel = MEMBERSHIP_ANALYTICS[activeMembership] ?? 0;
+
+  // Take the higher of the two — membership OR boost unlocks analytics
+  const level = Math.max(boostLevel, membershipLevel);
+  return TIER_LEVELS[level];
 }
 
 // Deterministic referral code from username
@@ -148,8 +173,8 @@ function centsToDisplay(cents: number) {
 }
 
 export default function CreatorDashboard() {
-  const { credits, isLoggedIn, showToast, activeBoost, user } = useApp();
-  const analyticsTier = getAnalyticsTier(activeBoost);
+  const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user } = useApp();
+  const analyticsTier = getAnalyticsTier(activeBoost, activeMembership);
   const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral">("overview");
   const [codeCopied, setCodeCopied] = useState(false);
   const [boostClaimed, setBoostClaimed] = useState(() => {
@@ -520,10 +545,11 @@ export default function CreatorDashboard() {
                     <Lock className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
                     <h3 className="text-base font-bold text-white mb-2">Analytics require a Boost package</h3>
                     <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      Subscribe to <strong style={{ color: "#64748b" }}>Spark</strong> for basic stats,
+                      Get a <strong style={{ color: "#64748b" }}>Spark</strong> boost for basic stats,
                       <strong style={{ color: "#14B8A6" }}> Flame</strong> for full analytics,
                       <strong style={{ color: "#f97316" }}> Inferno</strong> for premium insights, or
                       <strong style={{ color: "#f59e0b" }}> Legend</strong> for revenue forecasting.
+                      High-tier memberships (Elite+) also unlock analytics.
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 opacity-40">
                       {[
@@ -714,9 +740,9 @@ export default function CreatorDashboard() {
                         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
                         <div>
                           <p className="text-sm font-semibold text-white">
-                            {analyticsTier === "basic"   ? "Upgrade to Flame for charts & engagement data" :
-                             analyticsTier === "full"    ? "Upgrade to Inferno for demographics & conversion funnel" :
-                                                          "Upgrade to Legend for revenue forecasting & LTV"}
+                            {analyticsTier === "basic"   ? "Upgrade to Flame boost or Elite+ membership for charts & engagement" :
+                             analyticsTier === "full"    ? "Upgrade to Inferno boost or Black Card+ membership for demographics & funnel" :
+                                                          "Upgrade to Legend boost or Diamond+ membership for revenue forecasting & LTV"}
                           </p>
                           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
                             Unlock deeper insights to grow your creator business
