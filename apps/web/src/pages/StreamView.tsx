@@ -74,10 +74,11 @@ export default function StreamView() {
   const [, navigate] = useLocation();
   const { credits, spendCredits, addCredits, recordPurchase, token, user, isLoggedIn, showToast, setActiveMembership } = useApp();
 
-  // Auth gate — redirect to login if not signed in
+  // Auth gate — redirect to login if not signed in (debounced 500ms to avoid flash on load)
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/login");
+      const t = setTimeout(() => navigate("/login"), 500);
+      return () => clearTimeout(t);
     }
   }, [isLoggedIn, navigate]);
 
@@ -118,6 +119,18 @@ export default function StreamView() {
   // Demo tip goal (simulates creator having set a goal — visible to viewers)
   const [tipGoal] = useState({ title: "Special Show 🔥", target: 1000, current: 347 });
   const [goalProgress, setGoalProgress] = useState(347);
+  const [goalReached, setGoalReached] = useState(false);
+  const prevGoalRef = useRef(347);
+
+  // Confetti burst when tip goal crosses target threshold
+  useEffect(() => {
+    if (!goalReached && goalProgress >= tipGoal.target && prevGoalRef.current < tipGoal.target) {
+      setGoalReached(true);
+      showToast({ title: "🎉 Tip Goal Reached!", description: `${tipGoal.title} — the creator will perform the special show!` });
+      setTimeout(() => setGoalReached(false), 4000);
+    }
+    prevGoalRef.current = goalProgress;
+  }, [goalProgress, tipGoal.target, tipGoal.title, goalReached, showToast]);
 
   // Demo tip menu (mirrors what creators build in the Live Studio)
   const DEMO_TIP_MENU = [
@@ -277,6 +290,22 @@ export default function StreamView() {
       wsRef.current = null;
     };
   }, [id, token]);
+
+  // ── Demo viewer count fluctuation (when WS is not connected) ──────────────
+  useEffect(() => {
+    if (!feed || viewerCount === 0) return;
+    // Simulate realistic viewership: ±2–8% change every 8s with a slow drift
+    const baseCount = viewerCount;
+    let drift = 0;
+    const sim = setInterval(() => {
+      drift += (Math.random() - 0.48) * 0.015; // slight upward bias
+      drift = Math.max(-0.25, Math.min(0.35, drift)); // cap drift
+      const fluctuation = (Math.random() - 0.5) * 0.06; // ±3% noise
+      const factor = 1 + drift + fluctuation;
+      setViewerCount(Math.max(1, Math.round(baseCount * factor)));
+    }, 8000);
+    return () => clearInterval(sim);
+  }, [feed?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Send chat message ───────────────────────────────────────────────────────
   const sendMessage = useCallback(() => {
@@ -726,24 +755,56 @@ export default function StreamView() {
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         {/* ── Video column ─────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Video area */}
+          {/* Video area — animated demo stream placeholder (real WebRTC connects here in production) */}
           <div className="relative flex-1 bg-black flex items-center justify-center" style={{ minHeight: 0 }}>
+            {/* Blurred thumbnail as ambient background */}
             <img
               src={thumbnail}
               alt={feed.title}
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ opacity: 0.6 }}
+              style={{ opacity: 0.35, filter: "blur(12px)", transform: "scale(1.08)" }}
             />
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted={muted}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ display: "none" }}
-            />
+            {/* Animated pulsing gradient overlay for "demo stream" feel */}
+            <div className="absolute inset-0" style={{
+              background: "linear-gradient(135deg, rgba(9,9,26,0.7) 0%, rgba(20,184,166,0.08) 50%, rgba(9,9,26,0.7) 100%)",
+              animation: "pulse 3s ease-in-out infinite",
+            }} />
+            {/* Keep the hidden video element for future WebRTC hookup */}
+            <video ref={videoRef} autoPlay playsInline muted={muted}
+              className="absolute inset-0 w-full h-full object-cover" style={{ display: "none" }} />
+            {/* Demo stream centre badge */}
+            <div className="relative z-10 text-center pointer-events-none select-none">
+              <img src={hostAvatar} alt={hostName}
+                className="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-4"
+                style={{ borderColor: "#14b8a6", boxShadow: "0 0 40px rgba(20,184,166,0.4)" }} />
+              <p className="font-bold text-white text-lg mb-1">{hostName}</p>
+              <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>{feed.title}</p>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
+                style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(20,184,166,0.3)", color: "#5eead4", backdropFilter: "blur(8px)" }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
+                DEMO STREAM — Live video coming soon
+              </div>
+            </div>
 
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.8) 0%, transparent 50%, rgba(9,9,26,0.4) 100%)" }} />
+            {/* Confetti burst overlay when tip goal is reached */}
+            {goalReached && (
+              <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
+                <div className="text-center animate-bounce">
+                  <div className="text-5xl mb-2">🎉</div>
+                  <div className="text-xl font-bold text-white drop-shadow-lg">Goal Reached!</div>
+                  <div className="text-sm mt-1" style={{ color: "#14b8a6" }}>{tipGoal.title}</div>
+                </div>
+                {/* Confetti particles */}
+                {["🎊", "✨", "🌟", "💫", "🎉"].map((e, idx) => (
+                  <div key={idx} className="absolute text-2xl animate-ping"
+                    style={{ top: `${20 + idx * 15}%`, left: `${10 + idx * 18}%`, animationDelay: `${idx * 0.15}s`, animationDuration: "0.8s" }}>
+                    {e}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 45%, rgba(9,9,26,0.3) 100%)" }} />
 
             {/* Stream info overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4">

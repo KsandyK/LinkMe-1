@@ -5,8 +5,9 @@
  */
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Crown, Star, Zap, Gift, Shield, Sparkles, Lock, Clock, Play, Image, Film } from "lucide-react";
+import { Crown, Star, Zap, Gift, Shield, Sparkles, Lock, Clock, Play, Image, Film, Eye, Radio } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 
 // Session allowance per membership
 const SESSION_LIMITS: Record<string, number> = {
@@ -21,15 +22,25 @@ const SESSION_LIMITS: Record<string, number> = {
   platinum_m: 999,
 };
 
-// VIP-exclusive content cards
-const EXCLUSIVE_CONTENT = [
-  { id: "c1", type: "photo",  title: "Behind the Scenes",       creator: "Aria V.",    emoji: "📸", locked: false },
-  { id: "c2", type: "video",  title: "Private Unboxing",        creator: "Mia Rose",   emoji: "🎬", locked: false },
-  { id: "c3", type: "stream", title: "Intimate Q&A Stream",     creator: "Celeste K.", emoji: "🎙️", locked: false },
-  { id: "c4", type: "photo",  title: "Photoshoot Extras",       creator: "Aria V.",    emoji: "📸", locked: true  },
-  { id: "c5", type: "video",  title: "Exclusive Vlog",          creator: "Mia Rose",   emoji: "🎬", locked: true  },
-  { id: "c6", type: "stream", title: "VIP-Only Live",           creator: "Celeste K.", emoji: "🎙️", locked: true  },
-];
+// VIP live streams
+const VIP_LIVE_STREAMS = MOCK_LIVE_FEEDS.filter(f => f.isVip);
+
+// VIP-exclusive content — pull top-cost media items from mock profiles
+const EXCLUSIVE_CONTENT = MOCK_PROFILES.flatMap(profile =>
+  (profile.mediaItems ?? [])
+    .filter(m => m.creditCost >= 150) // 150+ credit items = VIP-tier content
+    .slice(0, 1) // take best item per creator
+    .map(m => ({
+      id: m.id,
+      type: m.type as "photo" | "video" | "stream",
+      title: m.title,
+      creator: profile.displayName ?? profile.username,
+      thumbnailUrl: m.thumbnailUrl,
+      creditCost: m.creditCost,
+      emoji: m.type === "video" ? "🎬" : "📸",
+      locked: false,
+    }))
+).slice(0, 6);
 
 const PERKS = [
   { icon: Zap,      title: "Priority Chat Access",    desc: "Skip the queue — message creators first, every time" },
@@ -214,6 +225,48 @@ export default function VipLounge() {
           </p>
         </div>
 
+        {/* VIP Live Streams */}
+        {VIP_LIVE_STREAMS.length > 0 && (
+          <div className="mb-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Radio className="w-4 h-4" style={{ color: "#ef4444" }} />
+              <h2 className="vl-section-title">VIP Live Now</h2>
+              <span className="vl-badge-live flex items-center gap-1 text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />LIVE
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {VIP_LIVE_STREAMS.map(stream => (
+                <Link key={stream.id} href={`/live/${stream.id}`}>
+                  <div className="vl-card overflow-hidden cursor-pointer group">
+                    <div className="relative" style={{ aspectRatio: "16/9" }}>
+                      <img src={stream.thumbnailUrl ?? `https://picsum.photos/seed/${stream.id}/640/360`}
+                        alt={stream.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold"
+                        style={{ background: "rgba(139,92,246,0.9)", color: "white" }}>
+                        <Crown className="w-3 h-3" /> VIP
+                      </div>
+                      <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold"
+                        style={{ background: "rgba(0,0,0,0.65)", color: "rgba(255,255,255,0.9)" }}>
+                        <Eye className="w-3 h-3" /> {(stream.viewerCount ?? 0).toLocaleString()}
+                      </div>
+                      <div className="absolute bottom-2 left-3 right-3">
+                        <p className="text-white text-sm font-bold truncate">{stream.title}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{stream.hostName}</p>
+                      </div>
+                    </div>
+                    <div className="px-3 py-2 text-xs font-semibold" style={{ color: "#8b5cf6" }}>
+                      VIP Access · {stream.vipCost ? `${stream.vipCost} cr` : "Included"}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Perks grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {PERKS.map(perk => (
@@ -239,14 +292,20 @@ export default function VipLounge() {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {EXCLUSIVE_CONTENT.map(item => {
-            const canOpen = openedContent.has(item.id) || (!item.locked && sessionsLeft > 0) || (item.locked === false && sessionsLeft > 0);
+            const canOpen = openedContent.has(item.id) || sessionsLeft > 0;
             const isViewed = openedContent.has(item.id);
             const TypeIcon = item.type === "photo" ? Image : item.type === "video" ? Film : Play;
             return (
               <div key={item.id} className="vl-card overflow-hidden flex flex-col">
-                <div className="flex items-center justify-center text-4xl relative"
-                  style={{ height: 140, background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(20,184,166,0.06))" }}>
-                  <span>{item.emoji}</span>
+                <div className="relative overflow-hidden" style={{ height: 140 }}>
+                  {item.thumbnailUrl ? (
+                    <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl"
+                      style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(20,184,166,0.06))" }}>
+                      <span>{item.emoji}</span>
+                    </div>
+                  )}
                   {!canOpen && (
                     <div className="absolute inset-0 flex items-center justify-center"
                       style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
