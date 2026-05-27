@@ -139,11 +139,44 @@ export const MEMBER_TIERS: MemberTier[] = [
     notIncluded: [],
     cta: "Get Obsidian", popular: false,
   },
+  // ── Ultra-Premium tier ladder ($499.99 → $4,999.99) ──────────────────────
   {
-    id: "platinum_m", name: "Platinum", emoji: "🪙", price: 749.99, priceStr: "$749.99",
-    color: "#e2e8f0", bonusCredits: 5000, discount: 0.25, vipSessions: 9999,
-    perks: ["5,000 bonus credits/month", "25% off + white-glove service", "Unlimited VIP Lounge access"],
-    features: ["Everything in Obsidian", "5,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Platinum crown profile frame", "Bi-weekly strategy sessions", "White-glove personal manager"],
+    id: "titanium", name: "Titanium", emoji: "🔷", price: 499.99, priceStr: "$499.99",
+    color: "#7dd3fc", bonusCredits: 7500, discount: 0.25, vipSessions: 75,
+    perks: ["7,500 bonus credits/month", "25% off credit purchases", "75 VIP sessions/month"],
+    features: ["Everything in Obsidian", "7,500 bonus credits/month", "25% discount on credit purchases", "75 VIP Lounge sessions/mo", "Titanium member badge", "Dedicated support agent", "Priority queue in all live chats"],
+    notIncluded: [],
+    cta: "Get Titanium", popular: false,
+  },
+  {
+    id: "gold", name: "Gold", emoji: "🥇", price: 749.99, priceStr: "$749.99",
+    color: "#fbbf24", bonusCredits: 10000, discount: 0.25, vipSessions: 100,
+    perks: ["10,000 bonus credits/month", "25% off credit purchases", "100 VIP sessions/month"],
+    features: ["Everything in Titanium", "10,000 bonus credits/month", "25% discount on credit purchases", "100 VIP Lounge sessions/mo", "Gold member badge", "Monthly exclusive creator events", "Custom profile accent frame"],
+    notIncluded: [],
+    cta: "Get Gold", popular: false,
+  },
+  {
+    id: "imperial", name: "Imperial", emoji: "⚜️", price: 1499.99, priceStr: "$1,499.99",
+    color: "#f472b6", bonusCredits: 20000, discount: 0.25, vipSessions: 150,
+    perks: ["20,000 bonus credits/month", "25% off credit purchases", "150 VIP sessions/month"],
+    features: ["Everything in Gold", "20,000 bonus credits/month", "25% discount on credit purchases", "150 VIP Lounge sessions/mo", "Imperial badge", "Personal account manager", "Bi-weekly strategy calls"],
+    notIncluded: [],
+    cta: "Get Imperial", popular: false,
+  },
+  {
+    id: "apex", name: "Apex", emoji: "🏔️", price: 2999.99, priceStr: "$2,999.99",
+    color: "#a78bfa", bonusCredits: 35000, discount: 0.25, vipSessions: 200,
+    perks: ["35,000 bonus credits/month", "25% off credit purchases", "200 VIP sessions/month"],
+    features: ["Everything in Imperial", "35,000 bonus credits/month", "25% discount on credit purchases", "200 VIP Lounge sessions/mo", "Apex elite badge", "Custom profile crown frame", "Quarterly exclusive gifting package"],
+    notIncluded: [],
+    cta: "Get Apex", popular: false,
+  },
+  {
+    id: "platinum_m", name: "Platinum", emoji: "🪙", price: 4999.99, priceStr: "$4,999.99",
+    color: "#e2e8f0", bonusCredits: 50000, discount: 0.25, vipSessions: 9999,
+    perks: ["50,000 bonus credits/month", "25% off + white-glove service", "Unlimited VIP Lounge access"],
+    features: ["Everything in Apex", "50,000 bonus credits/month", "25% discount on credit purchases", "Unlimited VIP Lounge access", "Platinum crown profile frame", "Bi-weekly strategy sessions", "White-glove personal manager"],
     notIncluded: [],
     cta: "Get Platinum", popular: false,
   },
@@ -190,8 +223,25 @@ export const BOOST_TIERS: BoostTier[] = [
     id: "colossus", name: "Colossus", emoji: "💫", price: 199.99, color: "#7c3aed", boosts: 95, popular: false,
     features: ["95 boosts/month — every slot except overnight", "Colossus partner badge", "Cross-platform promotion", "Custom boost campaigns", "Revenue & conversion analytics", "Dedicated account executive"],
   },
+  // ── Ultra-Premium boost ladder ($399.99 → $4,999.99) ─────────────────────
   {
-    id: "sovereign", name: "Sovereign", emoji: "🔱", price: 299.99, color: "#e2e8f0", boosts: 9999, popular: false,
+    id: "dynasty", name: "Dynasty", emoji: "👑", price: 399.99, color: "#f59e0b", boosts: 150, popular: false,
+    features: ["150 boosts/month — maximum daily coverage", "Top placement across all categories", "Full analytics suite", "Custom boost campaigns", "Dynasty crown badge"],
+  },
+  {
+    id: "overlord", name: "Overlord", emoji: "🛡️", price: 749.99, color: "#ef4444", boosts: 230, popular: false,
+    features: ["230 boosts/month — every peak + evening slot", "Homepage featured placement guaranteed", "Dedicated account manager", "Real-time boost analytics dashboard", "Cross-platform social promotion"],
+  },
+  {
+    id: "conqueror", name: "Conqueror", emoji: "⚔️", price: 1499.99, color: "#06b6d4", boosts: 380, popular: false,
+    features: ["380 boosts/month — comprehensive 24/7 coverage", "Priority placement across every feed", "Personal brand strategist", "Full revenue & analytics API access", "Custom branded boost campaigns"],
+  },
+  {
+    id: "emperor", name: "Emperor", emoji: "🏯", price: 2999.99, color: "#10b981", boosts: 550, popular: false,
+    features: ["550 boosts/month — saturated coverage all timezones", "Guaranteed homepage feature daily", "Dedicated executive account manager", "White-glove campaign management", "Quarterly performance strategy review"],
+  },
+  {
+    id: "sovereign", name: "Sovereign", emoji: "🔱", price: 4999.99, color: "#e2e8f0", boosts: 9999, popular: false,
     features: ["Unlimited boosts — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr"],
   },
 ];
