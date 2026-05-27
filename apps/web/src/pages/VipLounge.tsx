@@ -1,26 +1,42 @@
 /**
  * LINKME — VIP Lounge
  * Velvet Dark Design System
- * Gated to All-Access (10 sessions/month) and Creator Pass (20 sessions/month).
+ * Gated to All-Access (10 sessions/month) and above.
  */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
-import { Crown, Star, Zap, Gift, Shield, Sparkles, Lock, Clock, Play, Image, Film, Eye, Radio } from "lucide-react";
+import { Crown, Star, Zap, Gift, Shield, Sparkles, Lock, Clock, Play, Image, Film, Eye, Radio, Infinity as InfinityIcon } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 
-// Session allowance per membership
+// Session allowance per membership — Infinity = unlimited
 const SESSION_LIMITS: Record<string, number> = {
-  superfan: 2,
-  devotee: 4,
-  allaccess: 10,
-  elite: 15,
+  superfan:   2,
+  devotee:    4,
+  allaccess:  10,
+  elite:      15,
   creatorpass: 20,
-  blackcard: 999,
-  diamond: 999,
-  obsidian: 999,
-  platinum_m: 999,
+  blackcard:  Infinity,
+  diamond:    Infinity,
+  obsidian:   Infinity,
+  platinum_m: Infinity,
 };
+
+// Human-readable tier names for all membership IDs
+const MEMBERSHIP_DISPLAY_NAMES: Record<string, string> = {
+  free:        "Free",
+  superfan:    "Super Fan",
+  devotee:     "Devotee",
+  allaccess:   "All-Access",
+  elite:       "Elite",
+  creatorpass: "Creator Pass",
+  blackcard:   "Black Card",
+  diamond:     "Diamond",
+  obsidian:    "Obsidian",
+  platinum_m:  "Platinum",
+};
+
+const isUnlimitedPlan = (limit: number) => !isFinite(limit);
 
 // VIP live streams
 const VIP_LIVE_STREAMS = MOCK_LIVE_FEEDS.filter(f => f.isVip);
@@ -120,8 +136,11 @@ export default function VipLounge() {
               <span className="text-right">Price</span>
             </div>
             {[
-              { name: "All-Access",    sessions: "10 / month",  price: "$49.99/mo", color: "#14b8a6" },
-              { name: "Creator Pass",  sessions: "20 / month",  price: "$99.99/mo", color: "#e8a87c" },
+              { name: "All-Access",   sessions: "10 / month",   price: "$49.99/mo",   color: "#14b8a6" },
+              { name: "Elite",        sessions: "15 / month",   price: "$99.99/mo",   color: "#60a5fa" },
+              { name: "Creator Pass", sessions: "20 / month",   price: "$199.99/mo",  color: "#e8a87c" },
+              { name: "Black Card",   sessions: "Unlimited",    price: "$499.99/mo",  color: "#8b5cf6" },
+              { name: "Platinum",     sessions: "Unlimited",    price: "$4,999.99/mo",color: "#f0c040" },
             ].map(r => (
               <div key={r.name} className="grid grid-cols-3 text-xs py-3 px-4"
                 style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
@@ -196,33 +215,61 @@ export default function VipLounge() {
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">VIP Lounge</h1>
           <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs font-bold capitalize"
+            <span className="px-3 py-1 rounded-full text-xs font-bold"
               style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.25)", color: "#14b8a6" }}>
-              {activeMembership === "allaccess" ? "All-Access" : "Creator Pass"} Member
+              {MEMBERSHIP_DISPLAY_NAMES[activeMembership] ?? activeMembership} Member
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-              style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#8b5cf6" }}>
-              <Clock className="w-3 h-3" />
-              {sessionsLeft} / {limit} sessions remaining
-            </span>
+            {isUnlimitedPlan(limit) ? (
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.4)", color: "#a78bfa" }}>
+                <InfinityIcon className="w-3 h-3" />
+                Unlimited Access
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#8b5cf6" }}>
+                <Clock className="w-3 h-3" />
+                {sessionsLeft} / {limit} sessions remaining
+              </span>
+            )}
           </div>
         </div>
 
         {/* Session progress */}
         <div className="vl-card p-5 mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-white">Monthly VIP Sessions</p>
-            <p className="text-sm font-bold" style={{ color: sessionsLeft === 0 ? "#f87171" : "#14b8a6" }}>
-              {sessionsLeft} left
-            </p>
-          </div>
-          <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${(sessionsUsed / limit) * 100}%`, background: sessionsLeft === 0 ? "#ef4444" : "linear-gradient(90deg, #8b5cf6, #14b8a6)" }} />
-          </div>
-          <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Resets the 1st of each month · {sessionsUsed} session{sessionsUsed !== 1 ? "s" : ""} used this month
-          </p>
+          {isUnlimitedPlan(limit) ? (
+            /* Unlimited plan — show a celebration banner instead of a progress bar */
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white mb-0.5">Unlimited VIP Sessions</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  {sessionsUsed} session{sessionsUsed !== 1 ? "s" : ""} opened this month — no limits on your plan
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl"
+                style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(20,184,166,0.1))", border: "1px solid rgba(139,92,246,0.3)" }}>
+                <InfinityIcon className="w-5 h-5" style={{ color: "#a78bfa" }} />
+                <span className="text-sm font-black" style={{ color: "#a78bfa" }}>Unlimited</span>
+              </div>
+            </div>
+          ) : (
+            /* Limited plan — show progress bar */
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-white">Monthly VIP Sessions</p>
+                <p className="text-sm font-bold" style={{ color: sessionsLeft === 0 ? "#f87171" : "#14b8a6" }}>
+                  {sessionsLeft} left
+                </p>
+              </div>
+              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${(sessionsUsed / limit) * 100}%`, background: sessionsLeft === 0 ? "#ef4444" : "linear-gradient(90deg, #8b5cf6, #14b8a6)" }} />
+              </div>
+              <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Resets the 1st of each month · {sessionsUsed} session{sessionsUsed !== 1 ? "s" : ""} used this month
+              </p>
+            </>
+          )}
         </div>
 
         {/* VIP Live Streams */}
@@ -283,7 +330,7 @@ export default function VipLounge() {
 
         {/* Exclusive content */}
         <h2 className="vl-section-title mb-5">Exclusive VIP Content</h2>
-        {sessionsLeft === 0 && (
+        {sessionsLeft === 0 && !isUnlimitedPlan(limit) && (
           <div className="rounded-xl p-4 mb-5 text-center"
             style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
             <p className="text-sm font-semibold" style={{ color: "#f87171" }}>Session limit reached for this month</p>
