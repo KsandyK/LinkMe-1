@@ -56,7 +56,7 @@ ALL DISPUTES RESOLVED BY BINDING INDIVIDUAL ARBITRATION (AAA Consumer Rules). YO
 - 30-day opt-out right: email legal@cravr.fun within 30 days of first acceptance
 
 Legal: legal@cravr.fun | 30 N Gould St Ste N, Sheridan, WY 82801, USA
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const PRIVACY_POLICY: LegalDoc = {
@@ -112,7 +112,7 @@ Account data: 1 year post-termination. Payment records: 7 years. Age verificatio
 
 Privacy: legal@cravr.fun | GDPR: legal@cravr.fun
 30 N Gould St Ste N, Sheridan, WY 82801, USA
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const CREATOR_AGREEMENT: LegalDoc = {
@@ -154,7 +154,7 @@ Bring 25 qualifying referrals to the platform using your unique Creator/Streamer
 
 3. § 2257 RECORD-KEEPING & CUSTODIAN OF RECORDS
 Compliance with 18 U.S.C. § 2257 is mandatory. Maintain age verification records for all depicted individuals for 5+ years.
-Custodian of Records: Chief Compliance Officer, LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801. EIN: 42-2815300. legal@cravr.fun.
+Custodian of Records: Chief Compliance Officer, Cravr LLC, 30 N Gould St Ste N, Sheridan, WY 82801. EIN: 42-2815300. legal@cravr.fun.
 
 4. FOSTA-SESTA COMPLIANCE (MANDATORY)
 You are strictly prohibited from using CRAVR to advertise, facilitate, or solicit real-world sexual services or sex trafficking. Violation = immediate permanent termination, forfeiture of all balances, reporting to NCMEC and law enforcement.
@@ -178,7 +178,7 @@ This confidentiality obligation survives termination for TWO (2) YEARS following
 
 Creators: creators@cravr.fun | Compliance: legal@cravr.fun
 30 N Gould St Ste N, Sheridan, WY 82801, USA
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const CODE_OF_CONDUCT: LegalDoc = {
@@ -225,7 +225,7 @@ Zero-tolerance violations (CSAM, trafficking) are not eligible for appeal.
 Report violations: support@cravr.fun
 Emergencies (minors/trafficking): legal@cravr.fun
 Appeals: support@cravr.fun
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const DMCA_POLICY: LegalDoc = {
@@ -235,7 +235,7 @@ export const DMCA_POLICY: LegalDoc = {
 Version 1.0 | Effective: May 27, 2026
 
 DMCA Agent: legal@cravr.fun
-LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA
+Cravr LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 TAKEDOWN NOTICE (17 U.S.C. § 512(c)(3))
 To report copyright infringement, your notice must include:
@@ -264,7 +264,7 @@ REPEAT INFRINGER POLICY
 Accounts with multiple valid DMCA notices within 12 months may be terminated.
 
 Non-copyright violations: support@cravr.fun
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const REFUND_POLICY: LegalDoc = {
@@ -303,7 +303,7 @@ Response: 2 business days acknowledgment; 5–10 business days resolution.
 Approved refunds returned to original payment method within 5–10 business days.
 
 Billing: support@cravr.fun
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const COOKIE_POLICY: LegalDoc = {
@@ -345,7 +345,7 @@ CCPA: We do not sell personal information collected via cookies.
 Adult platform note: Age gate and verification cookies are essential. Clearing them will require re-verification on next visit.
 
 Privacy: legal@cravr.fun
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const COMMUNITY_GUIDELINES: LegalDoc = {
@@ -396,7 +396,7 @@ Minors/Trafficking emergencies: legal@cravr.fun (escalated within 1 hour)
 APPEALS: Email support@cravr.fun within 30 days of any moderation action.
 
 Safety: support@cravr.fun | Community: support@cravr.fun
-© 2026 LinkME LLC All rights reserved.`,
+© 2026 Cravr LLC All rights reserved.`,
 };
 
 export const LEGAL_DOCS: Record<string, LegalDoc> = {
@@ -411,7 +411,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
 };
 
 export const COMPANY = {
-  name:    "LinkME LLC",
+  name:    "Cravr LLC",
   email:   "legal@cravr.fun",
   support: "support@cravr.fun",
   website: "https://cravr.fun",

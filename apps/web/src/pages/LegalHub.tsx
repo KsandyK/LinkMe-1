@@ -96,7 +96,7 @@ export default function LegalHub() {
 
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-bold tracking-widest mb-3" style={{ color: "#14b8a6" }}>LinkME LLC</p>
+          <p className="text-xs font-bold tracking-widest mb-3" style={{ color: "#14b8a6" }}>Cravr LLC</p>
           <h1 className="text-4xl font-black text-white mb-2">Legal Centre</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
             All legal documents, policies, and contact information in one place.
@@ -152,7 +152,7 @@ export default function LegalHub() {
 
         {/* Footer note */}
         <p className="text-xs text-center mt-8" style={{ color: "rgba(255,255,255,0.2)" }}>
-          © 2026 LinkME LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA · EIN 42-2815300
+          © 2026 Cravr LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA · EIN 42-2815300
         </p>
       </div>
     </div>

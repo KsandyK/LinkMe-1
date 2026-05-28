@@ -46,7 +46,7 @@ export default function TermsOfService() {
               title: "1. Acceptance of Terms & Binding Agreement",
               content: `1.1 By accessing, registering for, or using CRAVR ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, and our Code of Conduct, all of which are incorporated herein by reference.
 
-1.2 These Terms constitute a legally binding agreement between you and LinkME LLC, a Delaware corporation ("Company"). If you do not agree, you have no right to use the Service.
+1.2 These Terms constitute a legally binding agreement between you and Cravr LLC, a Wyoming limited liability company ("Company"). If you do not agree, you have no right to use the Service.
 
 1.3 Electronic Acceptance: Clicking "I Agree," checking the age-confirmation box, creating an account, or continuing to use the Service after any update to these Terms constitutes your full legal acceptance. You waive any defense that an electronic agreement is unenforceable.
 
@@ -128,7 +128,7 @@ export default function TermsOfService() {
             },
             {
               title: "6. Content, Intellectual Property & License",
-              content: `6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of LinkME LLC and protected by copyright, trademark, and trade secret law.
+              content: `6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of Cravr LLC and protected by copyright, trademark, and trade secret law.
 
 6.2 Creator Content: Creators retain copyright in their original content. Purchasing or unlocking access to content grants you a personal, non-exclusive, non-transferable, revocable license to view that content within the Platform only.
 
@@ -168,7 +168,7 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 
 9.2 CAP: IN NO EVENT SHALL CRAVR'S AGGREGATE LIABILITY EXCEED THE LESSER OF: (A) THE AMOUNT YOU PAID TO CRAVR IN THE NINETY (90) DAYS PRECEDING THE CLAIM, OR (B) ONE HUNDRED DOLLARS ($100.00).
 
-9.3 INDEMNIFICATION: You agree to defend, indemnify, and hold harmless LinkME LLC and its affiliates, officers, agents, employees, and partners from any claim, demand, loss, liability, or expense (including reasonable attorney's fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of any third-party rights; or (d) any content you submit to the platform.`,
+9.3 INDEMNIFICATION: You agree to defend, indemnify, and hold harmless Cravr LLC and its affiliates, officers, agents, employees, and partners from any claim, demand, loss, liability, or expense (including reasonable attorney's fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of any third-party rights; or (d) any content you submit to the platform.`,
             },
             {
               title: "10. Arbitration, Class Action Waiver & Governing Law",
@@ -180,9 +180,9 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 
 10.4 Exceptions: Either party may seek emergency injunctive relief in court to prevent irreparable harm pending arbitration.
 
-10.5 Governing Law: These Terms are governed by the laws of the State of Delaware, without regard to conflict of law principles.
+10.5 Governing Law: These Terms are governed by the laws of the State of Wyoming, without regard to conflict of law principles.
 
-10.6 Venue: For any claims not subject to arbitration, you consent to exclusive jurisdiction in the state and federal courts of New Castle County, Delaware.
+10.6 Venue: For any claims not subject to arbitration, you consent to exclusive jurisdiction in the state and federal courts of Sheridan County, Wyoming.
 
 10.7 Time Limitation: ANY CLAIM MUST BE BROUGHT WITHIN ONE (1) YEAR OF THE CAUSE OF ACTION ARISING, OR BE FOREVER BARRED.`,
             },
@@ -215,7 +215,7 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 13.4 Assignment: You may not assign your rights or obligations under these Terms. CRAVR may freely assign its rights.
 
 13.5 Contact Information:
-LinkME LLC
+Cravr LLC
 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 General Support (billing, safety, appeals):  support@cravr.fun
@@ -225,10 +225,10 @@ Legal & Compliance (DMCA, GDPR, LE):        legal@cravr.fun`,
             {
               title: "14. DMCA Policy & Copyright Takedowns (17 U.S.C. § 512)",
               content: `14.1 Designated Copyright Agent
-LinkME LLC has designated the following agent to receive notifications of claimed copyright infringement under the Digital Millennium Copyright Act:
+Cravr LLC has designated the following agent to receive notifications of claimed copyright infringement under the Digital Millennium Copyright Act:
 
   DMCA Designated Agent
-  LinkME LLC — Copyright Department
+  Cravr LLC — Copyright Department
   30 N Gould St Ste N, Sheridan, WY 82801, USA
   Email: legal@cravr.fun
   Subject line: "DMCA Takedown Notice"
@@ -252,7 +252,7 @@ If you believe your content was removed due to mistake or misidentification of t
 • Identification of the removed material and the location where it appeared before removal
 • A statement under penalty of perjury that you believe the material was removed by mistake or misidentification
 • Your full name, mailing address, and telephone number
-• A statement consenting to the jurisdiction of the Federal District Court for the District of Delaware (or your local jurisdiction if outside the US)
+• A statement consenting to the jurisdiction of the Federal District Court for the District of Wyoming (or your local jurisdiction if outside the US)
 • Email to: legal@cravr.fun with subject line "DMCA Counter-Notice"
 
 Upon receipt of a valid counter-notice, CRAVR will notify the original complainant. If the complainant does not file a court action within 10–14 business days, CRAVR may, at its discretion, restore the removed material.

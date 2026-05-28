@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "10. Contact",
-              content: `Privacy inquiries:\n\nLinkME LLC — Data Privacy Officer\nlegal@cravr.fun\n\nFor GDPR requests (EU residents):\nlegal@cravr.fun`,
+              content: `Privacy inquiries:\n\nCravr LLC — Data Privacy Officer\nlegal@cravr.fun\n\nFor GDPR requests (EU residents):\nlegal@cravr.fun`,
             },
           ].map(section => (
             <div key={section.title} className="p-5 rounded-xl border border-border bg-card">

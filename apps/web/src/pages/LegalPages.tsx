@@ -11,13 +11,13 @@ const LEGAL_CONTENT: Record<string, { title: string; content: string }> = {
   terms: {
     title: "Terms of Service",
     content: `
-# LinkME LLC TERMS OF SERVICE
+# Cravr LLC TERMS OF SERVICE
 
 **Version:** 3.0
 **Effective Date:** May 27, 2026
 **Last Updated:** May 27, 2026
 
-LinkME LLC
+Cravr LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
 
@@ -37,7 +37,7 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 
 1.1 By accessing, registering for, or using CRAVR ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, Cookie Policy, and Code of Conduct, all of which are incorporated herein by reference.
 
-1.2 These Terms constitute a legally binding agreement between you and LinkME LLC, a Delaware corporation ("Company"). If you do not agree, you have no right to use the Service.
+1.2 These Terms constitute a legally binding agreement between you and Cravr LLC, a Wyoming limited liability company ("Company"). If you do not agree, you have no right to use the Service.
 
 1.3 Electronic Acceptance: Clicking "I Agree," checking the age-confirmation box, creating an account, or continuing to use the Service after any update to these Terms constitutes your full legal acceptance. You waive any defense that an electronic agreement is unenforceable.
 
@@ -136,7 +136,7 @@ Any violation of this section will result in immediate permanent termination, pr
 
 ## 6. CONTENT, INTELLECTUAL PROPERTY & LICENSE
 
-6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of LinkME LLC and protected by copyright, trademark, and trade secret law.
+6.1 All platform content not owned by creators (UI, branding, algorithms, software) is the exclusive property of Cravr LLC and protected by copyright, trademark, and trade secret law.
 
 6.2 **Creator Content:** Creators retain copyright in their original content. Purchasing or unlocking access to content grants you a personal, non-exclusive, non-transferable, revocable license to view that content within the Platform only.
 
@@ -166,7 +166,7 @@ Your use of the Service is governed by our Privacy Policy and Cookie Policy, inc
 
 8.2 CRAVR's total aggregate liability for any claim arising from or related to the Service is limited to the greater of (a) the total amount you paid to CRAVR in the 12 months preceding the claim, or (b) $100 USD.
 
-8.3 **Indemnification:** You agree to indemnify, defend, and hold harmless LinkME LLC and its officers, directors, employees, and agents from any claims, liabilities, damages, costs, and expenses (including reasonable attorney's fees) arising out of your use of the Service, your violation of these Terms, or your violation of any third-party rights.
+8.3 **Indemnification:** You agree to indemnify, defend, and hold harmless Cravr LLC and its officers, directors, employees, and agents from any claims, liabilities, damages, costs, and expenses (including reasonable attorney's fees) arising out of your use of the Service, your violation of these Terms, or your violation of any third-party rights.
 
 ---
 
@@ -180,7 +180,7 @@ Your use of the Service is governed by our Privacy Policy and Cookie Policy, inc
 
 ## 10. GOVERNING LAW
 
-These Terms are governed by the laws of the State of Delaware, without regard to its conflict of law principles. Subject to Section 11 (Mandatory Arbitration), you consent to the exclusive jurisdiction of the state and federal courts located in New Castle County, Delaware for any claims not subject to arbitration.
+These Terms are governed by the laws of the State of Wyoming, without regard to its conflict of law principles. Subject to Section 11 (Mandatory Arbitration), you consent to the exclusive jurisdiction of the state and federal courts located in Sheridan County, Wyoming for any claims not subject to arbitration.
 
 ---
 
@@ -219,18 +219,18 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 12.4 **Assignment:** You may not assign your rights under these Terms without CRAVR's written consent. CRAVR may assign these Terms in connection with a merger, acquisition, or sale of assets.
 
-12.5 **Contact:** For legal notices, contact legal@cravr.fun or LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA.
+12.5 **Contact:** For legal notices, contact legal@cravr.fun or Cravr LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA.
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   privacy: {
     title: "Privacy Policy",
     content: `
-# LinkME LLC PRIVACY POLICY
+# Cravr LLC PRIVACY POLICY
 
 **Version:** 2.0
 **Effective Date:** May 27, 2026
@@ -240,7 +240,7 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 ## PRIVACY NOTICE
 
-LinkME LLC ("we," "us," "our," or "Company") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and platform (the "Service"). This Policy also describes your rights under the CCPA (California), GDPR (EU/EEA/UK), and other applicable laws.
+Cravr LLC ("we," "us," "our," or "Company") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and platform (the "Service"). This Policy also describes your rights under the CCPA (California), GDPR (EU/EEA/UK), and other applicable laws.
 
 ---
 
@@ -399,7 +399,7 @@ California residents who provide personal information in obtaining products or s
 ### 10.8 How to Submit a Request
 Submit CCPA requests to:
 - **Email:** legal@cravr.fun (Subject: "CCPA Request")
-- **Mail:** LinkME LLC, Attn: Privacy — CCPA, 30 N Gould St Ste N, Sheridan, WY 82801
+- **Mail:** Cravr LLC, Attn: Privacy — CCPA, 30 N Gould St Ste N, Sheridan, WY 82801
 
 We will respond to verifiable requests within 45 days (extendable by an additional 45 days with notice). We will verify your identity before processing requests.
 
@@ -420,7 +420,7 @@ We will respond to verifiable requests within 45 days (extendable by an addition
 This section applies to individuals in the European Economic Area (EEA), United Kingdom, and Switzerland.
 
 ### 11.1 Data Controller
-LinkME LLC is the data controller for personal information processed through the Service. Our EU/UK contact: legal@cravr.fun.
+Cravr LLC is the data controller for personal information processed through the Service. Our EU/UK contact: legal@cravr.fun.
 
 ### 11.2 Legal Bases for Processing
 
@@ -455,14 +455,14 @@ Personal data is retained only for as long as necessary for the purposes set out
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   creator: {
     title: "Creator Agreement & NDA",
     content: `
-# LinkME LLC CREATOR AGREEMENT & NDA
+# Cravr LLC CREATOR AGREEMENT & NDA
 
 **Version:** 3.0
 **Effective Date:** May 27, 2026
@@ -472,7 +472,7 @@ Personal data is retained only for as long as necessary for the purposes set out
 
 ## LEGALLY BINDING AGREEMENT — READ EVERY SECTION
 
-This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and LinkME LLC, a Delaware corporation ("Company," "CRAVR," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
+This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and Cravr LLC, a Wyoming limited liability company ("Company," "CRAVR," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
 
 ---
 
@@ -482,7 +482,7 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 
 ## 1. CREATOR STATUS — INDEPENDENT CONTRACTOR
 
-1.1 You are an independent contractor, not an employee, agent, joint venture partner, or franchisee of LinkME LLC This Agreement does not create any employment relationship.
+1.1 You are an independent contractor, not an employee, agent, joint venture partner, or franchisee of Cravr LLC This Agreement does not create any employment relationship.
 
 1.2 As an independent contractor, you:
 - Are solely responsible for your own federal, state, local, and international taxes
@@ -588,10 +588,10 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 
 4.4 Failure to maintain or produce 2257 records upon demand will result in immediate content removal and account suspension pending investigation.
 
-4.5 **Custodian of Records:** LinkME LLC maintains a Custodian of Records for platform-level § 2257 compliance. Inspection requests and legal inquiries should be directed to:
+4.5 **Custodian of Records:** Cravr LLC maintains a Custodian of Records for platform-level § 2257 compliance. Inspection requests and legal inquiries should be directed to:
 
 **Custodian of Records — 18 U.S.C. § 2257**
-Chief Compliance Officer, LinkME LLC
+Chief Compliance Officer, Cravr LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
 Email: legal@cravr.fun
@@ -686,18 +686,18 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 
 ## 9. GOVERNING LAW
 
-This Agreement is governed by the laws of the State of Delaware, without regard to its conflict of law principles. Disputes are subject to the mandatory arbitration clause in the Terms of Service, incorporated herein by reference.
+This Agreement is governed by the laws of the State of Wyoming, without regard to its conflict of law principles. Disputes are subject to the mandatory arbitration clause in the Terms of Service, incorporated herein by reference.
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   conduct: {
     title: "Code of Conduct",
     content: `
-# LinkME LLC CODE OF CONDUCT
+# Cravr LLC CODE OF CONDUCT
 
 **Version:** 2.0
 **Effective Date:** May 27, 2026
@@ -891,14 +891,14 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   dmca: {
     title: "DMCA Policy",
     content: `
-# LinkME LLC DMCA POLICY & COPYRIGHT NOTICE
+# Cravr LLC DMCA POLICY & COPYRIGHT NOTICE
 
 **Version:** 1.0
 **Effective Date:** May 27, 2026
@@ -908,7 +908,7 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ## OVERVIEW
 
-LinkME LLC ("CRAVR") respects the intellectual property rights of others and expects users and creators to do the same. We comply with the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512, and have adopted policies to address copyright infringement on our platform.
+Cravr LLC ("CRAVR") respects the intellectual property rights of others and expects users and creators to do the same. We comply with the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512, and have adopted policies to address copyright infringement on our platform.
 
 ---
 
@@ -917,7 +917,7 @@ LinkME LLC ("CRAVR") respects the intellectual property rights of others and exp
 CRAVR has designated a Copyright Agent to receive notifications of claimed copyright infringement:
 
 **DMCA Copyright Agent**
-LinkME LLC
+Cravr LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
 Email: legal@cravr.fun
@@ -966,7 +966,7 @@ Under 17 U.S.C. § 512(g)(3), your counter-notification must include:
 
 - **Your contact information:** Your full legal name, mailing address, and telephone number.
 
-- **Consent to jurisdiction:** A statement that you consent to the jurisdiction of the Federal District Court for the district in which your address is located (or the District of Delaware if your address is outside the US), and that you will accept service of process from the person who submitted the takedown notice.
+- **Consent to jurisdiction:** A statement that you consent to the jurisdiction of the Federal District Court for the District of Wyoming, and that you will accept service of process from the person who submitted the takedown notice.
 
 - **Your signature:** Your physical or electronic signature.
 
@@ -1010,14 +1010,14 @@ DMCA Agent: legal@cravr.fun
 Legal: legal@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   refund: {
     title: "Refund Policy",
     content: `
-# LinkME LLC REFUND POLICY
+# Cravr LLC REFUND POLICY
 
 **Version:** 1.0
 **Effective Date:** May 27, 2026
@@ -1027,7 +1027,7 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ## OVERVIEW
 
-This Refund Policy describes the circumstances under which LinkME LLC ("CRAVR," "we," "us") will issue refunds for purchases made on our platform. Please read this policy carefully before making any purchase.
+This Refund Policy describes the circumstances under which Cravr LLC ("CRAVR," "we," "us") will issue refunds for purchases made on our platform. Please read this policy carefully before making any purchase.
 
 ---
 
@@ -1133,14 +1133,14 @@ Response time: 2 business days for acknowledgment; 5–10 business days for reso
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   cookies: {
     title: "Cookie Policy",
     content: `
-# LinkME LLC COOKIE POLICY
+# Cravr LLC COOKIE POLICY
 
 **Version:** 1.0
 **Effective Date:** May 27, 2026
@@ -1150,7 +1150,7 @@ Response time: 2 business days for acknowledgment; 5–10 business days for reso
 
 ## OVERVIEW
 
-LinkME LLC ("CRAVR," "we," "us") uses cookies and similar tracking technologies on our platform. This Cookie Policy explains what cookies are, how we use them, your choices regarding cookies, and how to contact us about this policy.
+Cravr LLC ("CRAVR," "we," "us") uses cookies and similar tracking technologies on our platform. This Cookie Policy explains what cookies are, how we use them, your choices regarding cookies, and how to contact us about this policy.
 
 This policy should be read alongside our Privacy Policy.
 
@@ -1279,14 +1279,14 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 
   community: {
     title: "Community Guidelines",
     content: `
-# LinkME LLC COMMUNITY GUIDELINES
+# Cravr LLC COMMUNITY GUIDELINES
 
 **Version:** 1.0
 **Effective Date:** May 27, 2026
@@ -1442,7 +1442,7 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
 
-© 2026 LinkME LLC All rights reserved.
+© 2026 Cravr LLC All rights reserved.
     `,
   },
 };
@@ -1562,7 +1562,7 @@ export default function LegalPages() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-gray-400 text-sm">
-          <p>© 2026 LinkME LLC All rights reserved.</p>
+          <p>© 2026 Cravr LLC All rights reserved.</p>
           <p className="mt-2">
             For legal inquiries, contact: <span className="text-teal-400">legal@cravr.fun</span>
           </p>
