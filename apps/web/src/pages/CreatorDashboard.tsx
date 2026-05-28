@@ -1587,6 +1587,47 @@ export default function CreatorDashboard() {
               <h3 className="text-base font-bold text-white mb-1">Earnings</h3>
               <p className="text-3xl font-black text-white mb-0.5">{centsToDisplay(stats?.monthlyEarnings ?? 0)}</p>
               <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>This month</p>
+
+              {/* Revenue share tier */}
+              {(() => {
+                const monthly = (stats?.monthlyEarnings ?? 0) / 100;
+                const REVENUE_TIERS = [
+                  { label: "Growth",          min: 0,       max: 5000,    creatorPct: 80, color: "#14b8a6" },
+                  { label: "Established",     min: 5001,    max: 15000,   creatorPct: 80, color: "#06b6d4" },
+                  { label: "Elite",           min: 15001,   max: 25000,   creatorPct: 83, color: "#8b5cf6" },
+                  { label: "Partner",         min: 25001,   max: 75000,   creatorPct: 85, color: "#f59e0b" },
+                  { label: "Senior Partner",  min: 75001,   max: 150000,  creatorPct: 87, color: "#f97316" },
+                  { label: "Exec Partner",    min: 150001,  max: 300000,  creatorPct: 88, color: "#ef4444" },
+                  { label: "Premier Partner", min: 300001,  max: 500000,  creatorPct: 89, color: "#ec4899" },
+                  { label: "Top Partner",     min: 500001,  max: 1000000, creatorPct: 90, color: "#a855f7" },
+                  { label: "Pinnacle",        min: 1000001, max: Infinity, creatorPct: 90, color: "#d4af37" },
+                ];
+                const current = REVENUE_TIERS.find(t => monthly >= t.min && monthly <= t.max) ?? REVENUE_TIERS[0];
+                const nextTier = REVENUE_TIERS[REVENUE_TIERS.indexOf(current) + 1];
+                return (
+                  <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold" style={{ color: current.color }}>{current.label} Tier</span>
+                      <span className="text-xs font-black" style={{ color: current.color }}>{current.creatorPct}% yours</span>
+                    </div>
+                    {nextTier && (
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Earn ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month to reach {nextTier.label} ({nextTier.creatorPct}%)
+                      </p>
+                    )}
+                    <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                      <div className="h-full rounded-full transition-all" style={{
+                        width: nextTier ? `${Math.min(100, ((monthly - current.min) / (nextTier.min - current.min)) * 100)}%` : "100%",
+                        background: current.color,
+                      }} />
+                    </div>
+                    <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Paid every Friday · $50 minimum
+                    </p>
+                  </div>
+                );
+              })()}
+
               <Link href="/billing">
                 <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-white/5"
                   style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>

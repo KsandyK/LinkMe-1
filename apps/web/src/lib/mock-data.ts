@@ -595,22 +595,22 @@ export const MOCK_GIFTS = [
 ];
 
 export const CUSTOMER_TIERS = [
-  { id: "starter", label: "Link Starter", minSpend: 0, maxSpend: 49, bonusCredits: 0, discount: 0, boosts: 0, color: "#64748b" },
-  { id: "explorer", label: "Link Explorer", minSpend: 50, maxSpend: 199, bonusCredits: 12, discount: 0, boosts: 0, color: "#06b6d4" },
-  { id: "connector", label: "Link Connector", minSpend: 200, maxSpend: 499, bonusCredits: 18, discount: 12, boosts: 5, color: "#10b981" },
-  { id: "pro", label: "Link Pro", minSpend: 500, maxSpend: 999, bonusCredits: 22, discount: 18, boosts: 12, color: "#8b5cf6" },
-  { id: "elite", label: "Link Elite", minSpend: 1000, maxSpend: 2499, bonusCredits: 27, discount: 25, boosts: 20, color: "#f59e0b" },
-  { id: "legend", label: "Link Legend", minSpend: 2500, maxSpend: 4999, bonusCredits: 32, discount: 32, boosts: 30, color: "#f97316" },
-  { id: "vip", label: "Link VIP", minSpend: 5000, maxSpend: 9999, bonusCredits: 40, discount: 40, boosts: 35, color: "#ef4444" },
-  { id: "icon", label: "Link Icon", minSpend: 10000, maxSpend: 24999, bonusCredits: 50, discount: 45, boosts: 50, color: "#ec4899" },
-  { id: "titan", label: "Link Titan", minSpend: 25000, maxSpend: 49999, bonusCredits: 60, discount: 50, boosts: 75, color: "#a855f7" },
-  { id: "mogul", label: "Link Mogul", minSpend: 50000, maxSpend: 99999, bonusCredits: 75, discount: 55, boosts: 100, color: "#6366f1" },
+  { id: "starter", label: "Cravr Starter", minSpend: 0, maxSpend: 49, bonusCredits: 0, discount: 0, boosts: 0, color: "#64748b" },
+  { id: "explorer", label: "Cravr Explorer", minSpend: 50, maxSpend: 199, bonusCredits: 12, discount: 0, boosts: 0, color: "#06b6d4" },
+  { id: "connector", label: "Cravr Connector", minSpend: 200, maxSpend: 499, bonusCredits: 18, discount: 12, boosts: 5, color: "#10b981" },
+  { id: "pro", label: "Cravr Pro", minSpend: 500, maxSpend: 999, bonusCredits: 22, discount: 18, boosts: 12, color: "#8b5cf6" },
+  { id: "elite", label: "Cravr Elite", minSpend: 1000, maxSpend: 2499, bonusCredits: 27, discount: 25, boosts: 20, color: "#f59e0b" },
+  { id: "legend", label: "Cravr Legend", minSpend: 2500, maxSpend: 4999, bonusCredits: 32, discount: 32, boosts: 30, color: "#f97316" },
+  { id: "vip", label: "Cravr VIP", minSpend: 5000, maxSpend: 9999, bonusCredits: 40, discount: 40, boosts: 35, color: "#ef4444" },
+  { id: "icon", label: "Cravr Icon", minSpend: 10000, maxSpend: 24999, bonusCredits: 50, discount: 45, boosts: 50, color: "#ec4899" },
+  { id: "titan", label: "Cravr Titan", minSpend: 25000, maxSpend: 49999, bonusCredits: 60, discount: 50, boosts: 75, color: "#a855f7" },
+  { id: "mogul", label: "Cravr Mogul", minSpend: 50000, maxSpend: 99999, bonusCredits: 75, discount: 55, boosts: 100, color: "#6366f1" },
   { id: "founders", label: "Founders Circle", minSpend: 100000, maxSpend: 249999, bonusCredits: 100, discount: 60, boosts: 150, color: "#14B8A6" },
-  { id: "dynasty", label: "Link Dynasty", minSpend: 250000, maxSpend: 499999, bonusCredits: 120, discount: 65, boosts: 200, color: "#f43f5e" },
-  { id: "sovereign", label: "Link Sovereign", minSpend: 500000, maxSpend: 999999, bonusCredits: 150, discount: 68, boosts: 300, color: "#7c3aed" },
-  { id: "phenomenon", label: "Link Phenomenon", minSpend: 1000000, maxSpend: 2499999, bonusCredits: 180, discount: 72, boosts: 500, color: "#db2777" },
-  { id: "deity", label: "Link Deity", minSpend: 2500000, maxSpend: 9999999, bonusCredits: 220, discount: 75, boosts: 750, color: "#ea580c" },
-  { id: "eternal", label: "Link Eternal", minSpend: 10000000, maxSpend: Infinity, bonusCredits: 300, discount: 80, boosts: 999, color: "#dc2626" },
+  { id: "dynasty", label: "Cravr Dynasty", minSpend: 250000, maxSpend: 499999, bonusCredits: 120, discount: 65, boosts: 200, color: "#f43f5e" },
+  { id: "sovereign", label: "Cravr Sovereign", minSpend: 500000, maxSpend: 999999, bonusCredits: 150, discount: 68, boosts: 300, color: "#7c3aed" },
+  { id: "phenomenon", label: "Cravr Phenomenon", minSpend: 1000000, maxSpend: 2499999, bonusCredits: 180, discount: 72, boosts: 500, color: "#db2777" },
+  { id: "deity", label: "Cravr Deity", minSpend: 2500000, maxSpend: 9999999, bonusCredits: 220, discount: 75, boosts: 750, color: "#ea580c" },
+  { id: "eternal", label: "Cravr Eternal", minSpend: 10000000, maxSpend: Infinity, bonusCredits: 300, discount: 80, boosts: 999, color: "#dc2626" },
 ];
 
 export const CREATOR_SUB_TIERS = [

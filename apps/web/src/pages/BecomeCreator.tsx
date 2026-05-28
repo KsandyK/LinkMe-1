@@ -132,7 +132,7 @@ export default function BecomeCreator() {
               {[
                 { label: "Avg Monthly Earnings", value: "$3,200" },
                 { label: "Revenue Share",        value: "Up to 90%" },
-                { label: "Payout Speed",         value: "24–48 hrs" },
+                { label: "Payout Schedule",       value: "Every Friday" },
               ].map(s => (
                 <div key={s.label}>
                   <div className="text-2xl font-bold font-mono" style={{ color: "#14b8a6" }}>{s.value}</div>
@@ -469,7 +469,7 @@ export default function BecomeCreator() {
               <Link href="/register">
                 <button className="vl-btn-primary px-10 py-3 text-sm">Create Creator Account — Free</button>
               </Link>
-              <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required · Cancel anytime · Instant payouts</p>
+              <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required · Cancel anytime · Weekly payouts every Friday</p>
             </>
           )}
 
