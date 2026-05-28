@@ -152,7 +152,7 @@ export default function LegalHub() {
 
         {/* Footer note */}
         <p className="text-xs text-center mt-8" style={{ color: "rgba(255,255,255,0.2)" }}>
-          © 2026 LinkME LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA
+          © 2026 LinkME LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA · EIN 42-2815300
         </p>
       </div>
     </div>

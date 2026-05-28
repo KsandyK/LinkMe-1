@@ -154,7 +154,7 @@ Bring 25 qualifying referrals to the platform using your unique Creator/Streamer
 
 3. § 2257 RECORD-KEEPING & CUSTODIAN OF RECORDS
 Compliance with 18 U.S.C. § 2257 is mandatory. Maintain age verification records for all depicted individuals for 5+ years.
-Custodian of Records: Chief Compliance Officer, LinkME LLC, 30 N Gould St Ste N, Wilmington DE 19801. legal@LinkME.com.
+Custodian of Records: Chief Compliance Officer, LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801. EIN: 42-2815300. legal@LinkME.com.
 
 4. FOSTA-SESTA COMPLIANCE (MANDATORY)
 You are strictly prohibited from using LinkME to advertise, facilitate, or solicit real-world sexual services or sex trafficking. Violation = immediate permanent termination, forfeiture of all balances, reporting to NCMEC and law enforcement.
