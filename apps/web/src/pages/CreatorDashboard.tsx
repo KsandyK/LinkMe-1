@@ -398,13 +398,6 @@ export default function CreatorDashboard() {
             </div>
             <p className="text-base" style={{ color: "rgba(255,255,255,0.4)" }}>Welcome back — here's how you're doing</p>
           </div>
-          <Link href="/creator/studio">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
-              style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
-              <Radio className="w-4 h-4" />
-              Go Live
-            </button>
-          </Link>
         </div>
 
         {/* Stats row */}
@@ -1458,27 +1451,6 @@ export default function CreatorDashboard() {
                       </button>
                     </div>
 
-                    {/* HLS / viewer URL */}
-                    <div className="vl-card p-5">
-                      <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        Live Playback URL (Bunny CDN)
-                      </p>
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-2"
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                        <code className="flex-1 text-xs font-mono truncate" style={{ color: "rgba(255,255,255,0.6)" }}>
-                          {streamKeyData.hlsUrl}
-                        </code>
-                        <button
-                          onClick={() => copyField(streamKeyData.hlsUrl, "hls")}
-                          className="flex-shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/10"
-                          style={{ color: streamKeyCopied === "hls" ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
-                          {streamKeyCopied === "hls" ? <CheckIcon className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      </div>
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        This URL is automatically served to viewers when you're live. You don't need to share it manually.
-                      </p>
-                    </div>
 
                     {/* Quick-start guide */}
                     <div className="vl-card p-5">
