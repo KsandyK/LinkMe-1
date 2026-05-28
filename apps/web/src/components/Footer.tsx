@@ -12,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src="/cravr-icon.png" alt="CRAVR" className="w-6 h-6" />
+              <img src="/Cravr.jpg" alt="CRAVR" className="w-6 h-6 rounded-full object-cover" style={{ objectPosition: "center 20%" }} />
               <span className="font-bold text-white">CRAVR</span>
             </div>
             <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
