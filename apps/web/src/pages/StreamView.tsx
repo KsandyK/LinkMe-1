@@ -4,6 +4,9 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+// hls.js is loaded dynamically so it doesn't bloat the initial bundle.
+// It's only needed when a real HLS stream URL is present.
+type HlsType = typeof import("hls.js").default;
 import { Link, useParams, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from "@/lib/api";
@@ -25,41 +28,23 @@ interface ChatMsg {
   createdAt: string;
 }
 
-// ── Drop types ────────────────────────────────────────────────────────────────
+// ── Creator Drop (sent FROM creator TO viewers) ───────────────────────────────
 const DROP_STORAGE_KEY = "vl_active_drop_v1";
 
-interface DropItem  { id: string; name: string; emoji: string; rarity: "Common" | "Rare" | "Epic" | "Legendary"; desc: string; }
-interface DropPull  { id: string; username: string; item: DropItem; pulledAt: number; }
-interface DropState { id: string; creatorName: string; startedAt: number; durationMs: number; pullCost: number; isActive: boolean; pulls: DropPull[]; totalRevenue: number; }
-
-const DROP_ITEMS_VIEWER: DropItem[] = [
-  { id: "d1",  name: "Signed Photo",         emoji: "📸", rarity: "Common",    desc: "A digital signed photo" },
-  { id: "d2",  name: "Shoutout",             emoji: "📢", rarity: "Common",    desc: "A personal shoutout in chat" },
-  { id: "d3",  name: "Thank You Note",       emoji: "💌", rarity: "Common",    desc: "A heartfelt personal note" },
-  { id: "d4",  name: "Fan Badge",            emoji: "🎖️", rarity: "Common",    desc: "Exclusive stream fan badge" },
-  { id: "d5",  name: "Stream Sticker",       emoji: "🌟", rarity: "Common",    desc: "This stream's custom sticker" },
-  { id: "d6",  name: "VIP Chat Access",      emoji: "💬", rarity: "Rare",      desc: "30-day VIP chat emotes" },
-  { id: "d7",  name: "Exclusive Wallpaper",  emoji: "🖼️", rarity: "Rare",      desc: "Creator exclusive wallpaper" },
-  { id: "d8",  name: "Custom Emoji Pack",    emoji: "😍", rarity: "Rare",      desc: "Stream-exclusive emojis" },
-  { id: "d9",  name: "Priority DM",          emoji: "✉️", rarity: "Rare",      desc: "Jump the DM queue" },
-  { id: "d10", name: "Custom Nickname",      emoji: "✨", rarity: "Epic",      desc: "Creator names you on stream" },
-  { id: "d11", name: "Private Story Access", emoji: "🔒", rarity: "Epic",      desc: "30 days private stories" },
-  { id: "d12", name: "Collab Entry",         emoji: "🎬", rarity: "Epic",      desc: "Entered into collab raffle" },
-  { id: "d13", name: "1-on-1 Chat",          emoji: "💎", rarity: "Legendary", desc: "15-min private chat" },
-  { id: "d14", name: "Lifetime Fan Card",    emoji: "👑", rarity: "Legendary", desc: "Permanent VIP fan status" },
-  { id: "d15", name: "Creator Collectible",  emoji: "🏆", rarity: "Legendary", desc: "One-of-a-kind digital item" },
-];
-
-function weightedDropPull(): DropItem {
-  const r = Math.random();
-  const rarity: DropItem["rarity"] = r < 0.50 ? "Common" : r < 0.80 ? "Rare" : r < 0.95 ? "Epic" : "Legendary";
-  const pool = DROP_ITEMS_VIEWER.filter(i => i.rarity === rarity);
-  return pool[Math.floor(Math.random() * pool.length)];
+interface CreatorDropClaim { username: string; claimedAt: number; }
+interface CreatorDropState {
+  id: string;
+  creatorUsername: string;
+  typeId: string;
+  typeEmoji: string;
+  typeName: string;
+  description: string;
+  quantity: number;        // -1 = unlimited
+  claimWindowMs: number;
+  startedAt: number;
+  isActive: boolean;
+  claims: CreatorDropClaim[];
 }
-
-const DROP_RARITY_COLORS: Record<string, string> = {
-  Common: "#9ca3af", Rare: "#3b82f6", Epic: "#8b5cf6", Legendary: "#f59e0b",
-};
 
 // ── Creator subscription tiers ─────────────────────────────────────────────────
 // These are CREATOR-specific subscriptions — money goes to the creator.
@@ -223,10 +208,9 @@ export default function StreamView() {
   const defaultCard = savedCards.find(c => c.isDefault) ?? savedCards[0] ?? null;
 
   // Drop state
-  const [activeDrop, setActiveDrop] = useState<DropState | null>(null);
+  const [activeDrop, setActiveDrop] = useState<CreatorDropState | null>(null);
   const [dropSecsLeft, setDropSecsLeft] = useState(0);
-  const [dropPullResult, setDropPullResult] = useState<DropItem | null>(null);
-  const [dropPullAnim, setDropPullAnim] = useState(false);
+  const [dropClaimed, setDropClaimed] = useState(false); // did THIS viewer claim?
 
   // Demo tip goal (simulates creator having set a goal — visible to viewers)
   const [tipGoal] = useState({ title: "Special Show 🔥", target: 1000, current: 347 });
@@ -338,30 +322,37 @@ export default function StreamView() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  // Poll localStorage for active drop (every 2 s)
+  // Poll localStorage for active creator drop (every 2 s)
   useEffect(() => {
     const poll = () => {
       try {
         const stored = localStorage.getItem(DROP_STORAGE_KEY);
         if (!stored) { setActiveDrop(null); return; }
-        const state: DropState = JSON.parse(stored);
-        if (!state.isActive || Date.now() > state.startedAt + state.durationMs) {
+        const state: CreatorDropState = JSON.parse(stored);
+        const expired = Date.now() > state.startedAt + state.claimWindowMs;
+        const full = state.quantity !== -1 && state.claims.length >= state.quantity;
+        if (!state.isActive || expired || full) {
           setActiveDrop(null);
         } else {
           setActiveDrop(state);
+          // Check if this viewer already claimed
+          const myUsername = user?.username;
+          if (myUsername && state.claims.some(c => c.username === myUsername)) {
+            setDropClaimed(true);
+          }
         }
       } catch { setActiveDrop(null); }
     };
     poll();
     const interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user?.username]);
 
   // Drop countdown (1-second tick when a drop is active)
   useEffect(() => {
     if (!activeDrop) { setDropSecsLeft(0); return; }
     const tick = () => {
-      const left = Math.max(0, Math.round((activeDrop.startedAt + activeDrop.durationMs - Date.now()) / 1000));
+      const left = Math.max(0, Math.round((activeDrop.startedAt + activeDrop.claimWindowMs - Date.now()) / 1000));
       setDropSecsLeft(left);
     };
     tick();
@@ -418,6 +409,39 @@ export default function StreamView() {
     }, 8000);
     return () => clearInterval(sim);
   }, [feed?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── HLS.js player — loads dynamically, attaches when feed.hlsUrl is set ────
+  // Dynamic import keeps hls.js (~500KB) out of the initial bundle.
+  const hlsRef = useRef<InstanceType<HlsType> | null>(null);
+  const hlsUrl  = (feed as (typeof feed & { hlsUrl?: string }) | null)?.hlsUrl ?? null;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !hlsUrl) return;
+
+    hlsRef.current?.destroy();
+
+    import("hls.js").then(({ default: Hls }) => {
+      if (Hls.isSupported()) {
+        const hls = new Hls({ lowLatencyMode: false, maxBufferLength: 30 });
+        hlsRef.current = hls;
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        // Safari native HLS
+        video.src = hlsUrl;
+        video.addEventListener("loadedmetadata", () => { video.play().catch(() => {}); });
+      }
+    }).catch(() => {});
+
+    return () => { hlsRef.current?.destroy(); hlsRef.current = null; };
+  }, [hlsUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep video mute state in sync with the muted toggle button
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = muted;
+  }, [muted]);
 
   // ── Send chat message ───────────────────────────────────────────────────────
   const sendMessage = useCallback(() => {
@@ -514,51 +538,44 @@ export default function StreamView() {
     showToast({ title: `${item.emoji} Sent!`, description: `You sent ${item.name} (${item.credits} cr)` });
   }, [feed, spendCredits, user, tipGoal.target, showToast]);
 
-  // ── Pull in an active Drop ───────────────────────────────────────────────
-  const handleDropPull = useCallback(() => {
-    if (!activeDrop || !activeDrop.isActive) return;
-    const ok = spendCredits(activeDrop.pullCost, "🔮 Drop pull");
-    if (!ok) return;
+  // ── Claim an active Creator Drop (free — creator sends gifts to viewers) ─────
+  const handleDropClaim = useCallback(() => {
+    if (!activeDrop || !activeDrop.isActive || dropClaimed) return;
+    const username = user?.username ?? "Viewer";
 
-    const item = weightedDropPull();
-    const pull: DropPull = {
-      id: `${Date.now()}-${Math.random()}`,
-      username: user?.username ?? "Viewer",
-      item,
-      pulledAt: Date.now(),
-    };
-
-    // Write pull to shared localStorage so Studio picks it up
+    // Write claim to shared localStorage so Studio picks it up
     try {
       const stored = localStorage.getItem(DROP_STORAGE_KEY);
       if (stored) {
-        const state: DropState = JSON.parse(stored);
-        const updated: DropState = {
+        const state: CreatorDropState = JSON.parse(stored);
+        // Guard: already claimed (race condition)
+        if (state.claims.some(c => c.username === username)) {
+          setDropClaimed(true);
+          return;
+        }
+        const updated: CreatorDropState = {
           ...state,
-          pulls: [...state.pulls, pull],
-          totalRevenue: state.totalRevenue + activeDrop.pullCost,
+          claims: [...state.claims, { username, claimedAt: Date.now() }],
         };
         localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify(updated));
         setActiveDrop(updated);
       }
     } catch {}
 
-    // Show reveal animation
-    setDropPullResult(item);
-    setDropPullAnim(true);
-    setTimeout(() => setDropPullAnim(false), 2600);
-    setTimeout(() => setDropPullResult(null), 3000);
+    setDropClaimed(true);
 
     // Announce in chat
     setMsgs(prev => [...prev, {
       id: String(Date.now()),
       userId: user?.id ?? "me",
       username: user?.username ?? "You",
-      text: `🔮 Drop: pulled ${item.emoji} ${item.name} [${item.rarity}]!`,
+      text: `🎁 I just claimed the drop: ${activeDrop.typeEmoji} ${activeDrop.description}!`,
       creditTip: 0,
       createdAt: new Date().toISOString(),
     }]);
-  }, [activeDrop, spendCredits, user]);
+
+    showToast({ title: "🎁 Claimed!", description: activeDrop.description });
+  }, [activeDrop, dropClaimed, user, showToast]);
 
   // ── Loading / 404 ────────────────────────────────────────────────────────────
   if (loadingFeed) {
@@ -833,33 +850,45 @@ export default function StreamView() {
         )}
       </div>
 
-      {/* ── DROP ACTIVE banner ─────────────────────────────────────────────── */}
+      {/* ── CREATOR DROP banner — free gift from creator to viewers ────────── */}
       {activeDrop && (
         <div className="px-4 py-2.5 flex items-center gap-3 flex-shrink-0"
-          style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.1), rgba(245,158,11,0.06))", borderBottom: "1px solid rgba(139,92,246,0.2)" }}>
-          <Sparkles className="w-4 h-4 animate-pulse flex-shrink-0" style={{ color: "#a78bfa" }} />
+          style={{ background: "linear-gradient(90deg, rgba(20,184,166,0.1), rgba(232,168,124,0.06))", borderBottom: "1px solid rgba(20,184,166,0.25)" }}>
+          <Gift className="w-4 h-4 animate-pulse flex-shrink-0" style={{ color: "#14b8a6" }} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-white">🔮 DROP ACTIVE</span>
+              <span className="text-xs font-bold text-white">
+                {activeDrop.typeEmoji} DROP — {activeDrop.typeName}
+              </span>
               <span className="text-xs font-mono px-1.5 py-0.5 rounded"
-                style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa" }}>
-                {Math.floor(dropSecsLeft / 60)}m {dropSecsLeft % 60}s left
+                style={{ background: "rgba(20,184,166,0.15)", color: "#5eead4" }}>
+                {dropSecsLeft > 60
+                  ? `${Math.floor(dropSecsLeft / 60)}m ${dropSecsLeft % 60}s left`
+                  : `${dropSecsLeft}s left`}
               </span>
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                · {activeDrop.pulls.length} pulls
-              </span>
+              {activeDrop.quantity !== -1 && (
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  · {activeDrop.quantity - activeDrop.claims.length} slots left
+                </span>
+              )}
             </div>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Pull exclusive {activeDrop.creatorName} collectibles — {activeDrop.pullCost} credits each
+            <p className="text-xs mt-0.5 line-clamp-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {activeDrop.description}
             </p>
           </div>
-          <button
-            onClick={handleDropPull}
-            disabled={credits < activeDrop.pullCost}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", color: "white" }}>
-            <Sparkles className="w-3.5 h-3.5" /> Pull ({activeDrop.pullCost} cr)
-          </button>
+          {dropClaimed ? (
+            <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold flex-shrink-0"
+              style={{ background: "rgba(20,184,166,0.15)", color: "#5eead4", border: "1px solid rgba(20,184,166,0.3)" }}>
+              <CheckCircle2 className="w-3.5 h-3.5" /> Claimed!
+            </div>
+          ) : (
+            <button
+              onClick={handleDropClaim}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white", boxShadow: "0 4px 12px rgba(20,184,166,0.35)" }}>
+              <Gift className="w-3.5 h-3.5" /> CLAIM NOW — FREE
+            </button>
+          )}
         </div>
       )}
 
@@ -867,36 +896,36 @@ export default function StreamView() {
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         {/* ── Video column ─────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Video area — animated demo stream placeholder (real WebRTC connects here in production) */}
+          {/* ── Video area ────────────────────────────────────────────────────── */}
+          {/* HLS.js when feed.hlsUrl is set; animated demo placeholder otherwise */}
           <div className="relative flex-1 bg-black flex items-center justify-center" style={{ minHeight: 0 }}>
-            {/* Blurred thumbnail as ambient background */}
-            <img
-              src={thumbnail}
-              alt={feed.title}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ opacity: 0.35, filter: "blur(12px)", transform: "scale(1.08)" }}
-            />
-            {/* Animated pulsing gradient overlay for "demo stream" feel */}
-            <div className="absolute inset-0" style={{
-              background: "linear-gradient(135deg, rgba(9,9,26,0.7) 0%, rgba(20,184,166,0.08) 50%, rgba(9,9,26,0.7) 100%)",
-              animation: "pulse 3s ease-in-out infinite",
-            }} />
-            {/* Keep the hidden video element for future WebRTC hookup */}
+            {/* HLS video element — visible when live stream is active */}
             <video ref={videoRef} autoPlay playsInline muted={muted}
-              className="absolute inset-0 w-full h-full object-cover" style={{ display: "none" }} />
-            {/* Demo stream centre badge */}
-            <div className="relative z-10 text-center pointer-events-none select-none">
-              <img src={hostAvatar} alt={hostName}
-                className="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-4"
-                style={{ borderColor: "#14b8a6", boxShadow: "0 0 40px rgba(20,184,166,0.4)" }} />
-              <p className="font-bold text-white text-lg mb-1">{hostName}</p>
-              <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>{feed.title}</p>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
-                style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(20,184,166,0.3)", color: "#5eead4", backdropFilter: "blur(8px)" }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
-                DEMO STREAM — Live video coming soon
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ display: hlsUrl ? "block" : "none" }} />
+
+            {/* Demo placeholder — shown when no real HLS stream is attached */}
+            {!hlsUrl && (<>
+              <img src={thumbnail} alt={feed.title}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ opacity: 0.35, filter: "blur(12px)", transform: "scale(1.08)" }} />
+              <div className="absolute inset-0" style={{
+                background: "linear-gradient(135deg, rgba(9,9,26,0.7) 0%, rgba(20,184,166,0.08) 50%, rgba(9,9,26,0.7) 100%)",
+                animation: "pulse 3s ease-in-out infinite",
+              }} />
+              <div className="relative z-10 text-center pointer-events-none select-none">
+                <img src={hostAvatar} alt={hostName}
+                  className="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-4"
+                  style={{ borderColor: "#14b8a6", boxShadow: "0 0 40px rgba(20,184,166,0.4)" }} />
+                <p className="font-bold text-white text-lg mb-1">{hostName}</p>
+                <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>{feed.title}</p>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
+                  style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(20,184,166,0.3)", color: "#5eead4", backdropFilter: "blur(8px)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
+                  DEMO STREAM — Live video coming soon
+                </div>
               </div>
-            </div>
+            </>)}
 
             {/* Confetti burst overlay when tip goal is reached */}
             {goalReached && (
@@ -906,7 +935,6 @@ export default function StreamView() {
                   <div className="text-xl font-bold text-white drop-shadow-lg">Goal Reached!</div>
                   <div className="text-sm mt-1" style={{ color: "#14b8a6" }}>{tipGoal.title}</div>
                 </div>
-                {/* Confetti particles */}
                 {["🎊", "✨", "🌟", "💫", "🎉"].map((e, idx) => (
                   <div key={idx} className="absolute text-2xl animate-ping"
                     style={{ top: `${20 + idx * 15}%`, left: `${10 + idx * 18}%`, animationDelay: `${idx * 0.15}s`, animationDuration: "0.8s" }}>
@@ -963,36 +991,22 @@ export default function StreamView() {
               ))}
             </div>
 
-            {/* Drop pull result overlay */}
-            {dropPullResult && (
-              <div
-                className={`absolute inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-300 ${dropPullAnim ? "opacity-100" : "opacity-0"}`}
-                style={{ background: "rgba(9,9,26,0.75)" }}
-              >
-                <div
-                  className={`flex flex-col items-center gap-3 px-8 py-6 rounded-2xl text-center transition-transform duration-300 ${dropPullAnim ? "scale-100" : "scale-90"}`}
+            {/* Drop claimed confirmation flash */}
+            {dropClaimed && activeDrop && (
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+                style={{ animation: "fade-up 0.35s ease-out both" }}>
+                <div className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold"
                   style={{
                     background: "rgba(13,13,30,0.97)",
-                    border: `2px solid ${DROP_RARITY_COLORS[dropPullResult.rarity]}`,
-                    boxShadow: `0 0 48px ${DROP_RARITY_COLORS[dropPullResult.rarity]}40`,
-                  }}
-                >
-                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: DROP_RARITY_COLORS[dropPullResult.rarity] }}>
-                    🔮 Drop Pull
-                  </p>
-                  <span className="text-6xl leading-none">{dropPullResult.emoji}</span>
+                    border: "2px solid rgba(20,184,166,0.5)",
+                    boxShadow: "0 0 32px rgba(20,184,166,0.3)",
+                    color: "white",
+                  }}>
+                  <span className="text-2xl">{activeDrop.typeEmoji}</span>
                   <div>
-                    <p className="text-lg font-black text-white mb-0.5">{dropPullResult.name}</p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{dropPullResult.desc}</p>
+                    <p className="text-xs font-bold" style={{ color: "#5eead4" }}>🎁 Drop Claimed!</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>{activeDrop.description}</p>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold"
-                    style={{
-                      background: `${DROP_RARITY_COLORS[dropPullResult.rarity]}20`,
-                      color: DROP_RARITY_COLORS[dropPullResult.rarity],
-                      border: `1px solid ${DROP_RARITY_COLORS[dropPullResult.rarity]}50`,
-                    }}>
-                    {dropPullResult.rarity}
-                  </span>
                 </div>
               </div>
             )}
@@ -1157,6 +1171,25 @@ export default function StreamView() {
                               onConfirm: () => {
                                 recordPurchase(tier.price, `${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
                                 try { localStorage.setItem(`vl_creator_sub_${id ?? ""}`, tier.id); } catch {}
+                                // Notify creator studio via localStorage (polled every 2s by CreatorLiveStudio)
+                                try {
+                                  const creatorUsername = feed.creator?.user?.username ?? id ?? "";
+                                  const notifKey = `vl_sub_notifications_${creatorUsername}`;
+                                  const existing = JSON.parse(localStorage.getItem(notifKey) ?? "[]");
+                                  existing.push({
+                                    id: `sub-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                                    subscriberUsername: user?.username ?? "anonymous",
+                                    tierId: tier.id,
+                                    tierName: tier.name,
+                                    tierEmoji: tier.emoji,
+                                    priceStr: tier.priceStr,
+                                    price: tier.price,
+                                    perks: tier.perks,
+                                    subscribedAt: Date.now(),
+                                    creatorUsername,
+                                  });
+                                  localStorage.setItem(notifKey, JSON.stringify(existing));
+                                } catch {}
                                 setSubscribedTier(tier.id);
                                 setSubscribePending(null);
                                 setShowSubscribeModal(false);

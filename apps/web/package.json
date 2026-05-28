@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.4.0",
-    "@stripe/stripe-js": "^9.7.0"
+    "@stripe/stripe-js": "^9.7.0",
+    "hls.js": "^1.6.16"
   }
 }

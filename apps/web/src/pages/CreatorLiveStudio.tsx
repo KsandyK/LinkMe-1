@@ -24,7 +24,7 @@ import {
   Send, Crown, Bell, CheckCircle, Megaphone, Square,
   DollarSign, Users, Star, X, Edit3, Mic, MicOff,
   Shield, Hash, Volume2, VolumeX, ChevronDown, ChevronUp,
-  BarChart, AlertCircle, Pin, Loader2, RefreshCw, Sparkles,
+  BarChart, AlertCircle, Pin, Loader2, RefreshCw, Sparkles, Gift,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -72,7 +72,33 @@ interface TopTipper {
 }
 
 type ChatMode = "normal" | "slow" | "sub-only" | "followers-only";
-type StudioTab = "goals" | "tipmenu" | "chatmod" | "settings" | "stats" | "drop";
+type StudioTab = "goals" | "tipmenu" | "chatmod" | "settings" | "stats" | "drop" | "subs";
+
+// ── Subscriber notification (written by StreamView, polled here) ──────────────
+interface SubNotification {
+  id: string;
+  subscriberUsername: string;
+  tierId: string;
+  tierName: string;
+  tierEmoji: string;
+  priceStr: string;
+  price: number;
+  perks: string[];
+  subscribedAt: number;
+  creatorUsername: string;
+}
+
+// Perks that require explicit creator action, keyed by tier ID
+const TIER_ACTION_ITEMS: Record<string, string[]> = {
+  vip:       ["📅 Schedule their monthly Q&A session"],
+  super_vip: ["🎬 Fulfill their custom content request this month", "📞 Schedule 15-min 1-on-1 video call", "🔒 Add to private subscriber stream invite list"],
+  elite:     ["📞 Schedule weekly 30-min video calls with them", "✍️ Add their name permanently to your bio"],
+  diamond:   ["🎥 Record a personalized video message this month", "📦 Grant early merchandise access"],
+  obsidian:  ["📞 Schedule bi-weekly video calls", "📦 Ship signed physical merchandise this month", "🗳️ Add to content topic vote list"],
+  platinum:  ["💬 Enable unlimited priority DM access for them", "✍️ Credit their name in upcoming content descriptions"],
+  legend:    ["🎥 Schedule exclusive Legend-only private livestream", "📞 Enable on-request video call access for them"],
+  icon:      ["🤝 Schedule full creative collaboration session", "🎖️ Grant lifetime VIP status — never expires", "📝 Dedicate next content release to them"],
+};
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
@@ -108,36 +134,40 @@ const DEMO_TIP_EMOJIS = ["💸", "🔥", "💎", "⭐", "🚀", "❤️"];
 const CATEGORIES = ["General", "Music", "Gaming", "ASMR", "Fitness", "Cooking", "Talk", "Adult"];
 const EMOJI_OPTIONS = ["💋", "👋", "💃", "🎵", "📸", "👙", "🔥", "⭐", "🎯", "🎁", "💎", "🌹", "😘", "✨", "🏆", "🎶"];
 
-// ── Drop types & constants ────────────────────────────────────────────────────
+// ── Creator Drop (gift sent FROM creator TO viewers) ─────────────────────────
 const DROP_STORAGE_KEY = "vl_active_drop_v1";
-const DROP_DURATION_MS = 30 * 60 * 1000; // 30 minutes
-const DROP_PULL_COST   = 50;
 
-interface DropItem  { id: string; name: string; emoji: string; rarity: "Common" | "Rare" | "Epic" | "Legendary"; desc: string; }
-interface DropPull  { id: string; username: string; item: DropItem; pulledAt: number; }
-interface DropState { id: string; creatorName: string; startedAt: number; durationMs: number; pullCost: number; isActive: boolean; pulls: DropPull[]; totalRevenue: number; }
+interface CreatorDropClaim { username: string; claimedAt: number; }
+interface CreatorDropState {
+  id: string;
+  creatorUsername: string;
+  typeId: string;
+  typeEmoji: string;
+  typeName: string;
+  description: string;
+  quantity: number;        // -1 = unlimited
+  claimWindowMs: number;
+  startedAt: number;
+  isActive: boolean;
+  claims: CreatorDropClaim[];
+}
 
-const DROP_ITEMS: DropItem[] = [
-  { id: "d1",  name: "Signed Photo",         emoji: "📸", rarity: "Common",    desc: "A digital signed photo" },
-  { id: "d2",  name: "Shoutout",             emoji: "📢", rarity: "Common",    desc: "A personal shoutout in chat" },
-  { id: "d3",  name: "Thank You Note",       emoji: "💌", rarity: "Common",    desc: "A heartfelt personal note" },
-  { id: "d4",  name: "Fan Badge",            emoji: "🎖️", rarity: "Common",    desc: "Exclusive stream fan badge" },
-  { id: "d5",  name: "Stream Sticker",       emoji: "🌟", rarity: "Common",    desc: "This stream's custom sticker" },
-  { id: "d6",  name: "VIP Chat Access",      emoji: "💬", rarity: "Rare",      desc: "30-day VIP chat emotes" },
-  { id: "d7",  name: "Exclusive Wallpaper",  emoji: "🖼️", rarity: "Rare",      desc: "Creator exclusive wallpaper" },
-  { id: "d8",  name: "Custom Emoji Pack",    emoji: "😍", rarity: "Rare",      desc: "Stream-exclusive emojis" },
-  { id: "d9",  name: "Priority DM",          emoji: "✉️", rarity: "Rare",      desc: "Jump the DM queue" },
-  { id: "d10", name: "Custom Nickname",      emoji: "✨", rarity: "Epic",      desc: "Creator names you on stream" },
-  { id: "d11", name: "Private Story Access", emoji: "🔒", rarity: "Epic",      desc: "30 days private stories" },
-  { id: "d12", name: "Collab Entry",         emoji: "🎬", rarity: "Epic",      desc: "Entered into collab raffle" },
-  { id: "d13", name: "1-on-1 Chat",          emoji: "💎", rarity: "Legendary", desc: "15-min private chat" },
-  { id: "d14", name: "Lifetime Fan Card",    emoji: "👑", rarity: "Legendary", desc: "Permanent VIP fan status" },
-  { id: "d15", name: "Creator Collectible",  emoji: "🏆", rarity: "Legendary", desc: "One-of-a-kind digital item" },
-];
+const CREATOR_DROP_TYPES = [
+  { id: "content",     emoji: "📸", name: "Content Unlock",    hint: "Describe the exclusive photo/video you'll unlock for them" },
+  { id: "shoutout",    emoji: "📢", name: "Live Shoutout",      hint: "You'll personally shout out each claimer on stream" },
+  { id: "dm",          emoji: "💬", name: "DM Session",         hint: "A free private message session — describe the time limit" },
+  { id: "vip_chat",    emoji: "⭐", name: "VIP Chat (24h)",     hint: "24-hour VIP badge in this chat for all claimers" },
+  { id: "collectible", emoji: "🏆", name: "Stream Collectible", hint: "An exclusive digital collectible from this stream" },
+  { id: "custom",      emoji: "🎁", name: "Custom Prize",       hint: "Describe your own unique prize or reward" },
+] as const;
 
-const DROP_RARITY_COLORS: Record<string, string> = {
-  Common: "#9ca3af", Rare: "#3b82f6", Epic: "#8b5cf6", Legendary: "#f59e0b",
-};
+const DROP_CLAIM_WINDOWS = [
+  { label: "30 sec", secs: 30 },
+  { label: "1 min",  secs: 60 },
+  { label: "5 min",  secs: 300 },
+  { label: "10 min", secs: 600 },
+  { label: "30 min", secs: 1800 },
+] as const;
 
 function formatDuration(secs: number) {
   const h = Math.floor(secs / 3600);
@@ -217,11 +247,21 @@ export default function CreatorLiveStudio() {
   // Drop state
   const [dropIsActive, setDropIsActive] = useState(false);
   const [dropStartedAt, setDropStartedAt] = useState<number | null>(null);
-  const [dropPulls, setDropPulls] = useState<DropPull[]>([]);
-  const [dropRevenue, setDropRevenue] = useState(0);
+  const [dropClaims, setDropClaims] = useState<CreatorDropClaim[]>([]);
   const [dropSecsLeft, setDropSecsLeft] = useState(0);
+  const [dropType, setDropType] = useState(CREATOR_DROP_TYPES[0].id);
+  const [dropDescription, setDropDescription] = useState("");
+  const [dropQuantity, setDropQuantity] = useState(10);
+  const [dropWindow, setDropWindow] = useState(DROP_CLAIM_WINDOWS[2].secs); // 5 min default
+  const [dropWindowMs, setDropWindowMs] = useState(DROP_CLAIM_WINDOWS[2].secs * 1000);
   const dropTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const dropPullCountRef = useRef(0);
+  const dropClaimCountRef = useRef(0);
+
+  // Subscriber notifications
+  const [sessionSubs, setSessionSubs] = useState<SubNotification[]>([]);
+  const [activeSubAlert, setActiveSubAlert] = useState<SubNotification | null>(null);
+  const subReadCountRef = useRef(0);
+  const subAlertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -336,7 +376,7 @@ export default function CreatorLiveStudio() {
       return;
     }
     dropTimerRef.current = setInterval(() => {
-      const remaining = Math.max(0, Math.round((DROP_DURATION_MS - (Date.now() - dropStartedAt)) / 1000));
+      const remaining = Math.max(0, Math.round((dropWindowMs - (Date.now() - dropStartedAt)) / 1000));
       setDropSecsLeft(remaining);
       if (remaining <= 0) {
         if (dropTimerRef.current) clearInterval(dropTimerRef.current);
@@ -345,14 +385,14 @@ export default function CreatorLiveStudio() {
         try {
           const stored = localStorage.getItem(DROP_STORAGE_KEY);
           if (stored) {
-            const s: DropState = JSON.parse(stored);
+            const s: CreatorDropState = JSON.parse(stored);
             localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify({ ...s, isActive: false }));
           }
         } catch {}
         setChatMsgs(prev => [...prev, {
           id: `drop-expire-${Date.now()}`,
-          username: "🔮 Drop",
-          text: "Drop expired! Thanks to everyone who pulled!",
+          username: "🎁 Drop",
+          text: `Drop ended! ${dropClaimCountRef.current} viewer${dropClaimCountRef.current !== 1 ? "s" : ""} claimed their gift. 🎉`,
           creditTip: 0,
           isNotice: true,
           timestamp: Date.now(),
@@ -360,38 +400,99 @@ export default function CreatorLiveStudio() {
       }
     }, 1000);
     return () => { if (dropTimerRef.current) clearInterval(dropTimerRef.current); };
-  }, [dropIsActive, dropStartedAt]);
+  }, [dropIsActive, dropStartedAt, dropWindowMs]);
 
-  // Poll localStorage for new viewer pulls (every 2 s while drop active)
+  // Poll localStorage for new claims (every 2 s while drop active)
   useEffect(() => {
     if (!dropIsActive) return;
     const interval = setInterval(() => {
       try {
         const stored = localStorage.getItem(DROP_STORAGE_KEY);
         if (!stored) return;
-        const state: DropState = JSON.parse(stored);
-        const prev = dropPullCountRef.current;
-        if (state.pulls.length > prev) {
-          const newPulls = state.pulls.slice(prev);
-          dropPullCountRef.current = state.pulls.length;
-          setDropPulls(state.pulls);
-          setDropRevenue(state.totalRevenue);
-          newPulls.forEach(pull => {
-            setSessionEarnings(p => p + Math.round(DROP_PULL_COST * 0.7));
+        const state: CreatorDropState = JSON.parse(stored);
+        const prev = dropClaimCountRef.current;
+        if (state.claims.length > prev) {
+          const newClaims = state.claims.slice(prev);
+          dropClaimCountRef.current = state.claims.length;
+          setDropClaims(state.claims);
+          newClaims.forEach(claim => {
             setChatMsgs(prev2 => [...prev2, {
-              id: `pull-${pull.id}`,
-              username: "🔮 Drop",
-              text: `${pull.username} pulled ${pull.item.emoji} ${pull.item.name} [${pull.item.rarity}]!`,
+              id: `claim-${claim.claimedAt}-${claim.username}`,
+              username: "🎁 Drop",
+              text: `${claim.username} just claimed the drop! 🎉`,
               creditTip: 0,
               isNotice: true,
-              timestamp: pull.pulledAt,
+              timestamp: claim.claimedAt,
             }]);
           });
+          // Auto-stop if quantity reached
+          if (state.quantity !== -1 && state.claims.length >= state.quantity) {
+            setDropIsActive(false);
+            setDropStartedAt(null);
+            localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify({ ...state, isActive: false }));
+            setChatMsgs(prev2 => [...prev2, {
+              id: `drop-full-${Date.now()}`,
+              username: "🎁 Drop",
+              text: `All ${state.quantity} slots claimed! Drop is now closed. 🎊`,
+              creditTip: 0,
+              isNotice: true,
+              timestamp: Date.now(),
+            }]);
+          }
         }
       } catch {}
     }, 2000);
     return () => clearInterval(interval);
   }, [dropIsActive]);
+
+  // Poll localStorage for new subscriber notifications (every 2 s while live)
+  useEffect(() => {
+    if (!isLive || !user?.username) return;
+    const subKey = `vl_sub_notifications_${user.username}`;
+    const interval = setInterval(() => {
+      try {
+        const stored = localStorage.getItem(subKey);
+        if (!stored) return;
+        const notifs: SubNotification[] = JSON.parse(stored);
+        const prev = subReadCountRef.current;
+        if (notifs.length > prev) {
+          const newNotifs = notifs.slice(prev);
+          subReadCountRef.current = notifs.length;
+          setSessionSubs(notifs);
+          newNotifs.forEach(notif => {
+            // Inject into chat
+            setChatMsgs(p => [...p, {
+              id: `sub-${notif.id}`,
+              username: "⭐ New Subscriber",
+              text: `${notif.subscriberUsername} just subscribed as ${notif.tierEmoji} ${notif.tierName} (${notif.priceStr}/mo)! 🎉`,
+              creditTip: 0,
+              isNotice: true,
+              timestamp: notif.subscribedAt,
+            }]);
+            // Add 70% of subscription price to session earnings (creator's share)
+            setSessionEarnings(p => p + Math.round(notif.price * 0.7));
+            // Show overlay alert — clear previous timer, set new one
+            if (subAlertTimerRef.current) clearTimeout(subAlertTimerRef.current);
+            setActiveSubAlert(notif);
+            subAlertTimerRef.current = setTimeout(() => setActiveSubAlert(null), 9000);
+          });
+        }
+      } catch {}
+    }, 2000);
+    return () => {
+      clearInterval(interval);
+      if (subAlertTimerRef.current) clearTimeout(subAlertTimerRef.current);
+    };
+  }, [isLive, user?.username]);
+
+  // Reset sub notification state when stream ends
+  useEffect(() => {
+    if (!isLive) {
+      subReadCountRef.current = 0;
+      setSessionSubs([]);
+      setActiveSubAlert(null);
+    }
+  }, [isLive]);
 
   // ── Go Live ───────────────────────────────────────────────────────────────
   const goLive = useCallback(() => {
@@ -535,35 +636,45 @@ export default function CreatorLiveStudio() {
   }, [editTitle, editCategory, editTags, editVip, showToast]);
 
   // ── Drop ─────────────────────────────────────────────────────────────────
+  const selectedDropType = CREATOR_DROP_TYPES.find(t => t.id === dropType) ?? CREATOR_DROP_TYPES[0];
+
   const startDrop = useCallback(() => {
+    const desc = dropDescription.trim();
+    if (!desc) { showToast({ title: "Add a description", description: "Tell viewers what they'll receive", variant: "destructive" }); return; }
     const now = Date.now();
-    const state: DropState = {
+    const windowMs = dropWindow * 1000;
+    const state: CreatorDropState = {
       id: `drop-${now}`,
-      creatorName: user?.username ?? "Creator",
+      creatorUsername: user?.username ?? "Creator",
+      typeId: selectedDropType.id,
+      typeEmoji: selectedDropType.emoji,
+      typeName: selectedDropType.name,
+      description: desc,
+      quantity: dropQuantity,
+      claimWindowMs: windowMs,
       startedAt: now,
-      durationMs: DROP_DURATION_MS,
-      pullCost: DROP_PULL_COST,
       isActive: true,
-      pulls: [],
-      totalRevenue: 0,
+      claims: [],
     };
     localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify(state));
-    dropPullCountRef.current = 0;
+    dropClaimCountRef.current = 0;
+    setDropWindowMs(windowMs);
     setDropIsActive(true);
     setDropStartedAt(now);
-    setDropPulls([]);
-    setDropRevenue(0);
-    setDropSecsLeft(DROP_DURATION_MS / 1000);
+    setDropClaims([]);
+    setDropSecsLeft(dropWindow);
+    const qtyLabel = dropQuantity === -1 ? "unlimited slots" : `${dropQuantity} slot${dropQuantity !== 1 ? "s" : ""}`;
+    const winLabel = DROP_CLAIM_WINDOWS.find(w => w.secs === dropWindow)?.label ?? `${dropWindow}s`;
     setChatMsgs(prev => [...prev, {
       id: `drop-start-${now}`,
-      username: "🔮 Drop",
-      text: "DROP STARTED! Pull for exclusive items — 50 credits each! 30 minutes only!",
+      username: "🎁 Drop",
+      text: `${selectedDropType.emoji} CREATOR DROP! ${desc} — ${qtyLabel} available · ${winLabel} to claim! Click CLAIM in your app!`,
       creditTip: 0,
       isNotice: true,
       timestamp: now,
     }]);
-    showToast({ title: "🔮 Drop started!", description: "Viewers can pull for 30 minutes" });
-  }, [user, showToast]);
+    showToast({ title: `${selectedDropType.emoji} Drop launched!`, description: `${qtyLabel} · ${winLabel} window` });
+  }, [user, showToast, selectedDropType, dropDescription, dropQuantity, dropWindow]);
 
   const stopDrop = useCallback(() => {
     setDropIsActive(false);
@@ -572,20 +683,20 @@ export default function CreatorLiveStudio() {
     try {
       const stored = localStorage.getItem(DROP_STORAGE_KEY);
       if (stored) {
-        const state: DropState = JSON.parse(stored);
+        const state: CreatorDropState = JSON.parse(stored);
         localStorage.setItem(DROP_STORAGE_KEY, JSON.stringify({ ...state, isActive: false }));
       }
     } catch {}
     setChatMsgs(prev => [...prev, {
       id: `drop-end-${Date.now()}`,
-      username: "🔮 Drop",
-      text: `Drop ended — ${dropPulls.length} pulls, ${Math.round(dropRevenue * 0.7).toLocaleString()} credits earned!`,
+      username: "🎁 Drop",
+      text: `Drop closed — ${dropClaimCountRef.current} viewer${dropClaimCountRef.current !== 1 ? "s" : ""} claimed their gift!`,
       creditTip: 0,
       isNotice: true,
       timestamp: Date.now(),
     }]);
-    showToast({ title: "Drop ended", description: `${dropPulls.length} pulls · ${Math.round(dropRevenue * 0.7).toLocaleString()} cr earned` });
-  }, [dropPulls.length, dropRevenue, showToast]);
+    showToast({ title: "Drop closed", description: `${dropClaimCountRef.current} claims total` });
+  }, [showToast]);
 
   // ── Tab data badge ────────────────────────────────────────────────────────
   const pollSecsLeft = poll ? Math.max(0, Math.round((poll.endsAt - Date.now()) / 1000)) : 0;
@@ -822,6 +933,67 @@ export default function CreatorLiveStudio() {
         </div>
       )}
 
+      {/* ── New Subscriber Alert Overlay ─────────────────────────────────── */}
+      {activeSubAlert && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{ top: "80px", right: "24px", width: "320px" }}
+        >
+          <div
+            className="rounded-2xl p-4 shadow-2xl"
+            style={{
+              background: "linear-gradient(135deg, rgba(13,13,30,0.98), rgba(20,10,40,0.98))",
+              border: "1px solid rgba(236,72,153,0.5)",
+              boxShadow: "0 0 40px rgba(236,72,153,0.25), 0 8px 32px rgba(0,0,0,0.6)",
+              animation: "slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+            }}
+          >
+            {/* Pulsing top border accent */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
+              style={{ background: "linear-gradient(90deg, #ec4899, #a855f7, #ec4899)", backgroundSize: "200% 100%", animation: "shimmer 2s linear infinite" }} />
+
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+                style={{ background: "rgba(236,72,153,0.15)", border: "2px solid rgba(236,72,153,0.4)" }}>
+                {activeSubAlert.tierEmoji}
+              </div>
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>NEW SUBSCRIBER</p>
+                <p className="text-base font-black text-white leading-tight">{activeSubAlert.subscriberUsername}</p>
+              </div>
+              <button
+                className="ml-auto pointer-events-auto p-1 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+                onClick={() => setActiveSubAlert(null)}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl mb-3"
+              style={{ background: "rgba(236,72,153,0.08)", border: "1px solid rgba(236,72,153,0.2)" }}>
+              <span className="text-sm font-bold text-white">{activeSubAlert.tierEmoji} {activeSubAlert.tierName}</span>
+              <span className="text-sm font-black" style={{ color: "#ec4899" }}>{activeSubAlert.priceStr}/mo</span>
+            </div>
+
+            {/* Action items if any */}
+            {(TIER_ACTION_ITEMS[activeSubAlert.tierId] ?? []).length > 0 && (
+              <div className="px-3 py-2.5 rounded-xl"
+                style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}>
+                <p className="text-xs font-bold mb-1.5" style={{ color: "#f59e0b" }}>⚡ Action required</p>
+                {(TIER_ACTION_ITEMS[activeSubAlert.tierId] ?? []).map((action, i) => (
+                  <p key={i} className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>• {action}</p>
+                ))}
+              </div>
+            )}
+
+            <p className="text-center text-xs mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+              See Subs tab for full details
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── 3-column body ────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
 
@@ -997,14 +1169,21 @@ export default function CreatorLiveStudio() {
               { id: "settings", label: "Settings",  icon: Settings2 },
               { id: "stats",    label: "Stats",     icon: BarChart2 },
               { id: "drop",     label: "Drop",      icon: Sparkles  },
+              { id: "subs",     label: "Subs",      icon: Bell      },
             ] as const).map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1.5 px-4 py-3 text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0"
+                className="relative flex items-center gap-1.5 px-4 py-3 text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0"
                 style={activeTab === tab.id
                   ? { color: "#14b8a6", borderBottom: "2px solid #14b8a6" }
                   : { color: "rgba(255,255,255,0.4)", borderBottom: "2px solid transparent" }
                 }>
                 <tab.icon className="w-3.5 h-3.5" /> {tab.label}
+                {tab.id === "subs" && sessionSubs.length > 0 && (
+                  <span className="absolute top-1.5 right-1 w-4 h-4 rounded-full text-white flex items-center justify-center font-black"
+                    style={{ background: "#ec4899", fontSize: "9px" }}>
+                    {sessionSubs.length > 9 ? "9+" : sessionSubs.length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -1014,83 +1193,160 @@ export default function CreatorLiveStudio() {
 
             {/* ── Goals tab ─────────────────────────────────────────────── */}
             {activeTab === "goals" && (
-              <div className="space-y-5">
-                <div>
-                  <h3 className="text-sm font-bold text-white mb-1">Active Tip Goal</h3>
-                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    Set a credit target for your viewers to unlock a special show. Viewers see the progress bar live.
-                  </p>
-                  {goal ? (
-                    <div className="vl-card p-4 mb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-bold text-white">{goal.title}</span>
-                        <button onClick={() => setGoal(null)}
-                          className="text-xs px-2 py-1 rounded-lg transition-all hover:bg-white/5"
-                          style={{ color: "rgba(255,255,255,0.4)" }}>Clear</button>
-                      </div>
-                      <div className="mb-2">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span style={{ color: "rgba(255,255,255,0.5)" }}>Progress</span>
-                          <span style={{ color: "#14b8a6" }}>
-                            {goal.current.toLocaleString()} / {goal.target.toLocaleString()} credits
-                          </span>
-                        </div>
-                        <div className="h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-                          <div className="h-full rounded-full transition-all duration-700 flex items-center justify-end pr-2"
-                            style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%`, background: "linear-gradient(90deg, #14b8a6, #0d9488)", minWidth: goal.current > 0 ? "2rem" : "0" }}>
-                            {(goal.current / goal.target) > 0.15 && (
-                              <span className="text-xs font-bold text-white">{Math.round((goal.current / goal.target) * 100)}%</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {goal.current >= goal.target && (
-                        <div className="mt-3 text-center">
-                          <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>🎉 Goal Reached! Time to deliver the show!</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="vl-card p-4 mb-4 text-center" style={{ border: "1px dashed rgba(255,255,255,0.1)" }}>
-                      <Target className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>No active goal — set one below</p>
-                    </div>
-                  )}
+              <div className="space-y-4">
 
-                  <div className="vl-card p-4">
-                    <h4 className="text-xs font-bold text-white mb-3">Set New Goal</h4>
-                    <div className="space-y-3">
-                      <input value={goalTitle} onChange={e => setGoalTitle(e.target.value)}
-                        placeholder="Goal title (e.g. Special Show)"
-                        className="w-full px-3 py-2.5 rounded-lg text-sm text-white"
-                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", outline: "none" }}
-                      />
-                      <div className="flex gap-2">
-                        <div className="flex-1 relative">
-                          <Zap className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
-                          <input value={goalTarget} onChange={e => setGoalTarget(e.target.value)}
-                            placeholder="Credit target"
-                            type="number" min="10"
-                            className="w-full pl-8 pr-3 py-2.5 rounded-lg text-sm text-white"
-                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", outline: "none" }}
-                          />
+                {/* ── ACTIVE GOAL card ──────────────────────────────────────── */}
+                {goal ? (
+                  <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(20,184,166,0.25)", background: "rgba(20,184,166,0.05)" }}>
+                    {/* Header row */}
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: "rgba(20,184,166,0.15)" }}>
+                        <Target className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: "#14b8a6" }}>Active Goal</p>
+                        <p className="text-base font-bold text-white truncate">{goal.title}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-lg font-black font-mono" style={{ color: "#14b8a6" }}>
+                          {Math.round(Math.min(100, (goal.current / goal.target) * 100))}%
+                        </p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                          {goal.current.toLocaleString()} / {goal.target.toLocaleString()} cr
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="px-4 pb-3">
+                      <div className="h-5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                        <div className="h-full rounded-full transition-all duration-700 relative flex items-center"
+                          style={{
+                            width: `${Math.min(100, (goal.current / goal.target) * 100)}%`,
+                            background: goal.current >= goal.target
+                              ? "linear-gradient(90deg, #14b8a6, #10b981)"
+                              : "linear-gradient(90deg, #14b8a6, #0d9488)",
+                            minWidth: goal.current > 0 ? "2.5rem" : "0",
+                          }}>
+                          {(goal.current / goal.target) > 0.12 && (
+                            <span className="absolute right-2 text-xs font-black text-white">
+                              {Math.round((goal.current / goal.target) * 100)}%
+                            </span>
+                          )}
                         </div>
-                        <button onClick={setNewGoal}
-                          className="px-4 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90"
-                          style={{ background: "#14b8a6", color: "white" }}>
-                          Set Goal
+                      </div>
+                    </div>
+
+                    {/* Goal reached state */}
+                    {goal.current >= goal.target ? (
+                      <div className="mx-4 mb-4 px-4 py-3 rounded-xl text-center"
+                        style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)" }}>
+                        <p className="text-sm font-bold mb-0.5" style={{ color: "#34d399" }}>🎉 Goal Reached!</p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Deliver the show, then start a new goal below.</p>
+                      </div>
+                    ) : (
+                      <div className="px-4 pb-1">
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          Viewers can see this bar in real time — tips push it forward.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* End Goal button — prominent, unmistakable */}
+                    <div className="px-4 pb-4 pt-2">
+                      <button
+                        onClick={() => {
+                          setGoal(null);
+                          showToast({ title: "Goal ended", description: "The tip goal has been cleared for your viewers." });
+                        }}
+                        className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+                        style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}>
+                        <X className="w-4 h-4" /> End Goal &amp; Remove from Stream
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* No goal — empty state */
+                  <div className="rounded-2xl p-6 text-center" style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
+                    <Target className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
+                    <p className="text-sm font-semibold text-white mb-1">No active tip goal</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Start one below — viewers will see the live progress bar.</p>
+                  </div>
+                )}
+
+                {/* ── CREATE / REPLACE GOAL form ─────────────────────────── */}
+                <div className="vl-card p-4">
+                  <h4 className="text-xs font-bold text-white mb-0.5">
+                    {goal ? "Replace Goal" : "Start a Tip Goal"}
+                  </h4>
+                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    {goal ? "Starting a new goal will immediately replace the current one." : "Pick a preset or type your own — the bar goes live instantly."}
+                  </p>
+
+                  {/* Quick-pick presets */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {[
+                      { emoji: "🔥", label: "Special Show", amount: 1000 },
+                      { emoji: "💃", label: "Dance for Me", amount: 500 },
+                      { emoji: "📸", label: "Selfie Set", amount: 750 },
+                      { emoji: "🎭", label: "Costume Change", amount: 300 },
+                      { emoji: "🎁", label: "Surprise Show", amount: 2000 },
+                      { emoji: "👑", label: "VIP Unlock", amount: 5000 },
+                    ].map(p => (
+                      <button key={p.label}
+                        onClick={() => { setGoalTitle(`${p.emoji} ${p.label}`); setGoalTarget(String(p.amount)); }}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:opacity-90 active:scale-95"
+                        style={{
+                          background: goalTitle === `${p.emoji} ${p.label}` ? "rgba(20,184,166,0.12)" : "rgba(255,255,255,0.04)",
+                          border: goalTitle === `${p.emoji} ${p.label}` ? "1px solid rgba(20,184,166,0.35)" : "1px solid rgba(255,255,255,0.07)",
+                        }}>
+                        <span className="text-lg">{p.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-white truncate">{p.label}</p>
+                          <p className="text-xs font-mono" style={{ color: "#14b8a6" }}>{p.amount.toLocaleString()} cr</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom title + amount */}
+                  <div className="space-y-2">
+                    <input value={goalTitle} onChange={e => setGoalTitle(e.target.value)}
+                      placeholder="Custom goal name…"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-white"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", outline: "none" }}
+                    />
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <Zap className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
+                        <input value={goalTarget} onChange={e => setGoalTarget(e.target.value)}
+                          placeholder="Credit target"
+                          type="number" min="10"
+                          className="w-full pl-8 pr-3 py-2.5 rounded-xl text-sm text-white"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", outline: "none" }}
+                        />
+                      </div>
+                      <button onClick={setNewGoal}
+                        disabled={!goalTitle.trim() || !goalTarget}
+                        className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                        {goal ? "Replace" : "Go Live"}
+                      </button>
+                    </div>
+                    {/* Quick amount chips */}
+                    <div className="flex gap-1.5 flex-wrap">
+                      {[250, 500, 1000, 2000, 5000, 10000].map(n => (
+                        <button key={n} onClick={() => setGoalTarget(String(n))}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                          style={{
+                            background: goalTarget === String(n) ? "rgba(20,184,166,0.2)" : "rgba(20,184,166,0.07)",
+                            border: goalTarget === String(n) ? "1px solid rgba(20,184,166,0.5)" : "1px solid rgba(20,184,166,0.18)",
+                            color: "#14b8a6",
+                          }}>
+                          {n >= 1000 ? `${n / 1000}k` : n}
                         </button>
-                      </div>
-                      {/* Quick goal amounts */}
-                      <div className="flex gap-2 flex-wrap">
-                        {[250, 500, 1000, 2000, 5000].map(n => (
-                          <button key={n} onClick={() => setGoalTarget(String(n))}
-                            className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
-                            style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
-                            {n.toLocaleString()}
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1507,28 +1763,36 @@ export default function CreatorLiveStudio() {
             {activeTab === "drop" && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-sm font-bold text-white mb-1">The Drop</h3>
+                  <h3 className="text-sm font-bold text-white mb-1">Creator Drop</h3>
                   <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    Trigger a 30-minute pull event. Viewers spend 50 credits to pull exclusive items from this stream. You earn 70% of all revenue.
+                    Send a free gift to your viewers. Choose what to give, set slots and a claim window — chatters see a CLAIM button in real time.
                   </p>
                 </div>
 
                 {dropIsActive ? (
                   <>
                     {/* Active drop banner */}
-                    <div className="p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(245,158,11,0.08))", border: "1px solid rgba(139,92,246,0.3)" }}>
+                    <div className="p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(20,184,166,0.1), rgba(236,72,153,0.06))", border: "1px solid rgba(20,184,166,0.35)" }}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" style={{ color: "#a78bfa" }} />
-                          <span className="text-sm font-bold text-white">DROP ACTIVE</span>
-                          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#a78bfa" }} />
+                          <span className="text-xl">{selectedDropType.emoji}</span>
+                          <span className="text-sm font-bold text-white">DROP LIVE</span>
+                          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#14b8a6" }} />
                         </div>
                         <button onClick={stopDrop}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
                           style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
-                          <Square className="w-3 h-3" /> End Drop
+                          <Square className="w-3 h-3" /> Close Drop
                         </button>
                       </div>
+
+                      {/* What's being dropped */}
+                      <div className="px-3 py-2 rounded-lg mb-3"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{selectedDropType.name}</p>
+                        <p className="text-sm font-semibold text-white">{dropDescription}</p>
+                      </div>
+
                       <div className="grid grid-cols-3 gap-3 text-center">
                         <div>
                           <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>Time Left</p>
@@ -1537,40 +1801,38 @@ export default function CreatorLiveStudio() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>Pulls</p>
-                          <p className="text-lg font-black text-white">{dropPulls.length}</p>
+                          <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>Claimed</p>
+                          <p className="text-lg font-black" style={{ color: "#14b8a6" }}>{dropClaims.length}</p>
                         </div>
                         <div>
-                          <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>Earned</p>
-                          <p className="text-lg font-black" style={{ color: "#14b8a6" }}>
-                            {Math.round(dropRevenue * 0.7).toLocaleString()}
+                          <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>Slots</p>
+                          <p className="text-lg font-black text-white">
+                            {dropQuantity === -1 ? "∞" : `${dropQuantity - dropClaims.length} left`}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Recent pulls feed */}
+                    {/* Claimers feed */}
                     <div className="vl-card p-4">
-                      <h4 className="text-xs font-bold text-white mb-3">Recent Pulls</h4>
-                      {dropPulls.length === 0 ? (
+                      <h4 className="text-xs font-bold text-white mb-3">Claimers ({dropClaims.length})</h4>
+                      {dropClaims.length === 0 ? (
                         <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>
-                          Waiting for first pull…
+                          Waiting for first claim…
                         </p>
                       ) : (
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                          {[...dropPulls].reverse().map(pull => (
-                            <div key={pull.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
-                              style={{ background: "rgba(255,255,255,0.03)" }}>
-                              <span className="text-lg leading-none">{pull.item.emoji}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-white truncate">{pull.username}</p>
-                                <p className="text-xs truncate" style={{ color: DROP_RARITY_COLORS[pull.item.rarity] }}>
-                                  {pull.item.name}
-                                </p>
-                              </div>
-                              <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-                                style={{ background: `${DROP_RARITY_COLORS[pull.item.rarity]}25`, color: DROP_RARITY_COLORS[pull.item.rarity] }}>
-                                {pull.item.rarity}
+                        <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                          {[...dropClaims].reverse().map((claim, i) => (
+                            <div key={`${claim.username}-${claim.claimedAt}`}
+                              className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
+                              style={{ background: "rgba(20,184,166,0.05)", border: "1px solid rgba(20,184,166,0.1)" }}>
+                              <span className="text-xs font-bold w-5 text-center"
+                                style={{ color: "rgba(255,255,255,0.3)" }}>
+                                {dropClaims.length - i}
+                              </span>
+                              <span className="flex-1 text-xs font-semibold text-white truncate">{claim.username}</span>
+                              <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                {new Date(claim.claimedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                               </span>
                             </div>
                           ))}
@@ -1580,45 +1842,207 @@ export default function CreatorLiveStudio() {
                   </>
                 ) : (
                   <>
-                    {/* Start drop CTA */}
-                    <div className="vl-card p-5 text-center" style={{ border: "1px dashed rgba(139,92,246,0.3)" }}>
-                      <Sparkles className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(139,92,246,0.4)" }} />
-                      <p className="text-sm font-bold text-white mb-1">No active Drop</p>
-                      <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        Start a Drop to let viewers pull exclusive items from this stream
-                      </p>
+                    {/* Drop type picker */}
+                    <div className="vl-card p-4">
+                      <h4 className="text-xs font-bold text-white mb-3">What are you dropping?</h4>
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {CREATOR_DROP_TYPES.map(t => (
+                          <button key={t.id} onClick={() => setDropType(t.id)}
+                            className="flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
+                            style={dropType === t.id
+                              ? { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.5)" }
+                              : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }
+                            }>
+                            <span className="text-xl">{t.emoji}</span>
+                            <span className="text-xs font-semibold text-center leading-tight"
+                              style={{ color: dropType === t.id ? "#14b8a6" : "rgba(255,255,255,0.6)" }}>
+                              {t.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Description */}
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                          Describe the prize
+                        </label>
+                        <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          {selectedDropType.hint}
+                        </p>
+                        <textarea
+                          value={dropDescription}
+                          onChange={e => setDropDescription(e.target.value)}
+                          placeholder={`e.g. "${selectedDropType.emoji} First ${dropQuantity === -1 ? "10" : dropQuantity} viewers get a personal shoutout right now!"`}
+                          rows={2}
+                          className="w-full px-3 py-2.5 rounded-xl text-sm text-white resize-none"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", outline: "none" }}
+                        />
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+                          How many slots?
+                        </label>
+                        <div className="flex gap-2 flex-wrap">
+                          {[1, 5, 10, 25, 50, -1].map(q => (
+                            <button key={q} onClick={() => setDropQuantity(q)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                              style={dropQuantity === q
+                                ? { background: "#14b8a6", color: "white" }
+                                : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }
+                              }>
+                              {q === -1 ? "∞ Unlimited" : q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Claim window */}
+                      <div className="mb-5">
+                        <label className="block text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+                          Claim window
+                        </label>
+                        <div className="flex gap-2 flex-wrap">
+                          {DROP_CLAIM_WINDOWS.map(w => (
+                            <button key={w.secs} onClick={() => setDropWindow(w.secs)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                              style={dropWindow === w.secs
+                                ? { background: "#a78bfa", color: "white" }
+                                : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }
+                              }>
+                              {w.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Launch button */}
                       <button onClick={startDrop}
                         className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2"
-                        style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", color: "white" }}>
-                        <Sparkles className="w-4 h-4" /> Start Drop
+                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                        <Gift className="w-4 h-4" /> Launch Drop to Viewers
                       </button>
-                    </div>
-
-                    {/* Item pool preview */}
-                    <div className="vl-card p-4">
-                      <h4 className="text-xs font-bold text-white mb-3">Drop Item Pool</h4>
-                      <div className="space-y-2">
-                        {(["Legendary", "Epic", "Rare", "Common"] as const).map(rarity => {
-                          const count = DROP_ITEMS.filter(i => i.rarity === rarity).length;
-                          const chance = rarity === "Common" ? "50%" : rarity === "Rare" ? "30%" : rarity === "Epic" ? "15%" : "5%";
-                          return (
-                            <div key={rarity} className="flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full flex-shrink-0"
-                                style={{ background: DROP_RARITY_COLORS[rarity] }} />
-                              <span className="text-xs font-semibold flex-1"
-                                style={{ color: DROP_RARITY_COLORS[rarity] }}>{rarity}</span>
-                              <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                                {count} items · {chance} chance
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
                     </div>
                   </>
                 )}
               </div>
             )}
+            {/* ── Subs tab ──────────────────────────────────────────────── */}
+            {activeTab === "subs" && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-1">Subscribers This Session</h3>
+                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    New subscribers appear here in real time. Action items flag what you owe them based on their tier.
+                  </p>
+                </div>
+
+                {sessionSubs.length === 0 ? (
+                  <div className="vl-card p-8 text-center" style={{ border: "1px dashed rgba(255,255,255,0.1)" }}>
+                    <Bell className="w-8 h-8 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>No subscribers yet</p>
+                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.25)" }}>New subs appear here instantly</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {[...sessionSubs].reverse().map(notif => {
+                      const actions = TIER_ACTION_ITEMS[notif.tierId] ?? [];
+                      return (
+                        <div key={notif.id} className="vl-card p-4"
+                          style={{ border: actions.length > 0 ? "1px solid rgba(245,158,11,0.25)" : "1px solid rgba(255,255,255,0.07)" }}>
+                          {/* Header */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg"
+                              style={{ background: "rgba(255,255,255,0.06)" }}>
+                              {notif.tierEmoji}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-white truncate">{notif.subscriberUsername}</span>
+                                <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
+                                  style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899" }}>
+                                  {notif.tierEmoji} {notif.tierName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{notif.priceStr}/mo</span>
+                                <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  {new Date(notif.subscribedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action items for this tier */}
+                          {actions.length > 0 && (
+                            <div className="mt-2 p-3 rounded-xl"
+                              style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                              <p className="text-xs font-bold mb-2" style={{ color: "#f59e0b" }}>
+                                ⚡ Action Required — {notif.tierName} perks
+                              </p>
+                              <ul className="space-y-1">
+                                {actions.map((action, i) => (
+                                  <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
+                                    <span className="flex-shrink-0 mt-0.5">{action.split(" ")[0]}</span>
+                                    <span>{action.slice(action.indexOf(" ") + 1)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Perks reminder (collapsible — show for action tiers) */}
+                          {actions.length === 0 && notif.perks.length > 0 && (
+                            <div className="space-y-1 mt-1">
+                              {notif.perks.map((perk, i) => (
+                                <p key={i} className="text-xs flex items-start gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                                  <CheckCircle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} />
+                                  {perk}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Session sub revenue summary */}
+                {sessionSubs.length > 0 && (
+                  <div className="vl-card p-4">
+                    <h4 className="text-xs font-bold text-white mb-3">Session Subscription Revenue</h4>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Total subscriptions</span>
+                      <span className="text-sm font-bold text-white">{sessionSubs.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Gross revenue</span>
+                      <span className="text-sm font-bold" style={{ color: "#ec4899" }}>
+                        ${sessionSubs.reduce((s, n) => s + n.price, 0).toFixed(2)}/mo
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Your share (70%)</span>
+                      <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>
+                        ${(sessionSubs.reduce((s, n) => s + n.price, 0) * 0.7).toFixed(2)}/mo
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-1">
+                      {sessionSubs.map(n => (
+                        <div key={n.id} className="flex items-center justify-between text-xs">
+                          <span style={{ color: "rgba(255,255,255,0.45)" }}>{n.tierEmoji} {n.subscriberUsername}</span>
+                          <span style={{ color: "#14b8a6" }}>{n.priceStr}/mo</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
         </div>
 
@@ -1715,16 +2139,17 @@ export default function CreatorLiveStudio() {
 
           {/* Active drop quick view */}
           {dropIsActive && (
-            <div className="vl-card p-3" style={{ border: "1px solid rgba(139,92,246,0.25)" }}>
+            <div className="vl-card p-3" style={{ border: "1px solid rgba(20,184,166,0.3)" }}>
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-3.5 h-3.5 animate-pulse" style={{ color: "#a78bfa" }} />
-                <span className="text-xs font-bold" style={{ color: "#a78bfa" }}>DROP ACTIVE</span>
+                <span className="text-base leading-none">{selectedDropType.emoji}</span>
+                <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>DROP LIVE</span>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-auto" style={{ background: "#14b8a6" }} />
               </div>
               <p className="text-sm font-black font-mono text-white">
                 {Math.floor(dropSecsLeft / 60)}:{String(dropSecsLeft % 60).padStart(2, "0")}
               </p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                {dropPulls.length} pulls · {Math.round(dropRevenue * 0.7).toLocaleString()} cr
+                {dropClaims.length} claimed{dropQuantity !== -1 ? ` / ${dropQuantity}` : ""}
               </p>
             </div>
           )}

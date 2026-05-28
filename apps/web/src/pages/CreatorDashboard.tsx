@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink } from "lucide-react";
 import { BOOST_TIERS } from "@/lib/membership-tiers";
 import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
 
@@ -175,7 +175,16 @@ function centsToDisplay(cents: number) {
 export default function CreatorDashboard() {
   const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user } = useApp();
   const analyticsTier = getAnalyticsTier(activeBoost, activeMembership);
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">("overview");
+
+  // ── Stream key state ──────────────────────────────────────────────────────────
+  const [streamKeyData, setStreamKeyData] = useState<{
+    rtmpServer: string; streamKey: string; hlsUrl: string; createdAt?: string;
+  } | null>(null);
+  const [streamKeyLoading, setStreamKeyLoading] = useState(false);
+  const [streamKeyVisible, setStreamKeyVisible] = useState(false);
+  const [streamKeyCopied, setStreamKeyCopied] = useState<"server" | "key" | "hls" | null>(null);
+  const [streamKeyRegenerating, setStreamKeyRegenerating] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [boostClaimed, setBoostClaimed] = useState(() => {
     try { return localStorage.getItem("linkme_referral_claimed") === "1"; } catch { return false; }
@@ -214,6 +223,71 @@ export default function CreatorDashboard() {
   const referralEarnings = 2840; // mock: $2,840 of $10,000/mo earned by referrals
   const referralCode = makeReferralCode(user?.username ?? "creator");
   const referralMet = referralCount >= REFERRAL_TARGET_COUNT && referralEarnings >= REFERRAL_TARGET_EARNINGS;
+
+  // ── Stream key helpers ────────────────────────────────────────────────────────
+  const fetchStreamKey = async () => {
+    setStreamKeyLoading(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "";
+      const token  = localStorage.getItem("linkme_token") ?? "";
+      const res    = await fetch(`${apiUrl}/api/streams/key`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setStreamKeyData(d);
+      } else {
+        // Demo fallback — show placeholder values in dev/offline mode
+        setStreamKeyData({
+          rtmpServer: "rtmp://stream.yourdomain.com:1935/live",
+          streamKey:  "demo-stream-key-not-active",
+          hlsUrl:     "https://cdn.yourdomain.com/live/demo-stream-key-not-active/index.m3u8",
+        });
+      }
+    } catch {
+      setStreamKeyData({
+        rtmpServer: "rtmp://stream.yourdomain.com:1935/live",
+        streamKey:  "demo-stream-key-not-active",
+        hlsUrl:     "https://cdn.yourdomain.com/live/demo-stream-key-not-active/index.m3u8",
+      });
+    } finally {
+      setStreamKeyLoading(false);
+    }
+  };
+
+  const regenerateStreamKey = async () => {
+    if (!window.confirm("Regenerate your stream key? Your current OBS/Streamlabs settings will stop working immediately.")) return;
+    setStreamKeyRegenerating(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "";
+      const token  = localStorage.getItem("linkme_token") ?? "";
+      const res    = await fetch(`${apiUrl}/api/streams/key/regenerate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setStreamKeyData(d);
+        setStreamKeyVisible(false);
+        showToast({ title: "Stream key regenerated", description: "Update your OBS/Streamlabs settings with the new key." });
+      }
+    } catch {}
+    setStreamKeyRegenerating(false);
+  };
+
+  const copyField = (value: string, field: "server" | "key" | "hls") => {
+    navigator.clipboard.writeText(value).catch(() => {});
+    setStreamKeyCopied(field);
+    setTimeout(() => setStreamKeyCopied(null), 2000);
+  };
+
+  // Fetch stream key when tab is opened
+  useEffect(() => {
+    if (activeTab === "stream" && !streamKeyData) {
+      fetchStreamKey();
+    }
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [data, setData] = useState<CreatorDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -357,17 +431,18 @@ export default function CreatorDashboard() {
         {/* Tabs — horizontally scrollable on narrow screens */}
         <div className="overflow-x-auto pb-1 -mx-4 px-4 mb-6">
         <div className="flex gap-1 vl-card p-1.5 w-fit min-w-full sm:min-w-0">
-          {(["overview", "content", "fans", "analytics", "boosts", "referral"] as const).map(tab => (
+          {(["overview", "content", "fans", "analytics", "boosts", "referral", "stream"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="px-4 py-1.5 rounded-lg text-base font-semibold capitalize transition-all flex items-center gap-1.5"
               style={activeTab === tab
-                ? { background: tab === "referral" ? "rgba(232,168,124,0.15)" : tab === "boosts" ? "rgba(249,115,22,0.15)" : "rgba(20,184,166,0.15)", color: tab === "referral" ? "#e8a87c" : tab === "boosts" ? "#f97316" : "#14b8a6" }
+                ? { background: tab === "referral" ? "rgba(232,168,124,0.15)" : tab === "boosts" ? "rgba(249,115,22,0.15)" : tab === "stream" ? "rgba(239,68,68,0.15)" : "rgba(20,184,166,0.15)", color: tab === "referral" ? "#e8a87c" : tab === "boosts" ? "#f97316" : tab === "stream" ? "#f87171" : "#14b8a6" }
                 : { color: "rgba(255,255,255,0.45)" }
               }>
               {tab === "analytics" && <BarChart2 className="w-3.5 h-3.5" />}
               {tab === "boosts"    && <Zap        className="w-3.5 h-3.5" />}
               {tab === "referral"  && <Gift       className="w-3.5 h-3.5" />}
-              {tab}
+              {tab === "stream"    && <Radio      className="w-3.5 h-3.5" />}
+              {tab === "stream" ? "Go Live" : tab}
               {tab === "analytics" && analyticsTier === "none" && (
                 <Lock className="w-3 h-3 opacity-50" />
               )}
@@ -1302,6 +1377,178 @@ export default function CreatorDashboard() {
                     One-time reward per account. Non-repeatable. Rate boosted to next bracket (e.g. 80%→83%, 85%→87%), capped at 90%. Referrals must stay active 30+ days. Earnings measured on a rolling 30-day window. See Creator Agreement §2.9.
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ── Go Live / Stream Setup tab ───────────────────────────── */}
+            {activeTab === "stream" && (
+              <div className="space-y-5">
+                {/* Header */}
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-1">Go Live with OBS / Streamlabs</h3>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    Copy the server URL and stream key into your broadcasting software. Hit "Start Streaming" — you're live.
+                  </p>
+                </div>
+
+                {streamKeyLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#14b8a6" }} />
+                  </div>
+                ) : streamKeyData ? (
+                  <>
+                    {/* Connection credentials */}
+                    <div className="vl-card p-5 space-y-4">
+                      <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        OBS / Streamlabs Settings
+                      </p>
+
+                      {/* RTMP Server */}
+                      <div>
+                        <p className="text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                          Server URL
+                        </p>
+                        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                          <code className="flex-1 text-sm font-mono text-white truncate">
+                            {streamKeyData.rtmpServer}
+                          </code>
+                          <button
+                            onClick={() => copyField(streamKeyData.rtmpServer, "server")}
+                            className="flex-shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/10"
+                            style={{ color: streamKeyCopied === "server" ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
+                            {streamKeyCopied === "server" ? <CheckIcon className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Stream Key */}
+                      <div>
+                        <p className="text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                          Stream Key <span className="font-normal opacity-60">(keep private — anyone with this can stream as you)</span>
+                        </p>
+                        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                          <code className="flex-1 text-sm font-mono text-white truncate">
+                            {streamKeyVisible ? streamKeyData.streamKey : "•".repeat(Math.min(streamKeyData.streamKey.length, 32))}
+                          </code>
+                          <button
+                            onClick={() => setStreamKeyVisible(v => !v)}
+                            className="flex-shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/10"
+                            style={{ color: "rgba(255,255,255,0.4)" }}>
+                            {streamKeyVisible ? <EyeOff className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => copyField(streamKeyData.streamKey, "key")}
+                            className="flex-shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/10"
+                            style={{ color: streamKeyCopied === "key" ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
+                            {streamKeyCopied === "key" ? <CheckIcon className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Regenerate */}
+                      <button
+                        onClick={regenerateStreamKey}
+                        disabled={streamKeyRegenerating}
+                        className="flex items-center gap-2 text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-40"
+                        style={{ color: "rgba(239,68,68,0.7)" }}>
+                        <RefreshCw className={`w-3.5 h-3.5 ${streamKeyRegenerating ? "animate-spin" : ""}`} />
+                        Regenerate key (invalidates current key immediately)
+                      </button>
+                    </div>
+
+                    {/* HLS / viewer URL */}
+                    <div className="vl-card p-5">
+                      <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Live Playback URL (Bunny CDN)
+                      </p>
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-2"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                        <code className="flex-1 text-xs font-mono truncate" style={{ color: "rgba(255,255,255,0.6)" }}>
+                          {streamKeyData.hlsUrl}
+                        </code>
+                        <button
+                          onClick={() => copyField(streamKeyData.hlsUrl, "hls")}
+                          className="flex-shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/10"
+                          style={{ color: streamKeyCopied === "hls" ? "#14b8a6" : "rgba(255,255,255,0.4)" }}>
+                          {streamKeyCopied === "hls" ? <CheckIcon className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        This URL is automatically served to viewers when you're live. You don't need to share it manually.
+                      </p>
+                    </div>
+
+                    {/* Quick-start guide */}
+                    <div className="vl-card p-5">
+                      <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        OBS Setup — 3 Steps
+                      </p>
+                      <div className="space-y-4">
+                        {[
+                          {
+                            step: "1",
+                            title: "Open OBS → Settings → Stream",
+                            body: 'Set Service to "Custom…". Paste the Server URL above. Paste your Stream Key. Click Apply.',
+                          },
+                          {
+                            step: "2",
+                            title: "Configure your scene",
+                            body: "Add a Video Capture Device source (your webcam) and/or a Window Capture source. Set output resolution to 1280×720 or 1920×1080.",
+                          },
+                          {
+                            step: "3",
+                            title: 'Click "Start Streaming" in OBS',
+                            body: "Within 5 seconds your stream appears live on LinkMe. Viewers will see you in the Live section and on your profile page.",
+                          },
+                        ].map(s => (
+                          <div key={s.step} className="flex gap-3">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
+                              style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+                              {s.step}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-white mb-0.5">{s.title}</p>
+                              <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{s.body}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Supported software */}
+                      <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>Works with</p>
+                        <div className="flex flex-wrap gap-2">
+                          {["OBS Studio", "Streamlabs", "Meld Studio", "XSplit", "vMix"].map(app => (
+                            <span key={app} className="px-2.5 py-1 rounded-lg text-xs font-medium"
+                              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
+                              {app}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* After going live — go to studio */}
+                    <div className="rounded-2xl p-4 flex items-center gap-4"
+                      style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                      <Wifi className="w-8 h-8 flex-shrink-0" style={{ color: "#f87171" }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white mb-0.5">Once you're live</p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                          Head to the Live Studio to manage your chat, tip goals, drops, and viewer subscriptions in real time.
+                        </p>
+                      </div>
+                      <Link href="/studio">
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold flex-shrink-0 transition-all hover:opacity-90"
+                          style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", color: "white" }}>
+                          <ExternalLink className="w-3.5 h-3.5" /> Studio
+                        </button>
+                      </Link>
+                    </div>
+                  </>
+                ) : null}
               </div>
             )}
           </div>

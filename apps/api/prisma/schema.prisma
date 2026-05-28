@@ -143,17 +143,20 @@ model Profile {
 }
 
 model CreatorProfile {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  subscriptionPrice Int      @default(0)   // credits per month
-  tipMenuItems      Json?                  // [{label: string, credits: number}]
-  totalEarnings     Int      @default(0)
-  monthlyEarnings   Int      @default(0)
-  subscriberCount   Int      @default(0)
-  isApproved        Boolean  @default(false)
-  isLive            Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  subscriptionPrice Int       @default(0)   // credits per month
+  tipMenuItems      Json?                   // [{label: string, credits: number}]
+  totalEarnings     Int       @default(0)
+  monthlyEarnings   Int       @default(0)
+  subscriberCount   Int       @default(0)
+  isApproved        Boolean   @default(false)
+  isLive            Boolean   @default(false)
+  // SRS stream key — used as the RTMP stream name (rtmp://host/live/<streamKey>)
+  streamKey         String?   @unique
+  streamKeyCreatedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   liveFeeds LiveFeed[]
@@ -199,6 +202,8 @@ model LiveFeed {
   peakViewers  Int       @default(0)
   isLive       Boolean   @default(false)
   isVip        Boolean   @default(false)
+  // SRS/Bunny — HLS delivery URL served to viewers via Bunny CDN
+  hlsUrl       String?
   // WebRTC — store the SDP offer from creator so late joiners can connect
   sdpOffer     String?   @db.Text
   tags         String[]  @default([])

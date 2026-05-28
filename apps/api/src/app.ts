@@ -16,6 +16,7 @@ import boostsRouter    from "./routes/boosts.js";
 import creatorRouter   from "./routes/creator.js";
 import verifyAgeRouter from "./routes/verify-age.js";
 import moderationRouter from "./routes/moderation.js";
+import streamsRouter   from "./routes/streams.js";
 import healthRouter    from "./routes/health.js";
 
 const app = express();
@@ -26,8 +27,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        connectSrc: ["'self'", "wss:", "ws:"],
-        mediaSrc:   ["'self'", "blob:", "https://*.amazonaws.com"],
+        connectSrc: ["'self'", "wss:", "ws:", "https://*.b-cdn.net"],
+        mediaSrc:   ["'self'", "blob:", "https://*.amazonaws.com", "https://*.b-cdn.net"],
       },
     },
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -95,6 +96,7 @@ api.use(boostsRouter);
 api.use(creatorRouter);
 api.use(verifyAgeRouter);
 api.use(moderationRouter);
+api.use(streamsRouter);
 
 app.use("/api", api);
 
