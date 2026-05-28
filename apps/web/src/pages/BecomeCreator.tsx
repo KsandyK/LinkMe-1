@@ -112,7 +112,7 @@ export default function BecomeCreator() {
               <Crown className="w-3.5 h-3.5" /> JOIN 2,400+ CREATORS EARNING TODAY
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 leading-tight">
-              Turn Your Vibe Into<br /><span style={{ color: "#14b8a6" }}>Real Income</span>
+              Turn Your Passion Into<br /><span style={{ color: "#14b8a6" }}>Real Income</span>
             </h1>
             <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.8 }}>
               CRAVR gives creators the tools, audience, and revenue share to build a real income stream — through live streams, subscriptions, tips, and exclusive content.

@@ -166,10 +166,10 @@ export default function Home() {
               {liveCount > 0 ? `${liveCount} CREATORS LIVE NOW` : "LIVE STREAMING NOW"}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-              Connect. <span style={{ color: "#14b8a6" }}>Live.</span> Vibe.
+              Crave More. <span style={{ color: "#14b8a6" }}>Live</span> Now.
             </h1>
             <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.7 }}>
-              The premium hybrid dating and live interaction platform. Discover genuine connections with creators who match your vibe.
+              The premium adult live interaction platform. Connect with verified creators through live streams, exclusive content, and real conversations. 18+ only.
             </p>
             {/* Hero Search */}
             <div className="relative mb-5 max-w-sm">
