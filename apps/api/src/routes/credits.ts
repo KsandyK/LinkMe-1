@@ -6,13 +6,17 @@ import { getRevenueSharePct, splitEarning } from "../lib/revenue.js";
 
 const router = Router();
 
-// Credit pack definitions (mirror frontend CREDIT_PACKS)
-const PACKS: Record<string, { credits: number; usdCents: number }> = {
-  starter:    { credits: 100,  usdCents: 999  },
-  popular:    { credits: 500,  usdCents: 3499 },
-  value:      { credits: 1000, usdCents: 5999 },
-  mega:       { credits: 2500, usdCents: 9999 },
-  ultimate:   { credits: 5000, usdCents: 17499 },
+// Credit pack definitions — MUST match apps/web/src/pages/CreditsStore.tsx PACKAGES exactly.
+// bonusCredits are included in x-credits so CCBill webhook credits the full amount.
+const PACKS: Record<string, { credits: number; bonusCredits: number; usdCents: number }> = {
+  starter:  { credits: 100,   bonusCredits: 0,    usdCents: 999    },
+  basic:    { credits: 250,   bonusCredits: 5,    usdCents: 2499   },
+  value:    { credits: 500,   bonusCredits: 25,   usdCents: 4999   },
+  plus:     { credits: 1000,  bonusCredits: 75,   usdCents: 9999   },
+  pro:      { credits: 2500,  bonusCredits: 250,  usdCents: 24999  },
+  max:      { credits: 5000,  bonusCredits: 600,  usdCents: 49999  },
+  ultra:    { credits: 10000, bonusCredits: 1500, usdCents: 99999  },
+  diamond:  { credits: 20000, bonusCredits: 3500, usdCents: 199999 },
 };
 
 // ── GET /api/credits/balance ──────────────────────────────────────────────────
@@ -30,6 +34,8 @@ router.get("/credits/packs", (_req, res) => {
     Object.entries(PACKS).map(([id, pack]) => ({
       id,
       credits: pack.credits,
+      bonusCredits: pack.bonusCredits,
+      totalCredits: pack.credits + pack.bonusCredits,
       usdCents: pack.usdCents,
       usd: (pack.usdCents / 100).toFixed(2),
     })),
@@ -54,7 +60,10 @@ router.post("/credits/purchase", requireAuth, async (req, res) => {
     return;
   }
 
-  // Build CCBill URL
+  const totalCredits = pack.credits + pack.bonusCredits;
+
+  // Build CCBill URL — x-credits carries the TOTAL (base + bonus) so the
+  // webhook can add the correct amount to the user's balance in one shot.
   const params = new URLSearchParams({
     clientAccnum: process.env.CCBILL_CLIENT_ACCNUM ?? "",
     formName:     process.env.CCBILL_FORM_NAME ?? "",
@@ -65,18 +74,19 @@ router.post("/credits/purchase", requireAuth, async (req, res) => {
     currencyCode: "840",
     "x-userId":   req.user!.sub,
     "x-packId":   parsed.data.packId,
-    "x-credits":  pack.credits.toString(),
+    "x-credits":  totalCredits.toString(),
   });
 
   // Log pending transaction
   await db.transaction.create({
     data: {
       userId: req.user!.sub,
-      amount: pack.credits,
+      amount: totalCredits,
       usdAmount: pack.usdCents / 100,
       type: "CREDIT_PURCHASE",
       status: "PENDING",
       paymentMethod: "ccbill",
+      metadata: { packId: parsed.data.packId, baseCredits: pack.credits, bonusCredits: pack.bonusCredits },
     },
   });
 
@@ -107,18 +117,25 @@ router.post("/credits/webhook", async (req, res) => {
     return;
   }
 
+  const pack = PACKS[packId];
   await db.$transaction([
     db.user.update({ where: { id: userId }, data: { credits: { increment: credits } } }),
     db.transaction.create({
       data: {
         userId,
         amount: credits,
-        usdAmount: PACKS[packId]?.usdCents ? PACKS[packId].usdCents / 100 : null,
+        // usdAmount now resolvable for all 8 pack IDs
+        usdAmount: pack ? pack.usdCents / 100 : null,
         type: "CREDIT_PURCHASE",
         status: "COMPLETED",
         paymentMethod: "ccbill",
         reference: txId,
-        metadata: req.body,
+        metadata: {
+          ccbill: req.body,
+          packId,
+          baseCredits: pack?.credits ?? null,
+          bonusCredits: pack?.bonusCredits ?? null,
+        },
       },
     }),
   ]);

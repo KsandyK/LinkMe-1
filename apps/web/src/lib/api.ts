@@ -286,6 +286,8 @@ export const credits = {
 export interface CreditPack {
   id: string;
   credits: number;
+  bonusCredits: number;
+  totalCredits: number;
   usdCents: number;
   usd: string;
 }
@@ -435,6 +437,38 @@ export const content = {
     get<{ contentId: string; contentType: string; creditCost: number; createdAt: string }[]>(
       "/api/content/unlocked"
     ),
+};
+
+// ── Subscriptions ─────────────────────────────────────────────────────────────
+
+export const subscriptions = {
+  /** POST /api/subscriptions — subscribe to a creator (charges credits) */
+  subscribe: (creatorId: string, tier?: string) =>
+    post<{
+      ok: boolean;
+      subscription: { id: string; creatorId: string; endsAt: string; status: string };
+      creditCost: number;
+      creatorCredits: number;
+      processingFee: number;
+      platformFee: number;
+      revenueSharePct: number;
+      endsAt: string;
+    }>("/api/subscriptions", { creatorId, tier }),
+
+  /** GET /api/subscriptions — list active subscriptions for the logged-in user */
+  list: () =>
+    get<{
+      id: string;
+      creatorId: string;
+      tier: string;
+      endsAt: string;
+      creditCost: number;
+      creator: { username: string; profile: { displayName: string | null; avatarUrl: string | null } | null };
+    }[]>("/api/subscriptions"),
+
+  /** DELETE /api/subscriptions/:id — cancel a subscription (retains access until endsAt) */
+  cancel: (id: string) =>
+    del<{ ok: boolean; accessUntil: string }>(`/api/subscriptions/${id}`),
 };
 
 // ── Moderation ────────────────────────────────────────────────────────────────

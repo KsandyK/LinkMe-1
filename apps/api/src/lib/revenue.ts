@@ -72,11 +72,17 @@ export function splitEarning(
 }
 
 /**
- * Human-readable tier label for a given revenue share %.
+ * Human-readable tier label for a given revenue share % (and optionally the
+ * monthly USD earnings, needed to distinguish Growth from Established — both
+ * are 80% but Established is $5,001–$15,000/mo).
  */
-export function revenueTierLabel(pct: number): string {
+export function revenueTierLabel(pct: number, monthlyUsd?: number): string {
+  if (pct === 0.80) {
+    // Both Growth and Established share 80% — differentiate by monthly volume
+    if (monthlyUsd !== undefined && monthlyUsd >= 5001) return "Established";
+    return "Growth";
+  }
   const map: Record<number, string> = {
-    0.80: "Growth",
     0.83: "Elite",
     0.85: "Partner",
     0.87: "Senior Partner",
@@ -85,4 +91,27 @@ export function revenueTierLabel(pct: number): string {
     0.90: "Top Partner / Pinnacle",
   };
   return map[pct] ?? "Growth";
+}
+
+/**
+ * Returns the next tier the creator is working toward, with its threshold.
+ */
+export function nextRevenueTier(monthlyUsd: number): { label: string; thresholdUsd: number; pct: number } | null {
+  const tiers = [
+    { minUsd: 0,      label: "Growth",           pct: 0.80 },
+    { minUsd: 5001,   label: "Established",       pct: 0.80 },
+    { minUsd: 15001,  label: "Elite",             pct: 0.83 },
+    { minUsd: 25001,  label: "Partner",           pct: 0.85 },
+    { minUsd: 75001,  label: "Senior Partner",    pct: 0.87 },
+    { minUsd: 150001, label: "Exec Partner",      pct: 0.88 },
+    { minUsd: 300001, label: "Premier Partner",   pct: 0.89 },
+    { minUsd: 500001, label: "Top Partner",       pct: 0.90 },
+    { minUsd: 1000001, label: "Pinnacle",         pct: 0.90 },
+  ];
+  for (let i = tiers.length - 1; i >= 0; i--) {
+    if (monthlyUsd < tiers[i].minUsd) {
+      return { label: tiers[i].label, thresholdUsd: tiers[i].minUsd, pct: tiers[i].pct };
+    }
+  }
+  return null; // already at Pinnacle
 }

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
-import { getRevenueSharePct, revenueTierLabel, CREDITS_PER_USD, GRACE_PERIOD_DAYS } from "../lib/revenue.js";
+import { getRevenueSharePct, revenueTierLabel, nextRevenueTier, CREDITS_PER_USD, GRACE_PERIOD_DAYS } from "../lib/revenue.js";
 
 const router = Router();
 
@@ -42,11 +42,13 @@ router.get("/creator/dashboard", requireAuth, async (req, res) => {
 
   // Revenue tier info
   const revenueSharePct = getRevenueSharePct(creator.creatorActivatedAt, creator.monthlyEarnings);
+  const monthlyEarningsUsd = creator.monthlyEarnings / CREDITS_PER_USD;
   const daysSinceActivation = creator.creatorActivatedAt
     ? Math.floor((Date.now() - creator.creatorActivatedAt.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   const inGracePeriod = daysSinceActivation <= GRACE_PERIOD_DAYS;
   const graceDaysRemaining = inGracePeriod ? GRACE_PERIOD_DAYS - daysSinceActivation : 0;
+  const next = inGracePeriod ? null : nextRevenueTier(monthlyEarningsUsd);
 
   res.json({
     profile: creator,
@@ -57,10 +59,11 @@ router.get("/creator/dashboard", requireAuth, async (req, res) => {
     },
     revenueShare: {
       pct: revenueSharePct,
-      label: revenueTierLabel(revenueSharePct),
+      label: revenueTierLabel(revenueSharePct, monthlyEarningsUsd),
       inGracePeriod,
       graceDaysRemaining,
-      monthlyEarningsUsd: creator.monthlyEarnings / CREDITS_PER_USD,
+      monthlyEarningsUsd,
+      nextTier: next,   // { label, thresholdUsd, pct } or null if at Pinnacle
     },
     recentTips,
     recentSubs,
@@ -196,6 +199,22 @@ router.patch("/creator/settings", requireAuth, async (req, res) => {
     data: parsed.data,
   });
   res.json(creator);
+});
+
+// ── POST /api/creator/monthly-reset — ADMIN cron endpoint ────────────────────
+// Resets monthlyEarnings to 0 for all creators so revenue tiers recalculate
+// against the new month's earnings. Call via cron job on the 1st of each month.
+router.post("/creator/monthly-reset", requireAuth, async (req, res) => {
+  if (req.user!.role !== "ADMIN") {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const { count } = await db.creatorProfile.updateMany({
+    data: { monthlyEarnings: 0 },
+  });
+
+  res.json({ ok: true, creatorsReset: count, resetAt: new Date() });
 });
 
 export default router;
