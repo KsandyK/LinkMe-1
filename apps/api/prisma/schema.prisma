@@ -174,7 +174,8 @@ model AgeVerification {
   userId         String          @unique
   status         AgeVerifyStatus @default(PENDING)
   documentType   String?         // passport | drivers_license | national_id
-  documentRef    String?         // encrypted S3 key — NOT the raw file
+  documentRef    String?         // encrypted S3 key — front of ID
+  selfieRef      String?         // encrypted S3 key — selfie holding ID
   dateOfBirth    String?         // YYYY-MM-DD, stored after verify, doc purged
   verifiedAt     DateTime?
   rejectedAt     DateTime?

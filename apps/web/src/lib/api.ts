@@ -364,6 +364,18 @@ export const creator = {
 // ── Age Verification ──────────────────────────────────────────────────────────
 // Routes: GET/POST /api/age-verify/*
 
+export interface AgeVerifyQueueItem {
+  id: string;
+  userId: string;
+  status: string;
+  documentType: string | null;
+  dateOfBirth: string | null;
+  createdAt: string;
+  hasDocument: boolean;
+  hasSelfie: boolean;
+  user: { id: string; username: string; email: string | null };
+}
+
 export const ageVerify = {
   /** GET /api/age-verify/status */
   status: () => get<{ status: string; rejectedReason?: string }>("/api/age-verify/status"),
@@ -372,13 +384,24 @@ export const ageVerify = {
   submit: (data: { documentType: "passport" | "drivers_license" | "national_id"; dateOfBirth: string }) =>
     post<{ verificationId: string; status: string; message: string }>("/api/age-verify/submit", data),
 
-  /** POST /api/age-verify/upload-url — returns presigned S3 URL + key */
-  uploadUrl: () =>
-    post<{ uploadUrl: string; s3Key: string; expiresIn: number; fields: Record<string, string> }>("/api/age-verify/upload-url"),
+  /** POST /api/age-verify/upload-url — returns presigned S3 PUT URL for direct browser upload */
+  uploadUrl: (data: { type: "id" | "selfie"; contentType: string }) =>
+    post<{ uploadUrl: string; s3Key: string; expiresIn: number }>("/api/age-verify/upload-url", data),
 
-  /** POST /api/age-verify/confirm — called after S3 upload completes */
+  /** POST /api/age-verify/confirm — called after both uploads complete */
   confirm: () =>
     post<{ status: string; message: string }>("/api/age-verify/confirm"),
+
+  /** Admin: GET /api/age-verify/queue */
+  queue: () => get<AgeVerifyQueueItem[]>("/api/age-verify/queue"),
+
+  /** Admin: GET /api/age-verify/:userId/view-url?type=id|selfie */
+  viewUrl: (userId: string, type: "id" | "selfie") =>
+    get<{ url: string; expiresIn: number; type: string }>(`/api/age-verify/${userId}/view-url?type=${type}`),
+
+  /** Admin: PATCH /api/age-verify/:userId */
+  review: (userId: string, data: { action: "approve" | "reject"; reason?: string }) =>
+    patch<{ id: string; status: string; userId: string }>(`/api/age-verify/${userId}`, data),
 };
 
 // ── Moderation ────────────────────────────────────────────────────────────────

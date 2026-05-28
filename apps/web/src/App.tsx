@@ -37,8 +37,9 @@ const Account          = lazy(() => import("./pages/Account"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const CreatorLiveStudio = lazy(() => import("./pages/CreatorLiveStudio"));
 const Billing          = lazy(() => import("./pages/Billing"));
-const AgeVerification  = lazy(() => import("./pages/AgeVerification"));
-const LegalPages       = lazy(() => import("./pages/LegalPages"));
+const AgeVerification    = lazy(() => import("./pages/AgeVerification"));
+const AdminVerifyQueue   = lazy(() => import("./pages/AdminVerifyQueue"));
+const LegalPages         = lazy(() => import("./pages/LegalPages"));
 
 // ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
@@ -72,6 +73,7 @@ function Router() {
         <Route path="/creator" component={CreatorDashboard} />
         <Route path="/billing" component={Billing} />
         <Route path="/verify-age" component={AgeVerification} />
+        <Route path="/admin/verify-queue" component={AdminVerifyQueue} />
         <Route path="/legal" component={LegalHub} />
         <Route path="/legal/:page" component={LegalPages} />
         <Route path="/404" component={NotFound} />
