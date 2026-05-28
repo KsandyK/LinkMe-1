@@ -139,7 +139,7 @@ export function Navigation() {
                   {[
                     { href: "/account", label: "My Account", icon: User },
                     { href: "/creator", label: "Creator Dashboard", icon: LayoutDashboard },
-                    { href: "/become-creator", label: "Become a Creator", icon: Crown },
+                    { href: "/become-creator", label: "Become a Cravr", icon: Crown },
                   ].map(item => (
                     <Link key={item.href} href={item.href}>
                       <div onClick={() => setUserMenuOpen(false)}
