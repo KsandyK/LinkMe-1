@@ -15,14 +15,14 @@ export default function PrivacyPolicy() {
 
         <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 mb-6">
           <p className="text-primary text-sm font-semibold">🔒 Your Privacy Matters</p>
-          <p className="text-muted-foreground text-xs mt-1">LinkMe is committed to protecting your privacy. We handle adult content and interactions with the highest discretion. Your billing statement will show a neutral merchant name — never "LinkMe."</p>
+          <p className="text-muted-foreground text-xs mt-1">LinkME is committed to protecting your privacy. We handle adult content and interactions with the highest discretion. Your billing statement will show a neutral merchant name — never "LinkME."</p>
         </div>
 
         <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
           {[
             {
               title: "1. Information We Collect",
-              content: `1.1 Account Information: When you register, we collect your email address, username, date of birth (to verify age), and password (hashed).\n\n1.2 Payment Information: Credit card and billing information is handled exclusively by CCBill, our payment processor. LinkMe does not store your full payment card details.\n\n1.3 Usage Data: We collect information about how you use the platform including pages visited, content unlocked, streams watched, messages sent, and credits spent.\n\n1.4 Device & Technical Data: IP address, browser type, operating system, device identifiers, and time zone.\n\n1.5 Communications: Content of messages sent through the platform may be stored for safety and moderation purposes.\n\n1.6 Cookies: We use cookies and similar tracking technologies to maintain your session and improve the user experience.`,
+              content: `1.1 Account Information: When you register, we collect your email address, username, date of birth (to verify age), and password (hashed).\n\n1.2 Payment Information: Credit card and billing information is handled exclusively by CCBill, our payment processor. LinkME does not store your full payment card details.\n\n1.3 Usage Data: We collect information about how you use the platform including pages visited, content unlocked, streams watched, messages sent, and credits spent.\n\n1.4 Device & Technical Data: IP address, browser type, operating system, device identifiers, and time zone.\n\n1.5 Communications: Content of messages sent through the platform may be stored for safety and moderation purposes.\n\n1.6 Cookies: We use cookies and similar tracking technologies to maintain your session and improve the user experience.`,
             },
             {
               title: "2. How We Use Your Information",
@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "3. Billing Discretion",
-              content: `We understand the sensitive nature of adult platform billing. All charges will appear on your bank or credit card statement as "CCBILL*LinkMe" or a similar neutral descriptor. We never use "adult," "dating," or explicit language in billing descriptors.\n\nFor maximum discretion, we recommend using a prepaid card or virtual card number available from most banks.`,
+              content: `We understand the sensitive nature of adult platform billing. All charges will appear on your bank or credit card statement as "CCBILL*LinkME" or a similar neutral descriptor. We never use "adult," "dating," or explicit language in billing descriptors.\n\nFor maximum discretion, we recommend using a prepaid card or virtual card number available from most banks.`,
             },
             {
               title: "4. Data Sharing",
@@ -38,11 +38,11 @@ export default function PrivacyPolicy() {
             },
             {
               title: "5. Creator Interactions",
-              content: `Creators on LinkMe are independent contractors. While we facilitate interactions, please be aware:\n\n• Creators can see your username and public profile when you interact with them\n• Messages you send are visible to the recipient creator\n• Gifts and tips sent are visible to the creator\n• Creators cannot see your real name, payment information, or physical address`,
+              content: `Creators on LinkME are independent contractors. While we facilitate interactions, please be aware:\n\n• Creators can see your username and public profile when you interact with them\n• Messages you send are visible to the recipient creator\n• Gifts and tips sent are visible to the creator\n• Creators cannot see your real name, payment information, or physical address`,
             },
             {
               title: "6. Data Retention",
-              content: `We retain your account data for as long as your account is active. Upon account deletion:\n\n• Account data is deleted within 30 days\n• Payment records are retained for 7 years as required by law\n• Anonymized usage data may be retained indefinitely\n\nYou may request deletion of your account at any time by contacting support@LinkMe.com.`,
+              content: `We retain your account data for as long as your account is active. Upon account deletion:\n\n• Account data is deleted within 30 days\n• Payment records are retained for 7 years as required by law\n• Anonymized usage data may be retained indefinitely\n\nYou may request deletion of your account at any time by contacting support@LinkME.com.`,
             },
             {
               title: "7. Security",
@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "8. Your Rights (GDPR / CCPA)",
-              content: `Depending on your location, you may have the following rights:\n\n• Right to access your personal data\n• Right to correct inaccurate data\n• Right to deletion ("right to be forgotten")\n• Right to data portability\n• Right to restrict processing\n• Right to opt out of marketing communications\n\nTo exercise these rights, contact: legal@LinkMe.com\n\nCalifornia residents have additional rights under the CCPA, including the right to know what personal information is sold and the right to opt-out.`,
+              content: `Depending on your location, you may have the following rights:\n\n• Right to access your personal data\n• Right to correct inaccurate data\n• Right to deletion ("right to be forgotten")\n• Right to data portability\n• Right to restrict processing\n• Right to opt out of marketing communications\n\nTo exercise these rights, contact: legal@LinkME.com\n\nCalifornia residents have additional rights under the CCPA, including the right to know what personal information is sold and the right to opt-out.`,
             },
             {
               title: "9. Cookies Policy",
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "10. Contact",
-              content: `Privacy inquiries:\n\nLinkMe Inc. — Data Privacy Officer\nlegal@LinkMe.com\n\nFor GDPR requests (EU residents):\nlegal@LinkMe.com`,
+              content: `Privacy inquiries:\n\nLinkME LLC — Data Privacy Officer\nlegal@LinkME.com\n\nFor GDPR requests (EU residents):\nlegal@LinkME.com`,
             },
           ].map(section => (
             <div key={section.title} className="p-5 rounded-xl border border-border bg-card">

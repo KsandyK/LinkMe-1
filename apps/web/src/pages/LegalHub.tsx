@@ -71,19 +71,19 @@ const LEGAL_DOCS = [
 const CONTACTS = [
   {
     label: "General Support",
-    email: "support@LinkMe.com",
+    email: "support@LinkME.com",
     desc: "Billing, account issues, safety reports, appeals",
     icon: "💬",
   },
   {
     label: "Creator Support",
-    email: "creators@LinkMe.com",
+    email: "creators@LinkME.com",
     desc: "Payouts, verification, content disputes, creator tools",
     icon: "🎬",
   },
   {
     label: "Legal & Compliance",
-    email: "legal@LinkMe.com",
+    email: "legal@LinkME.com",
     desc: "DMCA, law enforcement, GDPR, §2257 records, privacy requests",
     icon: "⚖️",
   },
@@ -96,7 +96,7 @@ export default function LegalHub() {
 
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-bold tracking-widest mb-3" style={{ color: "#14b8a6" }}>LINKME INC.</p>
+          <p className="text-xs font-bold tracking-widest mb-3" style={{ color: "#14b8a6" }}>LinkME LLC</p>
           <h1 className="text-4xl font-black text-white mb-2">Legal Centre</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
             All legal documents, policies, and contact information in one place.
@@ -152,7 +152,7 @@ export default function LegalHub() {
 
         {/* Footer note */}
         <p className="text-xs text-center mt-8" style={{ color: "rgba(255,255,255,0.2)" }}>
-          © 2026 LinkMe Inc. · 1234 Platform Way, Wilmington, DE 19801, USA
+          © 2026 LinkME LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA
         </p>
       </div>
     </div>
