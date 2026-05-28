@@ -404,6 +404,39 @@ export const ageVerify = {
     patch<{ id: string; status: string; userId: string }>(`/api/age-verify/${userId}`, data),
 };
 
+// ── Content ───────────────────────────────────────────────────────────────────
+
+export const content = {
+  /**
+   * POST /api/content/unlock — unlock a piece of premium content.
+   * Deducts credits, writes ContentUnlock + CreatorEarning, returns the
+   * server-confirmed buyer balance.
+   */
+  unlock: (data: {
+    contentId:     string;
+    creatorUserId: string;
+    creditCost:    number;
+    contentType?:  "PHOTO" | "VIDEO" | "STREAM" | "PRIVATE_MESSAGE";
+  }) =>
+    post<{
+      ok: boolean;
+      contentId: string;
+      creditCost: number;
+      creatorCredits: number;
+      processingFee: number;
+      platformFee: number;
+      revenueSharePct: number;
+      buyerBalance: number;
+      alreadyUnlocked?: boolean;
+    }>("/api/content/unlock", data),
+
+  /** GET /api/content/unlocked — list of contentIds already unlocked by the user */
+  unlocked: () =>
+    get<{ contentId: string; contentType: string; creditCost: number; createdAt: string }[]>(
+      "/api/content/unlocked"
+    ),
+};
+
 // ── Moderation ────────────────────────────────────────────────────────────────
 
 export const moderation = {

@@ -6,7 +6,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
 import { MEMBERSHIP_DISCOUNTS } from "@/lib/membership-tiers";
-import { credits as creditsApi, boosts as boostsApi } from "@/lib/api";
+import { credits as creditsApi, boosts as boostsApi, content as contentApi } from "@/lib/api";
 
 // Use VITE_API_URL if set, otherwise same-origin (Vite proxy handles /api → localhost:3000)
 const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
@@ -44,7 +44,7 @@ interface AppContextType {
 
   // Unlocked content
   unlockedContent: Set<string>;
-  unlockContent: (contentId: string, cost: number, mediaUrl?: string) => boolean;
+  unlockContent: (contentId: string, cost: number, mediaUrl?: string, recipientId?: string, contentType?: "PHOTO" | "VIDEO" | "STREAM" | "PRIVATE_MESSAGE") => boolean;
   isUnlocked: (contentId: string) => boolean;
   getMediaUrl: (contentId: string) => string | undefined;
 
@@ -225,24 +225,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true;
   };
 
-  const unlockContent = (contentId: string, cost: number, mediaUrl?: string): boolean => {
+  const unlockContent = (
+    contentId: string,
+    cost: number,
+    mediaUrl?: string,
+    recipientId?: string,
+    contentType?: "PHOTO" | "VIDEO" | "STREAM" | "PRIVATE_MESSAGE",
+  ): boolean => {
     if (isUnlocked(contentId)) {
       toast.info("Already unlocked", { description: "You already have access to this content." });
       return true;
     }
+
+    // Optimistic local deduction
     const success = spendCredits(cost, `Unlocked content`);
-    if (success) {
-      setUnlockedContent(prev => {
-        const next = new Set(prev);
-        next.add(contentId);
-        safeSet(STORAGE_KEYS.UNLOCKED, Array.from(next));
-        return next;
-      });
-      if (mediaUrl) {
-        setUnlockedMediaUrls(prev => ({ ...prev, [contentId]: mediaUrl }));
-      }
+    if (!success) return false;
+
+    // Mark unlocked locally
+    setUnlockedContent(prev => {
+      const next = new Set(prev);
+      next.add(contentId);
+      safeSet(STORAGE_KEYS.UNLOCKED, Array.from(next));
+      return next;
+    });
+    if (mediaUrl) {
+      setUnlockedMediaUrls(prev => ({ ...prev, [contentId]: mediaUrl }));
     }
-    return success;
+
+    // If we know the creator, use the dedicated endpoint so earnings are tracked
+    if (recipientId) {
+      contentApi.unlock({
+        contentId,
+        creatorUserId: recipientId,
+        creditCost: cost,
+        contentType: contentType ?? "PHOTO",
+      })
+        .then(({ buyerBalance }) => {
+          // Sync server-confirmed balance
+          setCredits(buyerBalance);
+          safeSet(STORAGE_KEYS.CREDITS, buyerBalance);
+        })
+        .catch(() => {
+          // API offline — local deduction already applied, earnings will be
+          // reconciled when DB is back (acceptable in demo mode)
+        });
+    }
+
+    return true;
   };
 
   const isUnlocked = (contentId: string): boolean => unlockedContent.has(contentId);

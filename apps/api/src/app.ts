@@ -17,6 +17,7 @@ import creatorRouter   from "./routes/creator.js";
 import verifyAgeRouter from "./routes/verify-age.js";
 import moderationRouter from "./routes/moderation.js";
 import streamsRouter   from "./routes/streams.js";
+import contentRouter   from "./routes/content.js";
 import healthRouter    from "./routes/health.js";
 
 const app = express();
@@ -97,6 +98,7 @@ api.use(creatorRouter);
 api.use(verifyAgeRouter);
 api.use(moderationRouter);
 api.use(streamsRouter);
+api.use(contentRouter);
 
 app.use("/api", api);
 

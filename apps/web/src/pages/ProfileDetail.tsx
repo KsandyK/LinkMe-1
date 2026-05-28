@@ -285,7 +285,13 @@ export default function ProfileDetail() {
                 const isUnlocked = unlockedContent.has(item.id);
                 return (
                   <div key={item.id} className="vl-card overflow-hidden cursor-pointer group"
-                    onClick={() => !isUnlocked && unlockContent(item.id, item.creditCost)}>
+                    onClick={() => !isUnlocked && unlockContent(
+                      item.id,
+                      item.creditCost,
+                      undefined,
+                      creator?.userId,
+                      item.type === "video" ? "VIDEO" : "PHOTO",
+                    )}>
                     <div className="relative h-28 overflow-hidden">
                       <img
                         src={item.thumbnailUrl}

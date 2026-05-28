@@ -149,8 +149,9 @@ router.post("/creator/approve/:userId", requireAuth, async (req, res) => {
     return;
   }
 
+  const targetUserId = String(req.params.userId);
   const creator = await db.creatorProfile.findUnique({
-    where: { userId: req.params.userId },
+    where: { userId: targetUserId },
   });
   if (!creator) {
     res.status(404).json({ error: "Creator profile not found" });
@@ -163,7 +164,7 @@ router.post("/creator/approve/:userId", requireAuth, async (req, res) => {
 
   const now = new Date();
   await db.creatorProfile.update({
-    where: { userId: req.params.userId },
+    where: { userId: targetUserId },
     data: {
       isApproved: true,
       creatorActivatedAt: now,  // starts 90-day grace period

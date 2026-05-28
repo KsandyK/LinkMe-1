@@ -59,7 +59,8 @@ router.post("/gifts/send", requireAuth, async (req, res) => {
     : 0;
   const { processingFee, creatorCredits, platformFee } = splitEarning(gift.creditCost, revenueSharePct);
 
-  const txOps: Parameters<typeof db.$transaction>[0] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const txOps: any[] = [
     db.user.update({ where: { id: req.user!.sub }, data: { credits: { decrement: gift.creditCost } } }),
     db.transaction.create({
       data: {
@@ -107,7 +108,8 @@ router.post("/gifts/send", requireAuth, async (req, res) => {
     );
   }
 
-  const [, , giftRecord] = await db.$transaction(txOps);
+  const txResults = await db.$transaction(txOps) as any[];
+  const giftRecord = txResults[2];
 
   db.notification.create({
     data: {

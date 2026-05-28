@@ -162,7 +162,8 @@ router.post("/credits/tip", requireAuth, async (req, res) => {
     : 0;
   const { processingFee, creatorCredits, platformFee } = splitEarning(amount, revenueSharePct);
 
-  const ops: Parameters<typeof db.$transaction>[0] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ops: any[] = [
     db.user.update({ where: { id: req.user!.sub }, data: { credits: { decrement: amount } } }),
     db.transaction.create({
       data: {
@@ -211,6 +212,44 @@ router.post("/credits/tip", requireAuth, async (req, res) => {
     platformFee,
     revenueSharePct,
   });
+});
+
+// ── POST /api/credits/spend — generic server-confirmed spend ─────────────────
+// Called by the frontend AppContext after an optimistic local deduction.
+// Records the spend as a Transaction and returns the server-side balance.
+const SpendSchema = z.object({
+  amount: z.number().int().min(1),
+  reason: z.string().max(200).optional(),
+});
+
+router.post("/credits/spend", requireAuth, async (req, res) => {
+  const parsed = SpendSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Validation failed" });
+    return;
+  }
+  const { amount, reason } = parsed.data;
+
+  const user = await db.user.findUnique({ where: { id: req.user!.sub }, select: { credits: true } });
+  if (!user || user.credits < amount) {
+    res.status(402).json({ error: "Insufficient credits" });
+    return;
+  }
+
+  const [updated] = await db.$transaction([
+    db.user.update({ where: { id: req.user!.sub }, data: { credits: { decrement: amount } } }),
+    db.transaction.create({
+      data: {
+        userId: req.user!.sub,
+        amount: -amount,
+        type: "CREDIT_SPEND_TIP",   // generic spend bucket
+        status: "COMPLETED",
+        metadata: { reason: reason ?? "Credits spent" },
+      },
+    }),
+  ]);
+
+  res.json({ balance: updated.credits });
 });
 
 // ── GET /api/credits/transactions ────────────────────────────────────────────
