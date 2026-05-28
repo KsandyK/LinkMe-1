@@ -1,5 +1,5 @@
 /**
- * LINKME — VIP Lounge
+ * CRAVR — VIP Lounge
  * Velvet Dark Design System
  * Gated to All-Access (10 sessions/month) and above.
  */

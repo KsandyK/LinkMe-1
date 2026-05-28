@@ -336,7 +336,7 @@ export default function Account() {
     try {
       await fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/api/auth/logout-all`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("linkme_token") ?? ""}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("cravr_token") ?? ""}` },
       });
     } catch {/* ignore */}
     logout();
@@ -358,7 +358,7 @@ export default function Account() {
     try {
       await fetch(`${(import.meta as any).env?.VITE_API_URL ?? "http://localhost:3000"}/api/auth/me`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("linkme_token") ?? ""}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("cravr_token") ?? ""}` },
       });
     } catch {/* ignore — demo mode */}
     setDeleted(true);
@@ -376,7 +376,7 @@ export default function Account() {
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Account Deleted</h2>
           <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Your account and all associated data have been permanently removed from LinkMe.
+            Your account and all associated data have been permanently removed from CRAVR.
           </p>
           <Link href="/">
             <button className="vl-btn-primary px-6 py-2.5 text-sm">Return to Home</button>

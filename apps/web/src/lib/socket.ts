@@ -1,5 +1,5 @@
 /**
- * LINKME — WebSocket Client
+ * CRAVR — WebSocket Client
  *
  * Two channels on separate WS connections:
  *   LiveSocket  → ws://host:3001/ws/live   (streams, WebRTC signaling)
@@ -18,7 +18,7 @@ type MessageHandler = (data: Record<string, unknown>) => void;
 
 // ── Socket wrapper ────────────────────────────────────────────────────────────
 
-export class LinkMeSocket {
+export class CravrSocket {
   private ws: WebSocket | null = null;
   private token: string;
   private path: string;
@@ -113,24 +113,24 @@ export class LinkMeSocket {
 // ── Factory helpers ───────────────────────────────────────────────────────────
 
 export function createLiveSocket(token: string) {
-  return new LinkMeSocket("/ws/live", token);
+  return new CravrSocket("/ws/live", token);
 }
 
 export function createMsgSocket(token: string) {
-  return new LinkMeSocket("/ws/msg", token);
+  return new CravrSocket("/ws/msg", token);
 }
 
 // ── Legacy helpers (kept for backward compatibility) ──────────────────────────
 
-let _liveSocket: LinkMeSocket | null = null;
-let _msgSocket: LinkMeSocket | null = null;
+let _liveSocket: CravrSocket | null = null;
+let _msgSocket: CravrSocket | null = null;
 
-export function getLiveSocket(token?: string): LinkMeSocket | null {
+export function getLiveSocket(token?: string): CravrSocket | null {
   if (token && !_liveSocket) _liveSocket = createLiveSocket(token);
   return _liveSocket;
 }
 
-export function getMsgSocket(token?: string): LinkMeSocket | null {
+export function getMsgSocket(token?: string): CravrSocket | null {
   if (token && !_msgSocket) _msgSocket = createMsgSocket(token);
   return _msgSocket;
 }

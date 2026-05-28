@@ -115,7 +115,7 @@ export default function BecomeCreator() {
               Turn Your Vibe Into<br /><span style={{ color: "#14b8a6" }}>Real Income</span>
             </h1>
             <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.8 }}>
-              LinkMe gives creators the tools, audience, and revenue share to build a real income stream — through live streams, subscriptions, tips, and exclusive content.
+              CRAVR gives creators the tools, audience, and revenue share to build a real income stream — through live streams, subscriptions, tips, and exclusive content.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/register">
@@ -147,7 +147,7 @@ export default function BecomeCreator() {
       {/* Perks grid */}
       <section className="py-14">
         <div className="container">
-          <h2 className="vl-section-title text-center mb-2">Why Creators Choose LinkMe</h2>
+          <h2 className="vl-section-title text-center mb-2">Why Creators Choose CRAVR</h2>
           <p className="text-center text-sm mb-9" style={{ color: "rgba(255,255,255,0.45)" }}>Everything you need to build, grow, and monetize your audience.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {PERKS.map(p => (
@@ -249,7 +249,7 @@ export default function BecomeCreator() {
                     Before You Apply
                   </h2>
                   <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-                    Becoming a creator on LINKME gives you access to livestreaming, tipping, subscription tiers, and a dedicated creator dashboard. Here's what you'll need:
+                    Becoming a creator on CRAVR gives you access to livestreaming, tipping, subscription tiers, and a dedicated creator dashboard. Here's what you'll need:
                   </p>
                   <div className="space-y-3 mb-6">
                     {[
@@ -464,7 +464,7 @@ export default function BecomeCreator() {
             <>
               <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
               <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Join thousands of creators already building their income on LinkMe. Setup takes less than 5 minutes.
+                Join thousands of creators already building their income on CRAVR. Setup takes less than 5 minutes.
               </p>
               <Link href="/register">
                 <button className="vl-btn-primary px-10 py-3 text-sm">Create Creator Account — Free</button>

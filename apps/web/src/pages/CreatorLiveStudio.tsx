@@ -1,5 +1,5 @@
 /**
- * LINKME — Creator Live Studio
+ * CRAVR — Creator Live Studio
  * Full streaming control center for creators.
  *
  * Competitive feature parity:
@@ -509,7 +509,7 @@ export default function CreatorLiveStudio() {
     setIsLive(true);
     setChatMsgs([{
       id: "welcome",
-      username: "LinkMe",
+      username: "CRAVR",
       text: `🎉 ${user?.username ?? "Creator"} is now live! Welcome everyone!`,
       creditTip: 0,
       isNotice: true,

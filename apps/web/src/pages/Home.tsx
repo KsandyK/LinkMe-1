@@ -156,7 +156,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden" style={{ minHeight: "420px" }}>
         <div className="absolute inset-0">
-          <img src={HERO_BG} alt="LINKME" className="w-full h-full object-cover" />
+          <img src={HERO_BG} alt="CRAVR" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(9,9,26,0.92) 0%, rgba(9,9,26,0.6) 50%, rgba(9,9,26,0.85) 100%)" }} />
         </div>
         <div className="relative z-10 container py-14 md:py-20">
@@ -392,13 +392,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── New to LINKME ────────────────────────────────────────────────── */}
+      {/* ── New to CRAVR ────────────────────────────────────────────────── */}
       <section className="py-10">
         <div className="container">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" style={{ color: "#a78bfa" }} />
-              <h2 className="vl-section-title">New to LINKME</h2>
+              <h2 className="vl-section-title">New to CRAVR</h2>
             </div>
             <Link href="/profiles?sort=newest">
               <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>See All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
@@ -463,10 +463,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why LinkMe */}
+      {/* Why CRAVR */}
       <section className="py-12">
         <div className="container">
-          <h2 className="vl-section-title text-center mb-8">Why LinkMe</h2>
+          <h2 className="vl-section-title text-center mb-8">Why CRAVR</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { icon: Shield, title: "Verified Creators", desc: "Every creator is age-verified and identity-confirmed before going live.", color: "#14b8a6" },

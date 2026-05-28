@@ -1,5 +1,5 @@
 /**
- * LinkME — Legal Content (download source)
+ * CRAVR — Legal Content (download source)
  * Synced with LegalPages.tsx v3 — no CCBill references.
  * These strings are served as downloadable .txt files via downloadLegalDoc().
  */
@@ -13,13 +13,13 @@ export interface LegalDoc {
 export const TERMS_OF_SERVICE: LegalDoc = {
   key: "terms",
   title: "Terms of Service",
-  content: `LinkME LLC – TERMS OF SERVICE
+  content: `Cravr – TERMS OF SERVICE
 Version 3.0 | Effective: May 27, 2026
 
 IMPORTANT: This agreement contains a mandatory arbitration clause and class action waiver (Section 11).
 
 1. ACCEPTANCE
-By accessing LinkME you agree to these Terms, our Privacy Policy, Cookie Policy, and Code of Conduct. You must be 18+ to use this Service.
+By accessing CRAVR you agree to these Terms, our Privacy Policy, Cookie Policy, and Code of Conduct. You must be 18+ to use this Service.
 
 2. ELIGIBILITY
 You must be at least 18 years of age. You represent under penalty of perjury that you are 18+ and legally permitted to access adult content in your jurisdiction.
@@ -28,41 +28,41 @@ You must be at least 18 years of age. You represent under penalty of perjury tha
 Credits are virtual currency with no cash value. All purchases are final and non-refundable except as required by law or as described in our Refund Policy. Membership subscriptions auto-renew; cancel 48 hours before renewal.
 
 4. CHARGEBACKS
-Contact support@LinkME.com before initiating any payment dispute. Chargebacks without prior contact result in account suspension and liability for an administrative processing fee.
+Contact support@cravr.fun before initiating any payment dispute. Chargebacks without prior contact result in account suspension and liability for an administrative processing fee.
 
 5. USER CONDUCT & FOSTA-SESTA
-You may not use LinkME to facilitate prostitution, sex trafficking, or solicitation of real-world sexual services. Any violation is reported to NCMEC and law enforcement immediately. Full conduct rules in our Code of Conduct.
+You may not use CRAVR to facilitate prostitution, sex trafficking, or solicitation of real-world sexual services. Any violation is reported to NCMEC and law enforcement immediately. Full conduct rules in our Code of Conduct.
 
 6. CONTENT & IP
 Creators retain copyright. Purchasing content grants a personal, non-transferable viewing license only. Do not download, screenshot, or redistribute content.
 
 7. PRIVACY
-Governed by our Privacy Policy and Cookie Policy. All billing charges appear as "LinkME" on your statement.
+Governed by our Privacy Policy and Cookie Policy. All billing charges appear as "CRAVR" on your statement.
 
 8. LIMITATION OF LIABILITY
-LinkME's liability is limited to the greater of amounts paid in the prior 12 months or $100 USD. No liability for indirect, incidental, or consequential damages.
+CRAVR's liability is limited to the greater of amounts paid in the prior 12 months or $100 USD. No liability for indirect, incidental, or consequential damages.
 
 9. TERMINATION
-LinkME may terminate accounts with or without cause. Credits are forfeited on termination for cause.
+CRAVR may terminate accounts with or without cause. Credits are forfeited on termination for cause.
 
 10. GOVERNING LAW
 Laws of the State of Delaware. Subject to mandatory arbitration (Section 11).
 
 11. MANDATORY ARBITRATION & CLASS ACTION WAIVER
 ALL DISPUTES RESOLVED BY BINDING INDIVIDUAL ARBITRATION (AAA Consumer Rules). YOU WAIVE THE RIGHT TO JURY TRIAL AND CLASS ACTION PARTICIPATION.
-- Send written Notice of Dispute to legal@LinkME.com first (30-day informal resolution period)
+- Send written Notice of Dispute to legal@cravr.fun first (30-day informal resolution period)
 - AAA arbitration in Sheridan, WY or by videoconference
 - Small claims court exception applies
-- 30-day opt-out right: email legal@LinkME.com within 30 days of first acceptance
+- 30-day opt-out right: email legal@cravr.fun within 30 days of first acceptance
 
-Legal: legal@LinkME.com | 30 N Gould St Ste N, Sheridan, WY 82801, USA
+Legal: legal@cravr.fun | 30 N Gould St Ste N, Sheridan, WY 82801, USA
 © 2026 LinkME LLC All rights reserved.`,
 };
 
 export const PRIVACY_POLICY: LegalDoc = {
   key: "privacy",
   title: "Privacy Policy",
-  content: `LinkME LLC – PRIVACY POLICY
+  content: `Cravr – PRIVACY POLICY
 Version 2.0 | Effective: May 27, 2026
 
 1. INFORMATION WE COLLECT
@@ -90,18 +90,18 @@ We do NOT sell your personal information. We share only with:
 AES-256 encryption at rest, TLS 1.3 in transit, PCI DSS Level 1 payment processing.
 
 5. YOUR RIGHTS
-Access, correct, or delete your data: legal@LinkME.com
+Access, correct, or delete your data: legal@cravr.fun
 
 6. CALIFORNIA RESIDENTS (CCPA)
 - Right to know, delete, correct, and opt-out of sale (we don't sell data)
 - Right to non-discrimination
-- Submit requests: legal@LinkME.com (Subject: "CCPA Request")
+- Submit requests: legal@cravr.fun (Subject: "CCPA Request")
 - Response within 45 days
 
 7. EU/EEA/UK RESIDENTS (GDPR)
 Legal bases: contract performance, legal obligation, legitimate interests, consent.
 Rights: access, rectification, erasure, portability, objection, restriction.
-Submit requests: legal@LinkME.com | Response within 30 days.
+Submit requests: legal@cravr.fun | Response within 30 days.
 Right to lodge complaint with your local DPA.
 
 8. COOKIES
@@ -110,7 +110,7 @@ See our Cookie Policy for full details on cookies and your opt-out options.
 9. DATA RETENTION
 Account data: 1 year post-termination. Payment records: 7 years. Age verification: 5 years.
 
-Privacy: legal@LinkME.com | GDPR: legal@LinkME.com
+Privacy: legal@cravr.fun | GDPR: legal@cravr.fun
 30 N Gould St Ste N, Sheridan, WY 82801, USA
 © 2026 LinkME LLC All rights reserved.`,
 };
@@ -118,13 +118,13 @@ Privacy: legal@LinkME.com | GDPR: legal@LinkME.com
 export const CREATOR_AGREEMENT: LegalDoc = {
   key: "creator",
   title: "Creator Agreement & NDA",
-  content: `LinkME LLC – CREATOR AGREEMENT & NDA
+  content: `Cravr – CREATOR AGREEMENT & NDA
 Version 3.0 | Effective: May 27, 2026
 
 PART I — CREATOR SERVICES AGREEMENT
 
 1. INDEPENDENT CONTRACTOR
-You are an independent contractor. You are responsible for your own taxes. LinkME issues Form 1099-NEC for US creators earning $600+.
+You are an independent contractor. You are responsible for your own taxes. CRAVR issues Form 1099-NEC for US creators earning $600+.
 
 2. REVENUE SHARE TIERS
 
@@ -154,10 +154,10 @@ Bring 25 qualifying referrals to the platform using your unique Creator/Streamer
 
 3. § 2257 RECORD-KEEPING & CUSTODIAN OF RECORDS
 Compliance with 18 U.S.C. § 2257 is mandatory. Maintain age verification records for all depicted individuals for 5+ years.
-Custodian of Records: Chief Compliance Officer, LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801. EIN: 42-2815300. legal@LinkME.com.
+Custodian of Records: Chief Compliance Officer, LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801. EIN: 42-2815300. legal@cravr.fun.
 
 4. FOSTA-SESTA COMPLIANCE (MANDATORY)
-You are strictly prohibited from using LinkME to advertise, facilitate, or solicit real-world sexual services or sex trafficking. Violation = immediate permanent termination, forfeiture of all balances, reporting to NCMEC and law enforcement.
+You are strictly prohibited from using CRAVR to advertise, facilitate, or solicit real-world sexual services or sex trafficking. Violation = immediate permanent termination, forfeiture of all balances, reporting to NCMEC and law enforcement.
 
 5. CONTENT STANDARDS
 PERMITTED: Consensual adult content between verified adults.
@@ -165,18 +165,18 @@ NEVER PERMITTED: CSAM, non-consensual content, real violence, bestiality, traffi
 
 6. TERMINATION & EARNINGS
 - Termination FOR CAUSE (violations): All unpaid earnings are forfeited.
-- Termination WITHOUT CAUSE (LinkME discretion): All CLEARED earnings (past 90-day chargeback window) paid on next weekly cycle; uncleared earnings paid on their clearing dates.
+- Termination WITHOUT CAUSE (CRAVR discretion): All CLEARED earnings (past 90-day chargeback window) paid on next weekly cycle; uncleared earnings paid on their clearing dates.
 - Voluntary termination: Cleared earnings paid on next cycle; 7 days' written notice required.
 
 PART II — NON-DISCLOSURE AGREEMENT
 
 7. CONFIDENTIALITY
-You agree to keep confidential all LinkME business information, algorithms, earnings data, and unreleased features.
+You agree to keep confidential all CRAVR business information, algorithms, earnings data, and unreleased features.
 
 8. NDA SURVIVAL
 This confidentiality obligation survives termination for TWO (2) YEARS following the effective date of termination. After two years, publicly available information is no longer restricted.
 
-Creators: creators@LinkME.com | Compliance: legal@LinkME.com
+Creators: creators@cravr.fun | Compliance: legal@cravr.fun
 30 N Gould St Ste N, Sheridan, WY 82801, USA
 © 2026 LinkME LLC All rights reserved.`,
 };
@@ -184,7 +184,7 @@ Creators: creators@LinkME.com | Compliance: legal@LinkME.com
 export const CODE_OF_CONDUCT: LegalDoc = {
   key: "conduct",
   title: "Code of Conduct",
-  content: `LinkME LLC – CODE OF CONDUCT
+  content: `Cravr – CODE OF CONDUCT
 Version 2.0 | Effective: May 27, 2026
 
 CORE PRINCIPLES: Consent. Safety. Respect. Authenticity. Legality.
@@ -201,7 +201,7 @@ PROHIBITED FOR ALL USERS:
 CREATOR RESPONSIBILITIES:
 - Maintain § 2257 records for all depicted individuals
 - Ensure all on-screen individuals are 18+ and consented
-- Do not solicit off-platform payments outside LinkME's system
+- Do not solicit off-platform payments outside CRAVR's system
 
 VIEWER RESPONSIBILITIES:
 - Do not attempt to arrange in-person meetings with creators
@@ -215,26 +215,26 @@ ENFORCEMENT TIERS:
 - Legal Action: CSAM, trafficking, fraud, criminal activity
 
 CONTENT MODERATION APPEALS:
-To appeal a removal or suspension, email support@LinkME.com within 30 days.
+To appeal a removal or suspension, email support@cravr.fun within 30 days.
 Subject: "Moderation Appeal — [Username]"
 Include: username, account email, action appealed, date, explanation, evidence.
 Response time: 5–14 business days depending on severity.
 Appeals are reviewed by a different team member than the original decision.
 Zero-tolerance violations (CSAM, trafficking) are not eligible for appeal.
 
-Report violations: support@LinkME.com
-Emergencies (minors/trafficking): legal@LinkME.com
-Appeals: support@LinkME.com
+Report violations: support@cravr.fun
+Emergencies (minors/trafficking): legal@cravr.fun
+Appeals: support@cravr.fun
 © 2026 LinkME LLC All rights reserved.`,
 };
 
 export const DMCA_POLICY: LegalDoc = {
   key: "dmca",
   title: "DMCA Policy",
-  content: `LinkME LLC – DMCA POLICY
+  content: `Cravr – DMCA POLICY
 Version 1.0 | Effective: May 27, 2026
 
-DMCA Agent: legal@LinkME.com
+DMCA Agent: legal@cravr.fun
 LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 TAKEDOWN NOTICE (17 U.S.C. § 512(c)(3))
@@ -246,7 +246,7 @@ To report copyright infringement, your notice must include:
 5. Statement of accuracy under penalty of perjury
 6. Your physical or electronic signature
 
-Send to: legal@LinkME.com
+Send to: legal@cravr.fun
 
 WARNING: Knowingly filing a false DMCA claim is perjury (17 U.S.C. § 512(f)).
 
@@ -263,23 +263,23 @@ After a valid counter-notice, the complainant has 10–14 business days to file 
 REPEAT INFRINGER POLICY
 Accounts with multiple valid DMCA notices within 12 months may be terminated.
 
-Non-copyright violations: support@LinkME.com
+Non-copyright violations: support@cravr.fun
 © 2026 LinkME LLC All rights reserved.`,
 };
 
 export const REFUND_POLICY: LegalDoc = {
   key: "refund",
   title: "Refund Policy",
-  content: `LinkME LLC – REFUND POLICY
+  content: `Cravr – REFUND POLICY
 Version 1.0 | Effective: May 27, 2026
 
 GENERAL: All credit purchases are final and non-refundable.
 
 ELIGIBLE FOR REFUND:
 1. Technical errors — credits deducted without feature delivery, duplicate charges
-   (Report within 7 days to support@LinkME.com with transaction ID)
+   (Report within 7 days to support@cravr.fun with transaction ID)
 2. Unauthorized transactions — account accessed without your authorization
-   (Contact support@LinkME.com and support@LinkME.com immediately)
+   (Contact support@cravr.fun and support@cravr.fun immediately)
 3. Consumer protection law requirements in your jurisdiction
 4. Platform permanent shutdown (pro-rated unused credit balance refunded)
 
@@ -296,20 +296,20 @@ SUBSCRIPTION CANCELLATIONS:
 - Cancel at least 48 hours before renewal to avoid next charge.
 
 HOW TO REQUEST A REFUND:
-Email: support@LinkME.com
+Email: support@cravr.fun
 Subject: "Refund Request — [Transaction ID]"
 Include: username, email, transaction ID, date, amount, reason, evidence.
 Response: 2 business days acknowledgment; 5–10 business days resolution.
 Approved refunds returned to original payment method within 5–10 business days.
 
-Billing: support@LinkME.com
+Billing: support@cravr.fun
 © 2026 LinkME LLC All rights reserved.`,
 };
 
 export const COOKIE_POLICY: LegalDoc = {
   key: "cookies",
   title: "Cookie Policy",
-  content: `LinkME LLC – COOKIE POLICY
+  content: `Cravr – COOKIE POLICY
 Version 1.0 | Effective: May 27, 2026
 
 We use cookies and similar technologies to operate the platform, remember your preferences, and comply with legal requirements.
@@ -337,21 +337,21 @@ WE DO NOT:
 YOUR CHOICES:
 - Manage preferences via cookie consent banner (shown on first visit)
 - Browser settings: Chrome/Firefox/Safari/Edge all allow cookie management
-- Opt out of analytics: legal@LinkME.com
+- Opt out of analytics: legal@cravr.fun
 
 GDPR: We obtain consent before placing non-essential cookies.
 CCPA: We do not sell personal information collected via cookies.
 
 Adult platform note: Age gate and verification cookies are essential. Clearing them will require re-verification on next visit.
 
-Privacy: legal@LinkME.com
+Privacy: legal@cravr.fun
 © 2026 LinkME LLC All rights reserved.`,
 };
 
 export const COMMUNITY_GUIDELINES: LegalDoc = {
   key: "community",
   title: "Community Guidelines",
-  content: `LinkME LLC – COMMUNITY GUIDELINES
+  content: `Cravr – COMMUNITY GUIDELINES
 Version 1.0 | Effective: May 27, 2026
 
 OUR VALUES: Consent. Safety. Authenticity. Respect. Legality.
@@ -374,7 +374,7 @@ NEVER ALLOWED (zero tolerance):
 CREATOR RULES:
 - All depicted individuals must be 18+ with documented consent
 - Maintain § 2257 age records for all content featuring others
-- No soliciting off-platform payments outside LinkME's system
+- No soliciting off-platform payments outside CRAVR's system
 - Public streams must remain non-explicit
 
 VIEWER RULES:
@@ -390,12 +390,12 @@ MESSAGING:
 
 REPORTING VIOLATIONS:
 In-platform: Use "Report" button on any profile, message, or stream.
-Email: support@LinkME.com
-Minors/Trafficking emergencies: legal@LinkME.com (escalated within 1 hour)
+Email: support@cravr.fun
+Minors/Trafficking emergencies: legal@cravr.fun (escalated within 1 hour)
 
-APPEALS: Email support@LinkME.com within 30 days of any moderation action.
+APPEALS: Email support@cravr.fun within 30 days of any moderation action.
 
-Safety: support@LinkME.com | Community: support@LinkME.com
+Safety: support@cravr.fun | Community: support@cravr.fun
 © 2026 LinkME LLC All rights reserved.`,
 };
 
@@ -412,9 +412,9 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
 
 export const COMPANY = {
   name:    "LinkME LLC",
-  email:   "legal@LinkME.com",
-  support: "support@LinkME.com",
-  website: "https://LinkME.com",
+  email:   "legal@cravr.fun",
+  support: "support@cravr.fun",
+  website: "https://cravr.fun",
 };
 
 export function downloadLegalDoc(doc: LegalDoc) {
@@ -422,7 +422,7 @@ export function downloadLegalDoc(doc: LegalDoc) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `LinkME-${doc.key}.txt`;
+  a.download = `CRAVR-${doc.key}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -436,7 +436,7 @@ export function downloadAllLegalDocs() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "LinkME-Legal-Documents.txt";
+  a.download = "CRAVR-Legal-Documents.txt";
   a.click();
   URL.revokeObjectURL(url);
 }

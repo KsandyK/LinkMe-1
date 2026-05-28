@@ -704,7 +704,7 @@ export const CREATOR_TIERS = [
   {
     label: "Starter", min: 0, max: 2500, emoji: "🌱", color: "#64748b",
     badge: "Seedling Badge", title: "Seedling Creator",
-    perks: ["Starter profile listing", "Basic earnings dashboard", "Community forum access", "LinkMe welcome kit"],
+    perks: ["Starter profile listing", "Basic earnings dashboard", "Community forum access", "CRAVR welcome kit"],
   },
   {
     label: "Rising", min: 2501, max: 5000, emoji: "⭐", color: "#06b6d4",
@@ -723,18 +723,18 @@ export const CREATOR_TIERS = [
   },
   {
     label: "Partner", min: 25001, max: 75000, emoji: "🤝", color: "#f59e0b",
-    badge: "Partner Badge", title: "LinkMe Partner",
-    perks: ["Official LinkMe Partner badge", "Dedicated account manager", "Co-marketing campaigns", "Partner Discord community"],
+    badge: "Partner Badge", title: "CRAVR Partner",
+    perks: ["Official CRAVR Partner badge", "Dedicated account manager", "Co-marketing campaigns", "Partner Discord community"],
   },
   {
     label: "Top Partner", min: 75001, max: 200000, emoji: "🏅", color: "#f97316",
     badge: "Gold Medal Badge", title: "Top Partner",
-    perks: ["Gold medal badge + golden frame", "Algorithm priority boost", "Featured in LinkMe newsletters", "Bi-weekly payout option"],
+    perks: ["Gold medal badge + golden frame", "Algorithm priority boost", "Featured in CRAVR newsletters", "Bi-weekly payout option"],
   },
   {
     label: "Icon", min: 200001, max: 500000, emoji: "🎯", color: "#ef4444",
-    badge: "Icon Badge", title: "LinkMe Icon",
-    perks: ["Icon badge + custom animated frame", "Spotlight on LinkMe homepage", "Invitation to Creator Summits", "Personal PR support"],
+    badge: "Icon Badge", title: "CRAVR Icon",
+    perks: ["Icon badge + custom animated frame", "Spotlight on CRAVR homepage", "Invitation to Creator Summits", "Personal PR support"],
   },
   {
     label: "Superstar", min: 500001, max: 1000000, emoji: "🌟", color: "#ec4899",
@@ -749,7 +749,7 @@ export const CREATOR_TIERS = [
   {
     label: "Titan", min: 2500001, max: 5000000, emoji: "âš¡", color: "#6366f1",
     badge: "Titan Badge", title: "Titan",
-    perks: ["Titan lightning badge + animated halo", "Platinum analytics suite", "Co-marketing with LinkMe brand", "Dedicated legal & contract support"],
+    perks: ["Titan lightning badge + animated halo", "Platinum analytics suite", "Co-marketing with CRAVR brand", "Dedicated legal & contract support"],
   },
   {
     label: "Visionary", min: 5000001, max: 10000000, emoji: "🔮", color: "#14B8A6",
@@ -759,26 +759,26 @@ export const CREATOR_TIERS = [
   {
     label: "Legend", min: 10000001, max: 25000000, emoji: "👑", color: "#fbbf24",
     badge: "Legend Crown Badge", title: "Legend",
-    perks: ["Legend crown badge + gold halo", "LinkMe Hall of Fame listing", "Annual spotlight video produced by VL", "Exclusive Legend creator retreat"],
+    perks: ["Legend crown badge + gold halo", "CRAVR Hall of Fame listing", "Annual spotlight video produced by VL", "Exclusive Legend creator retreat"],
   },
   {
     label: "Phenomenon", min: 25000001, max: 50000000, emoji: "🌌", color: "#db2777",
     badge: "Phenomenon Galaxy Badge", title: "Phenomenon",
-    perks: ["Galaxy badge + nebula animated frame", "LinkMe Gala annual invitation", "Personal brand consultant (on-staff)", "Custom platform theme built for you"],
+    perks: ["Galaxy badge + nebula animated frame", "CRAVR Gala annual invitation", "Personal brand consultant (on-staff)", "Custom platform theme built for you"],
   },
   {
     label: "Dynasty", min: 50000001, max: 100000000, emoji: "🏛️", color: "#7c3aed",
     badge: "Dynasty Crest Badge", title: "Dynasty",
-    perks: ["Dynasty crest badge + constellation aura", "Advisory board invitation", "Named creator on LinkMe marketing", "Luxury gift commission (quarterly)"],
+    perks: ["Dynasty crest badge + constellation aura", "Advisory board invitation", "Named creator on CRAVR marketing", "Luxury gift commission (quarterly)"],
   },
   {
     label: "Sovereign", min: 100000001, max: 250000000, emoji: "💎", color: "#0ea5e9",
     badge: "Sovereign Diamond Badge", title: "Sovereign",
-    perks: ["Sovereign diamond badge + royal halo", "Direct line to LinkMe C-suite", "Equity conversation rights", "Permanent legacy wall recognition"],
+    perks: ["Sovereign diamond badge + royal halo", "Direct line to CRAVR C-suite", "Equity conversation rights", "Permanent legacy wall recognition"],
   },
   {
     label: "Immortal", min: 250000001, max: Infinity, emoji: "♾️", color: "#f43f5e",
     badge: "Immortal Infinity Badge", title: "Immortal — The Ultimate",
-    perks: ["Immortal infinity badge + full aura crown", "Permanent Hall of Fame (with statue)", "LinkMe Immortal title on all materials", "Named heir legacy fund access"],
+    perks: ["Immortal infinity badge + full aura crown", "Permanent Hall of Fame (with statue)", "CRAVR Immortal title on all materials", "Named heir legacy fund access"],
   },
 ];

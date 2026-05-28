@@ -1,5 +1,5 @@
 /**
- * LinkMe — Stream Key & SRS Webhook Routes
+ * CRAVR — Stream Key & SRS Webhook Routes
  *
  * GET  /api/streams/key            — return creator's RTMP key + Bunny HLS URL
  * POST /api/streams/key/regenerate — rotate the stream key

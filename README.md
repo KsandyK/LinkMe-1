@@ -1,4 +1,4 @@
-# LinkMe
+# CRAVR
 
 A modern, production-ready platform for creators with live streaming, monetization, and community features.
 
@@ -42,8 +42,8 @@ packages/
 
 ```bash
 # Clone the repository
-git clone https://github.com/KsandyK/LinkMe-1.git
-cd LinkMe-1
+git clone https://github.com/KsandyK/CRAVR-1.git
+cd CRAVR-1
 
 # Install dependencies
 pnpm install

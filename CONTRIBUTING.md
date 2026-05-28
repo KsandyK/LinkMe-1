@@ -1,4 +1,4 @@
-# Contributing to LinkMe
+# Contributing to CRAVR
 
 Thank you for your interest in contributing!
 

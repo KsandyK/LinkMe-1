@@ -95,7 +95,7 @@ export default function Register() {
       }
       // login() never throws: catches all errors internally and falls through to demo mode
       await login(form.username, form.password);
-      addCredits(200, "Welcome bonus — thanks for joining LinkMe!");
+      addCredits(200, "Welcome bonus — thanks for joining CRAVR!");
       setStep("done");
       setSubmitting(false);
     }
@@ -114,7 +114,7 @@ export default function Register() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
           <div className="text-7xl mb-6">🎉</div>
-          <h1 className="text-3xl font-black text-foreground mb-3">Welcome to LinkMe!</h1>
+          <h1 className="text-3xl font-black text-foreground mb-3">Welcome to CRAVR!</h1>
           <p className="text-muted-foreground mb-2">
             Your account <span className="text-primary font-bold">@{form.username}</span> is ready.
           </p>
@@ -154,7 +154,7 @@ export default function Register() {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src="/vibelink-icon.png" alt="LinkMe" className="w-14 h-14 mx-auto mb-3" />
+          <img src="/vibelink-icon.png" alt="CRAVR" className="w-14 h-14 mx-auto mb-3" />
           <h1 className="text-3xl font-black text-foreground">
             <span style={{ color: "#14B8A6" }}>Link</span>Me
           </h1>
@@ -191,7 +191,7 @@ export default function Register() {
               <h2 className="text-xl font-bold text-foreground mb-4">Create Account</h2>
 
               <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-                🔞 LinkMe is for adults 18+ only. You must confirm your age below.
+                🔞 CRAVR is for adults 18+ only. You must confirm your age below.
               </div>
 
               <Field label="Email Address" error={errors.email}>

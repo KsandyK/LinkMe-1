@@ -1,5 +1,5 @@
 /**
- * LinkME — Legal Pages
+ * CRAVR — Legal Pages
  * Full legal suite — ToS v3, Privacy v2 (CCPA + GDPR), Creator Agreement v3,
  * Code of Conduct v2, DMCA Policy, Refund Policy, Cookie Policy, Community Guidelines
  * No CCBill references. No AI watermarks.
@@ -21,13 +21,13 @@ LinkME LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
 
-Legal Department: legal@LinkME.com
+Legal Department: legal@cravr.fun
 
 ---
 
 ## IMPORTANT LEGAL NOTICE — READ CAREFULLY
 
-LinkME is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.
+CRAVR is an adult platform restricted to users 18 years of age or older. By accessing this Service you are entering into a legally binding contract. If you do not agree to all Terms below, you must immediately cease using the Service. Access by minors is strictly prohibited and may constitute a criminal offense.
 
 THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVER. BY USING THIS SERVICE, YOU WAIVE YOUR RIGHT TO A JURY TRIAL AND TO PARTICIPATE IN A CLASS ACTION. SEE SECTION 11 FOR FULL DETAILS.
 
@@ -35,7 +35,7 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 
 ## 1. ACCEPTANCE OF TERMS & BINDING AGREEMENT
 
-1.1 By accessing, registering for, or using LinkME ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, Cookie Policy, and Code of Conduct, all of which are incorporated herein by reference.
+1.1 By accessing, registering for, or using CRAVR ("Platform," "Service," "we," "us," or "our"), you ("User," "you") agree to be legally bound by these Terms of Service ("Terms"), our Privacy Policy, Cookie Policy, and Code of Conduct, all of which are incorporated herein by reference.
 
 1.2 These Terms constitute a legally binding agreement between you and LinkME LLC, a Delaware corporation ("Company"). If you do not agree, you have no right to use the Service.
 
@@ -56,15 +56,15 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 - You are legally permitted to access adult content in your jurisdiction
 - You are not accessing this Service from a jurisdiction where adult content is prohibited
 
-2.3 **Minors:** If LinkME discovers or has reason to believe any user is under 18, we will immediately terminate their account, report the matter to relevant authorities, and preserve all relevant evidence for law enforcement. Attempts to circumvent age verification may constitute criminal fraud.
+2.3 **Minors:** If CRAVR discovers or has reason to believe any user is under 18, we will immediately terminate their account, report the matter to relevant authorities, and preserve all relevant evidence for law enforcement. Attempts to circumvent age verification may constitute criminal fraud.
 
-2.4 You acknowledge that LinkME employs technical, procedural, and contractual measures to prevent minor access, and that your affirmative representation of age is the foundational layer of this system. Providing false age information is a material breach of these Terms.
+2.4 You acknowledge that CRAVR employs technical, procedural, and contractual measures to prevent minor access, and that your affirmative representation of age is the foundational layer of this system. Providing false age information is a material breach of these Terms.
 
 ---
 
 ## 3. DESCRIPTION OF SERVICE & NO GUARANTEE
 
-3.1 LinkME is a premium hybrid adult dating and live interaction platform providing:
+3.1 CRAVR is a premium hybrid adult dating and live interaction platform providing:
 - Live streaming rooms and interactive broadcasts
 - Creator profiles with optional locked/premium content
 - Virtual gift and tipping systems
@@ -73,11 +73,11 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 - Profile boost and visibility features
 - Membership subscription plans
 
-3.2 **THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE."** LinkME MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+3.2 **THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE."** CRAVR MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
 
 3.3 We do not guarantee uninterrupted service, error-free operation, or that the Service will meet your expectations. Scheduled and unscheduled downtime may occur without notice or compensation.
 
-3.4 **Creator Content:** Creators are independent contractors. LinkME does not endorse, validate, or guarantee the accuracy, quality, or appropriateness of creator content beyond our moderation standards.
+3.4 **Creator Content:** Creators are independent contractors. CRAVR does not endorse, validate, or guarantee the accuracy, quality, or appropriateness of creator content beyond our moderation standards.
 
 ---
 
@@ -87,20 +87,20 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 
 4.2 All credit and subscription purchases are **FINAL AND NON-REFUNDABLE**, except:
 - Where required by applicable consumer protection law
-- At LinkME's sole discretion in cases of demonstrable technical error
+- At CRAVR's sole discretion in cases of demonstrable technical error
 - As described in our Refund Policy
 
 4.3 Credits do not expire while your account remains in good standing. Upon account termination for cause, all unused credits are forfeited without compensation.
 
 4.4 Pricing is in USD and subject to change with 7 days' notice for subscriptions. We reserve the right to modify credit-to-dollar ratios at any time.
 
-4.5 **Chargebacks & Disputes:** We encourage you to contact us first at support@LinkME.com before initiating any payment dispute. Initiating a chargeback without first exhausting LinkME's internal dispute resolution process constitutes a breach of these Terms. In such cases:
+4.5 **Chargebacks & Disputes:** We encourage you to contact us first at support@cravr.fun before initiating any payment dispute. Initiating a chargeback without first exhausting CRAVR's internal dispute resolution process constitutes a breach of these Terms. In such cases:
 - Your account will be immediately suspended pending investigation
 - You will be liable for the disputed amount plus an administrative processing fee
-- LinkME reserves the right to pursue collection through any lawful means
+- CRAVR reserves the right to pursue collection through any lawful means
 - Accounts with fraudulent chargebacks may be permanently banned
 
-4.6 **Bonus Credits:** Bonus credits issued through membership plans, promotions, or referrals are revocable at LinkME's discretion and are the last credits spent from your balance.
+4.6 **Bonus Credits:** Bonus credits issued through membership plans, promotions, or referrals are revocable at CRAVR's discretion and are the last credits spent from your balance.
 
 4.7 **Membership Subscriptions:** Auto-renew unless cancelled at least 48 hours before the renewal date. Cancellation takes effect at the end of the current billing period. See our Refund Policy for additional details.
 
@@ -110,27 +110,27 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 
 5.1 You agree NOT to, and represent that you will not:
 - Access or use the Service if under 18 years of age
-- Harass, stalk, threaten, intimidate, or harm any user, creator, or LinkME employee
+- Harass, stalk, threaten, intimidate, or harm any user, creator, or CRAVR employee
 - Attempt to arrange in-person meetings with creators through the platform
 - Screenshot, record, download, copy, or distribute any content from the platform without explicit written permission
 - Use bots, scripts, crawlers, scrapers, or automated tools to interact with the platform
 - Reverse engineer, decompile, or attempt to extract source code from the platform
-- Impersonate any person, entity, or LinkME staff member
+- Impersonate any person, entity, or CRAVR staff member
 - Create multiple accounts to evade suspension or restrictions
 - Use VPN, proxy, or other tools to circumvent geo-restrictions or age verification
 - Upload, transmit, or share malware, viruses, or harmful code
 - Engage in any activity that interferes with platform operations or other users' enjoyment
 - Attempt to manipulate credit systems, exploit bugs, or conduct fraud
 
-5.2 **FOSTA-SESTA Prohibition:** In compliance with the Allow States and Victims to Fight Online Sex Trafficking Act (FOSTA-SESTA), 18 U.S.C. § 2421A, you are STRICTLY PROHIBITED from using LinkME for:
+5.2 **FOSTA-SESTA Prohibition:** In compliance with the Allow States and Victims to Fight Online Sex Trafficking Act (FOSTA-SESTA), 18 U.S.C. § 2421A, you are STRICTLY PROHIBITED from using CRAVR for:
 - Advertising, facilitating, or promoting prostitution or sex trafficking of any kind
 - Soliciting or arranging real-world sexual services through any platform feature
 - Posting content that promotes, enables, or benefits from sex trafficking
 - Using the platform to coerce, defraud, or traffic any individual
 
-Any violation of this section will result in immediate permanent termination, preservation of evidence, and mandatory reporting to the National Center for Missing & Exploited Children (NCMEC) and relevant law enforcement. LinkME takes a zero-tolerance stance on trafficking and will cooperate fully with law enforcement investigations.
+Any violation of this section will result in immediate permanent termination, preservation of evidence, and mandatory reporting to the National Center for Missing & Exploited Children (NCMEC) and relevant law enforcement. CRAVR takes a zero-tolerance stance on trafficking and will cooperate fully with law enforcement investigations.
 
-5.3 **Enforcement:** Violations may result in: content removal, account suspension, permanent ban, forfeiture of credits without refund, and/or referral to law enforcement. LinkME is the sole arbiter of violations and its decisions are final, subject to the appeal process in our Code of Conduct.
+5.3 **Enforcement:** Violations may result in: content removal, account suspension, permanent ban, forfeiture of credits without refund, and/or referral to law enforcement. CRAVR is the sole arbiter of violations and its decisions are final, subject to the appeal process in our Code of Conduct.
 
 ---
 
@@ -142,9 +142,9 @@ Any violation of this section will result in immediate permanent termination, pr
 
 6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
 
-6.4 **DMCA:** If you believe content infringes your copyright, see our DMCA Policy or send a compliant notice to: legal@LinkME.com. Repeat infringers' accounts will be terminated.
+6.4 **DMCA:** If you believe content infringes your copyright, see our DMCA Policy or send a compliant notice to: legal@cravr.fun. Repeat infringers' accounts will be terminated.
 
-6.5 **User Content License:** By submitting any content (messages, profile information, reviews), you grant LinkME a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.
+6.5 **User Content License:** By submitting any content (messages, profile information, reviews), you grant CRAVR a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.
 
 ---
 
@@ -156,15 +156,15 @@ Your use of the Service is governed by our Privacy Policy and Cookie Policy, inc
 - Use of cookies and tracking technologies as described in our Cookie Policy
 - Storage and processing of data in the United States
 
-**Billing Discretion:** All charges appear as "LinkME" or similar neutral descriptor on your bank statement. We never use explicit descriptors in billing.
+**Billing Discretion:** All charges appear as "CRAVR" or similar neutral descriptor on your bank statement. We never use explicit descriptors in billing.
 
 ---
 
 ## 8. LIMITATION OF LIABILITY & INDEMNIFICATION
 
-8.1 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LinkME SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, LOST DATA, OR LOST BUSINESS OPPORTUNITY, EVEN IF LinkME HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+8.1 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, CRAVR SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, LOST DATA, OR LOST BUSINESS OPPORTUNITY, EVEN IF CRAVR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-8.2 LinkME's total aggregate liability for any claim arising from or related to the Service is limited to the greater of (a) the total amount you paid to LinkME in the 12 months preceding the claim, or (b) $100 USD.
+8.2 CRAVR's total aggregate liability for any claim arising from or related to the Service is limited to the greater of (a) the total amount you paid to CRAVR in the 12 months preceding the claim, or (b) $100 USD.
 
 8.3 **Indemnification:** You agree to indemnify, defend, and hold harmless LinkME LLC and its officers, directors, employees, and agents from any claims, liabilities, damages, costs, and expenses (including reasonable attorney's fees) arising out of your use of the Service, your violation of these Terms, or your violation of any third-party rights.
 
@@ -172,9 +172,9 @@ Your use of the Service is governed by our Privacy Policy and Cookie Policy, inc
 
 ## 9. TERMINATION
 
-9.1 LinkME may terminate or suspend your account at any time, with or without cause, with or without notice. Upon termination, your right to use the Service immediately ceases. All unused credits are forfeited.
+9.1 CRAVR may terminate or suspend your account at any time, with or without cause, with or without notice. Upon termination, your right to use the Service immediately ceases. All unused credits are forfeited.
 
-9.2 You may terminate your account at any time by contacting support@LinkME.com. Termination does not entitle you to a refund of any unused credits or prepaid subscription fees, except as required by applicable law.
+9.2 You may terminate your account at any time by contacting support@cravr.fun. Termination does not entitle you to a refund of any unused credits or prepaid subscription fees, except as required by applicable law.
 
 ---
 
@@ -195,15 +195,15 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 11.3 **Small Claims Exception:** Either party may bring an individual action in small claims court for disputes that qualify. Either party may also seek emergency injunctive relief from a court of competent jurisdiction to prevent irreparable harm pending arbitration.
 
 11.4 **Arbitration Procedure:**
-- You must send a written Notice of Dispute to legal@LinkME.com before initiating arbitration, describing your claim and desired relief
+- You must send a written Notice of Dispute to legal@cravr.fun before initiating arbitration, describing your claim and desired relief
 - We have 30 days to resolve the claim informally
 - If not resolved, either party may initiate arbitration with AAA (adr.org)
 - Arbitration shall take place in Sheridan, WYlaware or via videoconference at your election
-- For claims under $75,000, LinkME will pay all AAA filing fees and arbitrator costs
+- For claims under $75,000, CRAVR will pay all AAA filing fees and arbitrator costs
 
 11.5 **Governing Law for Arbitration:** The Federal Arbitration Act (9 U.S.C. § 1 et seq.) governs the interpretation and enforcement of this arbitration agreement.
 
-11.6 **30-Day Opt-Out Right:** You may opt out of this arbitration agreement by sending written notice to legal@LinkME.com within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of arbitration. Opting out does not affect any other provision of these Terms.
+11.6 **30-Day Opt-Out Right:** You may opt out of this arbitration agreement by sending written notice to legal@cravr.fun within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of arbitration. Opting out does not affect any other provision of these Terms.
 
 11.7 **Severability:** If any part of this Section 11 is found invalid or unenforceable, the remainder shall continue in full force and effect, except that if the class action waiver is found unenforceable, the entire arbitration agreement is void.
 
@@ -211,15 +211,15 @@ These Terms are governed by the laws of the State of Delaware, without regard to
 
 ## 12. MISCELLANEOUS
 
-12.1 **Entire Agreement:** These Terms, together with the Privacy Policy, Cookie Policy, Code of Conduct, and any applicable Creator Agreement, constitute the entire agreement between you and LinkME.
+12.1 **Entire Agreement:** These Terms, together with the Privacy Policy, Cookie Policy, Code of Conduct, and any applicable Creator Agreement, constitute the entire agreement between you and CRAVR.
 
 12.2 **Severability:** If any provision is found unenforceable, the remaining provisions shall remain in full force.
 
 12.3 **Waiver:** Failure to enforce any provision shall not constitute a waiver of future enforcement.
 
-12.4 **Assignment:** You may not assign your rights under these Terms without LinkME's written consent. LinkME may assign these Terms in connection with a merger, acquisition, or sale of assets.
+12.4 **Assignment:** You may not assign your rights under these Terms without CRAVR's written consent. CRAVR may assign these Terms in connection with a merger, acquisition, or sale of assets.
 
-12.5 **Contact:** For legal notices, contact legal@LinkME.com or LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA.
+12.5 **Contact:** For legal notices, contact legal@cravr.fun or LinkME LLC, 30 N Gould St Ste N, Sheridan, WY 82801, USA.
 
 ---
 
@@ -319,14 +319,14 @@ We do **NOT** sell your personal information to third parties. We may share info
 - **Law Enforcement:** When legally required, pursuant to valid legal process, or to prevent illegal activity
 - **Legal Proceedings:** When required by court order or subpoena
 - **Business Transfers:** In case of merger, acquisition, or asset sale (you will be notified)
-- **Safety:** To protect the rights, property, or safety of LinkME, our users, or the public
+- **Safety:** To protect the rights, property, or safety of CRAVR, our users, or the public
 
 ---
 
 ## 6. YOUR RIGHTS & CHOICES
 
 ### 6.1 Access & Portability
-You have the right to request a copy of your personal data in a portable, machine-readable format. Submit requests to legal@LinkME.com.
+You have the right to request a copy of your personal data in a portable, machine-readable format. Submit requests to legal@cravr.fun.
 
 ### 6.2 Correction
 You may request correction of inaccurate or incomplete personal data.
@@ -335,7 +335,7 @@ You may request correction of inaccurate or incomplete personal data.
 You may request deletion of your account and associated personal data. We will comply unless retention is required by law (e.g., payment records, age verification data, law enforcement holds).
 
 ### 6.4 Marketing Opt-Out
-You may opt out of marketing communications at any time by clicking "unsubscribe" in any email or contacting legal@LinkME.com. You cannot opt out of essential service communications.
+You may opt out of marketing communications at any time by clicking "unsubscribe" in any email or contacting legal@cravr.fun. You cannot opt out of essential service communications.
 
 ### 6.5 Cookie Preferences
 You can manage your cookie preferences through our cookie consent banner or your browser settings. See our Cookie Policy for details.
@@ -344,7 +344,7 @@ You can manage your cookie preferences through our cookie consent banner or your
 
 ## 7. CHILDREN'S PRIVACY
 
-LinkME is not intended for users under 18 years of age. We do not knowingly collect information from minors. If we discover a minor has provided information, we will immediately delete it and report the matter to NCMEC and relevant authorities.
+CRAVR is not intended for users under 18 years of age. We do not knowingly collect information from minors. If we discover a minor has provided information, we will immediately delete it and report the matter to NCMEC and relevant authorities.
 
 ---
 
@@ -352,7 +352,7 @@ LinkME is not intended for users under 18 years of age. We do not knowingly coll
 
 Your information may be transferred to, stored in, and processed in the United States or other countries where our service providers operate. By using the Service, you consent to such transfers.
 
-For transfers from the EU/EEA/UK, we use appropriate safeguards including Standard Contractual Clauses (SCCs) approved by the European Commission or UK equivalent. Contact legal@LinkME.com for a copy of the applicable SCCs.
+For transfers from the EU/EEA/UK, we use appropriate safeguards including Standard Contractual Clauses (SCCs) approved by the European Commission or UK equivalent. Contact legal@cravr.fun for a copy of the applicable SCCs.
 
 ---
 
@@ -360,9 +360,9 @@ For transfers from the EU/EEA/UK, we use appropriate safeguards including Standa
 
 For privacy inquiries:
 
-**LinkME Privacy Team**
-Email: legal@LinkME.com
-GDPR inquiries: legal@LinkME.com
+**CRAVR Privacy Team**
+Email: legal@cravr.fun
+GDPR inquiries: legal@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
@@ -385,7 +385,7 @@ You have the right to request deletion of the personal information we have colle
 You have the right to request correction of inaccurate personal information we hold about you.
 
 ### 10.4 Right to Opt-Out of Sale / Sharing
-We do **not** sell personal information as defined by the CCPA. We do not share personal information with third parties for cross-context behavioral advertising. You may submit a "Do Not Sell or Share My Personal Information" request to legal@LinkME.com, though such a request is not currently applicable given our current practices.
+We do **not** sell personal information as defined by the CCPA. We do not share personal information with third parties for cross-context behavioral advertising. You may submit a "Do Not Sell or Share My Personal Information" request to legal@cravr.fun, though such a request is not currently applicable given our current practices.
 
 ### 10.5 Right to Limit Use of Sensitive Personal Information
 We use sensitive personal information (such as age verification data) only as necessary to provide the Service. You have the right to request that we limit the use and disclosure of such information to what is necessary to perform the services you requested.
@@ -394,11 +394,11 @@ We use sensitive personal information (such as age verification data) only as ne
 We will not discriminate against you for exercising any of your CCPA rights. We will not deny you services, charge different prices, or provide a different level of service because you exercised your privacy rights.
 
 ### 10.7 Shine the Light (California Civil Code § 1798.83)
-California residents who provide personal information in obtaining products or services for personal, family, or household use are entitled to request information about our sharing of their personal information with third parties for the other parties' direct marketing purposes. To make such a request, contact legal@LinkME.com.
+California residents who provide personal information in obtaining products or services for personal, family, or household use are entitled to request information about our sharing of their personal information with third parties for the other parties' direct marketing purposes. To make such a request, contact legal@cravr.fun.
 
 ### 10.8 How to Submit a Request
 Submit CCPA requests to:
-- **Email:** legal@LinkME.com (Subject: "CCPA Request")
+- **Email:** legal@cravr.fun (Subject: "CCPA Request")
 - **Mail:** LinkME LLC, Attn: Privacy — CCPA, 30 N Gould St Ste N, Sheridan, WY 82801
 
 We will respond to verifiable requests within 45 days (extendable by an additional 45 days with notice). We will verify your identity before processing requests.
@@ -420,7 +420,7 @@ We will respond to verifiable requests within 45 days (extendable by an addition
 This section applies to individuals in the European Economic Area (EEA), United Kingdom, and Switzerland.
 
 ### 11.1 Data Controller
-LinkME LLC is the data controller for personal information processed through the Service. Our EU/UK contact: legal@LinkME.com.
+LinkME LLC is the data controller for personal information processed through the Service. Our EU/UK contact: legal@cravr.fun.
 
 ### 11.2 Legal Bases for Processing
 
@@ -442,10 +442,10 @@ You have the following rights regarding your personal data:
 - **Rights Related to Automated Decision-Making (Art. 22):** Not be subject to solely automated decisions that significantly affect you
 
 ### 11.4 How to Exercise Your Rights
-Submit requests to legal@LinkME.com. We will respond within 30 days (extendable by 2 additional months with notice). There is no charge for exercising your rights, unless requests are manifestly unfounded or excessive.
+Submit requests to legal@cravr.fun. We will respond within 30 days (extendable by 2 additional months with notice). There is no charge for exercising your rights, unless requests are manifestly unfounded or excessive.
 
 ### 11.5 Data Transfers Outside the EEA/UK
-When we transfer your personal data outside the EEA or UK, we use Standard Contractual Clauses (SCCs) or other appropriate safeguards. Contact legal@LinkME.com for a copy.
+When we transfer your personal data outside the EEA or UK, we use Standard Contractual Clauses (SCCs) or other appropriate safeguards. Contact legal@cravr.fun for a copy.
 
 ### 11.6 Right to Lodge a Complaint
 You have the right to lodge a complaint with your local data protection authority. A list of EU supervisory authorities is available at edpb.europa.eu. For UK residents: ico.org.uk.
@@ -472,7 +472,7 @@ Personal data is retained only for as long as necessary for the purposes set out
 
 ## LEGALLY BINDING AGREEMENT — READ EVERY SECTION
 
-This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and LinkME LLC, a Delaware corporation ("Company," "LinkME," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
+This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally binding contract between you ("Creator," "you") and LinkME LLC, a Delaware corporation ("Company," "CRAVR," "we"). By registering as a Creator, uploading content, going live, or receiving any payment through the platform, you fully accept all terms below. This Agreement supersedes all prior understandings. If you do not agree, do not register as a Creator.
 
 ---
 
@@ -491,9 +491,9 @@ This Creator Agreement and Non-Disclosure Agreement ("Agreement") is a legally b
 - Must provide your own equipment, software, and internet connection
 - May engage in other business activities unless prohibited by a separately signed exclusivity agreement
 
-1.3 **Tax Reporting:** LinkME will issue Form 1099-NEC to US-based Creators earning $600 or more in a calendar year. Non-US creators must complete IRS Form W-8BEN or W-8BEN-E.
+1.3 **Tax Reporting:** CRAVR will issue Form 1099-NEC to US-based Creators earning $600 or more in a calendar year. Non-US creators must complete IRS Form W-8BEN or W-8BEN-E.
 
-1.4 You agree to indemnify and hold LinkME harmless from any tax liability, penalty, or fine arising from your failure to report or pay taxes on earnings.
+1.4 You agree to indemnify and hold CRAVR harmless from any tax liability, penalty, or fine arising from your failure to report or pay taxes on earnings.
 
 ---
 
@@ -534,7 +534,7 @@ All revenue share percentages above are calculated on GROSS transaction revenue 
 
 2.6 **Chargebacks & Reversals:** If a user initiates a chargeback, the full creator payout portion will be reversed from your next payout. Additionally, a $25 chargeback administration fee will be deducted.
 
-2.7 LinkME reserves the right to adjust revenue tier thresholds and percentages upon 30 days' written notice.
+2.7 CRAVR reserves the right to adjust revenue tier thresholds and percentages upon 30 days' written notice.
 
 2.8 Earnings estimates are informational only and do not constitute guarantees of income.
 
@@ -550,7 +550,7 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 - One-time reward per creator account. Non-repeatable and non-transferable.
 - Referral activity is measured on a rolling 12-month window.
 - Your unique referral code is available in your Creator Dashboard under the "Referral" tab.
-- LinkME reserves the right to verify referral authenticity and disqualify fraudulent activity.
+- CRAVR reserves the right to verify referral authenticity and disqualify fraudulent activity.
 
 ---
 
@@ -558,7 +558,7 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 
 3.1 You retain copyright ownership of all original content you create ("Creator Content"), subject to the license granted herein.
 
-3.2 **Platform License:** By uploading or streaming any Creator Content, you grant LinkME an irrevocable, non-exclusive, royalty-free, sublicensable, worldwide license to:
+3.2 **Platform License:** By uploading or streaming any Creator Content, you grant CRAVR an irrevocable, non-exclusive, royalty-free, sublicensable, worldwide license to:
 - Host, store, transcode, and serve Creator Content
 - Create thumbnails, previews, and promotional snippets (not exceeding 10 seconds)
 - Use your username and persona for platform marketing with prior consent
@@ -584,7 +584,7 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 - One additional form of identification if the primary ID does not include a photo
 - A signed model release form from each depicted individual
 
-4.3 You must maintain these records for a minimum of 5 years and make them available upon lawful demand from law enforcement or LinkME compliance officers.
+4.3 You must maintain these records for a minimum of 5 years and make them available upon lawful demand from law enforcement or CRAVR compliance officers.
 
 4.4 Failure to maintain or produce 2257 records upon demand will result in immediate content removal and account suspension pending investigation.
 
@@ -594,7 +594,7 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 Chief Compliance Officer, LinkME LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
-Email: legal@LinkME.com
+Email: legal@cravr.fun
 
 Inspection of records is available during normal business hours (9 AM–5 PM ET, Monday–Friday) upon reasonable advance notice and presentation of appropriate credentials.
 
@@ -602,7 +602,7 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 
 ## 5. FOSTA-SESTA COMPLIANCE (MANDATORY)
 
-5.1 In compliance with FOSTA-SESTA (18 U.S.C. § 2421A), you are strictly prohibited from using LinkME to:
+5.1 In compliance with FOSTA-SESTA (18 U.S.C. § 2421A), you are strictly prohibited from using CRAVR to:
 - Advertise, facilitate, recruit for, or otherwise promote prostitution or sex trafficking
 - Solicit, arrange, or coordinate real-world sexual services through any platform feature, including private messages, live streams, or profile content
 - Post content that promotes, benefits, or is otherwise connected to sex trafficking activities
@@ -619,7 +619,7 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 - Mandatory reporting to the National Center for Missing & Exploited Children (NCMEC) and relevant law enforcement agencies
 - Civil and/or criminal liability
 
-5.4 You agree to immediately report to legal@LinkME.com any user you believe is attempting to use the platform for trafficking or solicitation purposes.
+5.4 You agree to immediately report to legal@cravr.fun any user you believe is attempting to use the platform for trafficking or solicitation purposes.
 
 ---
 
@@ -642,23 +642,23 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 
 ## 7. TERMINATION & EARNINGS ON TERMINATION
 
-7.1 LinkME may terminate this Agreement and suspend your account at any time for:
+7.1 CRAVR may terminate this Agreement and suspend your account at any time for:
 - Violation of this Agreement or Terms of Service
 - Violation of applicable laws (including FOSTA-SESTA, § 2257, CSAM laws)
 - Failure to maintain 2257 compliance
 - Involvement in fraud, trafficking, or illegal activity
 - Repeated Code of Conduct violations
 
-7.2 **Termination for Cause:** Upon termination for cause (as listed in 7.1), all unpaid earnings are forfeited and your content may be removed from the platform. LinkME will retain evidence as required by law.
+7.2 **Termination for Cause:** Upon termination for cause (as listed in 7.1), all unpaid earnings are forfeited and your content may be removed from the platform. CRAVR will retain evidence as required by law.
 
-7.3 **Termination Without Cause:** If LinkME terminates this Agreement without cause (at LinkME's discretion, without any violation by you):
+7.3 **Termination Without Cause:** If CRAVR terminates this Agreement without cause (at CRAVR's discretion, without any violation by you):
 - All earnings that have **cleared** the standard chargeback period (90 days from transaction date) will be paid out in the next regular weekly payout cycle
 - Earnings that have **not yet cleared** (within the 90-day chargeback window) remain subject to review and will be paid out on their respective clearing dates
 - Disputed or chargeback-affected amounts remain subject to the chargeback policy in Section 2.6
 
 7.4 **Voluntary Termination:** If you terminate this Agreement voluntarily:
 - Cleared earnings will be paid in the next regular payout cycle
-- You must provide 7 days' written notice to creators@LinkME.com
+- You must provide 7 days' written notice to creators@cravr.fun
 - Content will be removed within 30 days of termination date
 
 ---
@@ -673,14 +673,14 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 - Platform algorithms and technical infrastructure
 - Creator earnings data and payment processing details
 - Other creators' personal information
-- LinkME's business strategies and financial information
+- CRAVR's business strategies and financial information
 - Unreleased product features and roadmaps
 
-8.2 You agree to maintain the confidentiality of all such information and not disclose it to any third party without LinkME's written consent.
+8.2 You agree to maintain the confidentiality of all such information and not disclose it to any third party without CRAVR's written consent.
 
 8.3 **NDA Survival:** This confidentiality obligation survives termination of this Agreement for a period of **two (2) years** following the effective date of termination. After two years, information that has become publicly available through no breach of this Agreement is no longer subject to confidentiality obligations.
 
-8.4 Exceptions: Confidentiality obligations do not apply to information that (a) is or becomes publicly available without breach of this Agreement, (b) was known to you prior to disclosure, (c) is independently developed by you without use of Confidential Information, or (d) must be disclosed by law or court order (with prompt written notice to LinkME).
+8.4 Exceptions: Confidentiality obligations do not apply to information that (a) is or becomes publicly available without breach of this Agreement, (b) was known to you prior to disclosure, (c) is independently developed by you without use of Confidential Information, or (d) must be disclosed by law or court order (with prompt written notice to CRAVR).
 
 ---
 
@@ -707,7 +707,7 @@ This Agreement is governed by the laws of the State of Delaware, without regard 
 
 ## PURPOSE
 
-This Code of Conduct establishes community standards for all LinkME users and creators. Our goal is to maintain a safe, respectful, and legal platform for all participants.
+This Code of Conduct establishes community standards for all CRAVR users and creators. Our goal is to maintain a safe, respectful, and legal platform for all participants.
 
 ---
 
@@ -725,7 +725,7 @@ All users and creators agree to:
 ## 2. PROHIBITED BEHAVIOR
 
 ### 2.1 Harassment & Abuse
-- Do not harass, stalk, threaten, intimidate, or abuse any user, creator, or LinkME employee
+- Do not harass, stalk, threaten, intimidate, or abuse any user, creator, or CRAVR employee
 - Do not engage in cyberbullying, doxxing, or coordinated harassment campaigns
 - Do not send unsolicited explicit content or unwanted sexual advances
 - Do not impersonate others or create fake accounts to harass
@@ -735,7 +735,7 @@ All users and creators agree to:
 - Do not engage in fraud, scams, or financial crimes
 - Do not distribute illegal drugs or controlled substances
 - Do not facilitate or promote any illegal activity
-- Any suspected trafficking activity must be reported to support@LinkME.com immediately
+- Any suspected trafficking activity must be reported to support@cravr.fun immediately
 
 ### 2.3 Exploitation & Abuse
 - Do not create, share, or request content involving minors
@@ -767,8 +767,8 @@ All users and creators agree to:
 
 ### 3.1 How to Report
 - Use the in-platform "Report" button on any profile, chat, or stream
-- Email: support@LinkME.com
-- For emergencies involving minors or trafficking: legal@LinkME.com (escalated to authorities within 1 hour)
+- Email: support@cravr.fun
+- For emergencies involving minors or trafficking: legal@cravr.fun (escalated to authorities within 1 hour)
 
 All reports are treated confidentially. We review every report within 24 hours.
 
@@ -810,7 +810,7 @@ Viewers agree to:
 
 ## 6. ZERO TOLERANCE FOR CSAM
 
-LinkME maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (CSAM). Any content, communication, or activity involving minors in a sexual context will result in:
+CRAVR maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (CSAM). Any content, communication, or activity involving minors in a sexual context will result in:
 - Immediate account termination
 - Permanent ban from the platform
 - Preservation of all evidence
@@ -821,7 +821,7 @@ LinkME maintains a **ZERO TOLERANCE POLICY** for child sexual abuse material (CS
 
 ## 7. MODIFICATIONS & UPDATES
 
-LinkME reserves the right to modify this Code of Conduct at any time. Material changes will be communicated via email or platform notice. Continued use of the platform constitutes acceptance of any updates.
+CRAVR reserves the right to modify this Code of Conduct at any time. Material changes will be communicated via email or platform notice. Continued use of the platform constitutes acceptance of any updates.
 
 ---
 
@@ -844,7 +844,7 @@ Appeals are **not** available for:
 ### 8.2 How to Submit an Appeal
 
 **Step 1 — Submit within 30 days:**
-Email support@LinkME.com with the subject line: "Moderation Appeal — [Your Username]"
+Email support@cravr.fun with the subject line: "Moderation Appeal — [Your Username]"
 
 **Include in your appeal:**
 - Your username and account email
@@ -877,16 +877,16 @@ You will receive a written decision via email with:
 Appeal decisions are final. If you believe your legal rights have been violated (e.g., DMCA counter-notification, civil rights), you may pursue remedies through applicable legal channels.
 
 ### 8.5 DMCA Counter-Notification
-If content was removed pursuant to a DMCA takedown notice and you believe it was removed in error, you may file a counter-notification at legal@LinkME.com. See our DMCA Policy for the required elements of a valid counter-notification.
+If content was removed pursuant to a DMCA takedown notice and you believe it was removed in error, you may file a counter-notification at legal@cravr.fun. See our DMCA Policy for the required elements of a valid counter-notification.
 
 ---
 
 ## CONTACT & SUPPORT
 
-**LinkME Community Team**
-Email: support@LinkME.com
-Safety & Reports: support@LinkME.com
-Appeals: support@LinkME.com
+**CRAVR Community Team**
+Email: support@cravr.fun
+Safety & Reports: support@cravr.fun
+Appeals: support@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
@@ -908,19 +908,19 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ## OVERVIEW
 
-LinkME LLC ("LinkME") respects the intellectual property rights of others and expects users and creators to do the same. We comply with the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512, and have adopted policies to address copyright infringement on our platform.
+LinkME LLC ("CRAVR") respects the intellectual property rights of others and expects users and creators to do the same. We comply with the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512, and have adopted policies to address copyright infringement on our platform.
 
 ---
 
 ## 1. DESIGNATED COPYRIGHT AGENT
 
-LinkME has designated a Copyright Agent to receive notifications of claimed copyright infringement:
+CRAVR has designated a Copyright Agent to receive notifications of claimed copyright infringement:
 
 **DMCA Copyright Agent**
 LinkME LLC
 30 N Gould St Ste N
 Sheridan, WY 82801, USA
-Email: legal@LinkME.com
+Email: legal@cravr.fun
 
 For the fastest processing, send DMCA notices by email.
 
@@ -928,7 +928,7 @@ For the fastest processing, send DMCA notices by email.
 
 ## 2. NOTICE OF CLAIMED COPYRIGHT INFRINGEMENT (TAKEDOWN)
 
-If you believe that content hosted on LinkME infringes your copyright, you may submit a DMCA takedown notice. To be valid under 17 U.S.C. § 512(c)(3), your notice must include ALL of the following:
+If you believe that content hosted on CRAVR infringes your copyright, you may submit a DMCA takedown notice. To be valid under 17 U.S.C. § 512(c)(3), your notice must include ALL of the following:
 
 ### 2.1 Required Elements
 
@@ -946,7 +946,7 @@ If you believe that content hosted on LinkME infringes your copyright, you may s
 
 ### 2.2 Where to Send
 
-Email (preferred): legal@LinkME.com (Subject: "DMCA Takedown Notice")
+Email (preferred): legal@cravr.fun (Subject: "DMCA Takedown Notice")
 
 **WARNING:** Knowingly submitting a materially false DMCA claim is perjury and may result in civil liability. See 17 U.S.C. § 512(f).
 
@@ -981,7 +981,7 @@ Upon receipt of a valid counter-notification:
 
 ## 4. REPEAT INFRINGER POLICY
 
-Consistent with the DMCA and other applicable law, LinkME maintains a policy of terminating accounts of users and creators who are repeat copyright infringers in appropriate circumstances. We consider a "repeat infringer" to be a user who has received multiple valid DMCA takedown notices within a 12-month period.
+Consistent with the DMCA and other applicable law, CRAVR maintains a policy of terminating accounts of users and creators who are repeat copyright infringers in appropriate circumstances. We consider a "repeat infringer" to be a user who has received multiple valid DMCA takedown notices within a 12-month period.
 
 ---
 
@@ -995,19 +995,19 @@ We recognize that many situations involve complex questions of fair use, transfo
 
 For content that violates our Terms of Service or Code of Conduct (harassment, illegal content, community standards) but does not constitute copyright infringement, please report using:
 - In-platform "Report" button
-- Email: support@LinkME.com
+- Email: support@cravr.fun
 
 ---
 
 ## 7. MODIFICATIONS
 
-LinkME reserves the right to modify this policy at any time. Changes will be posted on this page with an updated date.
+CRAVR reserves the right to modify this policy at any time. Changes will be posted on this page with an updated date.
 
 ---
 
 **Contact:**
-DMCA Agent: legal@LinkME.com
-Legal: legal@LinkME.com
+DMCA Agent: legal@cravr.fun
+Legal: legal@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 © 2026 LinkME LLC All rights reserved.
@@ -1027,7 +1027,7 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ## OVERVIEW
 
-This Refund Policy describes the circumstances under which LinkME LLC ("LinkME," "we," "us") will issue refunds for purchases made on our platform. Please read this policy carefully before making any purchase.
+This Refund Policy describes the circumstances under which LinkME LLC ("CRAVR," "we," "us") will issue refunds for purchases made on our platform. Please read this policy carefully before making any purchase.
 
 ---
 
@@ -1050,19 +1050,19 @@ If a verifiable technical error on our platform caused:
 - A duplicate charge for the same transaction
 - A payment being processed for a cancelled subscription
 
-You must report the error within **7 days** of the transaction to support@LinkME.com with your transaction ID and a description of the issue.
+You must report the error within **7 days** of the transaction to support@cravr.fun with your transaction ID and a description of the issue.
 
 ### 2.2 Unauthorized Transactions
-If your account was accessed without your authorization and charges were made, contact us immediately at support@LinkME.com and support@LinkME.com. We will investigate and, where confirmed, refund unauthorized charges. You must also:
+If your account was accessed without your authorization and charges were made, contact us immediately at support@cravr.fun and support@cravr.fun. We will investigate and, where confirmed, refund unauthorized charges. You must also:
 - Change your password immediately
 - Enable two-factor authentication
 - File a report with your bank or card issuer if appropriate
 
 ### 2.3 Consumer Protection Law Requirements
-Where applicable consumer protection laws in your jurisdiction mandate refund rights (e.g., EU/UK cooling-off periods for digital content), we will honor those rights. Note that for digital content that has been accessed or consumed, many such statutory rights may not apply. Contact legal@LinkME.com for jurisdiction-specific guidance.
+Where applicable consumer protection laws in your jurisdiction mandate refund rights (e.g., EU/UK cooling-off periods for digital content), we will honor those rights. Note that for digital content that has been accessed or consumed, many such statutory rights may not apply. Contact legal@cravr.fun for jurisdiction-specific guidance.
 
 ### 2.4 Platform Termination
-If LinkME permanently shuts down the platform and you have an unused credit balance at the time of shutdown, we will refund the equivalent dollar value of your unused credits at the purchase exchange rate.
+If CRAVR permanently shuts down the platform and you have an unused credit balance at the time of shutdown, we will refund the equivalent dollar value of your unused credits at the purchase exchange rate.
 
 ---
 
@@ -1094,13 +1094,13 @@ Cancel your subscription at any time from Account Settings → Billing → Subsc
 
 ## 5. CREATOR CONTENT COMPLAINTS
 
-If you believe a creator engaged in deceptive practices (e.g., promised specific content and delivered something materially different), contact support@LinkME.com within 72 hours of the interaction. We will review the complaint and may issue a credit refund at our sole discretion if deception is verified. We do not mediate subjective quality disputes.
+If you believe a creator engaged in deceptive practices (e.g., promised specific content and delivered something materially different), contact support@cravr.fun within 72 hours of the interaction. We will review the complaint and may issue a credit refund at our sole discretion if deception is verified. We do not mediate subjective quality disputes.
 
 ---
 
 ## 6. HOW TO REQUEST A REFUND
 
-**Step 1:** Contact support@LinkME.com with the subject line "Refund Request — [Transaction ID]"
+**Step 1:** Contact support@cravr.fun with the subject line "Refund Request — [Transaction ID]"
 
 **Step 2:** Include the following information:
 - Your username and account email
@@ -1126,8 +1126,8 @@ If you initiate a chargeback with your bank or card issuer without first contact
 
 For refund requests and billing inquiries:
 
-**LinkME Billing Team**
-Email: support@LinkME.com
+**CRAVR Billing Team**
+Email: support@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 Response time: 2 business days for acknowledgment; 5–10 business days for resolution
 
@@ -1150,7 +1150,7 @@ Response time: 2 business days for acknowledgment; 5–10 business days for reso
 
 ## OVERVIEW
 
-LinkME LLC ("LinkME," "we," "us") uses cookies and similar tracking technologies on our platform. This Cookie Policy explains what cookies are, how we use them, your choices regarding cookies, and how to contact us about this policy.
+LinkME LLC ("CRAVR," "we," "us") uses cookies and similar tracking technologies on our platform. This Cookie Policy explains what cookies are, how we use them, your choices regarding cookies, and how to contact us about this policy.
 
 This policy should be read alongside our Privacy Policy.
 
@@ -1177,8 +1177,8 @@ These cookies are essential for the platform to function and cannot be switched 
 |---|---|---|
 | vl_age_gate_v1 | Records age gate acceptance | Session |
 | vl_age_verify_v1 | Records verification status | 1 year |
-| LinkME_token | Authentication session | 7 days |
-| LinkME_user | User session data | 7 days |
+| CRAVR_token | Authentication session | 7 days |
+| CRAVR_user | User session data | 7 days |
 
 ### 2.2 Functional / Preference Cookies
 
@@ -1224,7 +1224,7 @@ We do **not** allow third-party advertising networks to set cookies on our platf
 ## 4. YOUR COOKIE CHOICES
 
 ### 4.1 Cookie Consent Banner
-When you first visit LinkME (after age gate acceptance), we display a cookie consent banner. You can accept all cookies, accept only necessary cookies, or manage your preferences individually.
+When you first visit CRAVR (after age gate acceptance), we display a cookie consent banner. You can accept all cookies, accept only necessary cookies, or manage your preferences individually.
 
 ### 4.2 Managing Cookies in Your Browser
 
@@ -1240,7 +1240,7 @@ Note: Deleting or blocking strictly necessary cookies will impair the platform's
 Our platform currently responds to Do Not Track browser signals by limiting non-essential tracking. We support user privacy preferences.
 
 ### 4.4 Opt-Out of Analytics
-To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible via the cookie icon in the footer) or contact legal@LinkME.com.
+To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible via the cookie icon in the footer) or contact legal@cravr.fun.
 
 ---
 
@@ -1273,8 +1273,8 @@ We may update this Cookie Policy as our practices change or as required by law. 
 
 For questions about our use of cookies:
 
-**LinkME Privacy Team**
-Email: legal@LinkME.com
+**CRAVR Privacy Team**
+Email: legal@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
@@ -1296,7 +1296,7 @@ Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ## INTRODUCTION
 
-LinkME is an adult platform built on the principles of consent, safety, and respect. These Community Guidelines explain in plain terms what is and isn't allowed on LinkME. All users — viewers and creators — must follow these guidelines. Violations may result in content removal, suspension, or permanent ban.
+CRAVR is an adult platform built on the principles of consent, safety, and respect. These Community Guidelines explain in plain terms what is and isn't allowed on CRAVR. All users — viewers and creators — must follow these guidelines. Violations may result in content removal, suspension, or permanent ban.
 
 These guidelines work alongside our Terms of Service and Code of Conduct. Where they overlap, the more specific rule applies.
 
@@ -1304,7 +1304,7 @@ These guidelines work alongside our Terms of Service and Code of Conduct. Where 
 
 ## WHAT WE STAND FOR
 
-- **Consent:** Every interaction on LinkME must be consensual. There is no exception.
+- **Consent:** Every interaction on CRAVR must be consensual. There is no exception.
 - **Safety:** The safety of every person on our platform comes first.
 - **Authenticity:** Be who you are. We don't allow fake personas created to deceive.
 - **Respect:** Everyone here deserves basic dignity, regardless of their role on the platform.
@@ -1334,7 +1334,7 @@ These guidelines work alongside our Terms of Service and Code of Conduct. Where 
 ## SECTION 2: CREATOR-SPECIFIC GUIDELINES
 
 ### 2.1 Creator Standards
-- You must be a verified adult (18+) to create content on LinkME
+- You must be a verified adult (18+) to create content on CRAVR
 - All individuals appearing in your content must be 18+ and have provided documented consent
 - You must maintain 18 U.S.C. § 2257 records for all content featuring other individuals
 - Your profile must accurately represent who you are — no impersonation of other creators or public figures
@@ -1347,7 +1347,7 @@ These guidelines work alongside our Terms of Service and Code of Conduct. Where 
 - Maintain control of your streaming environment — you are responsible for who and what appears on screen
 
 ### 2.3 Prohibited Creator Behavior
-- Do not use the platform to solicit off-platform payments outside of LinkME's system
+- Do not use the platform to solicit off-platform payments outside of CRAVR's system
 - Do not threaten or blackmail viewers
 - Do not promise exclusive off-platform contact as an inducement for payment
 - Do not share or sell viewer personal data
@@ -1395,7 +1395,7 @@ Consensual adult content exploring taboo or fantasy themes in a clearly fictiona
 ## SECTION 6: TRANSPARENCY & AUTHENTICITY
 
 - Do not misrepresent your identity for deceptive purposes
-- Do not claim to be LinkME staff unless you are
+- Do not claim to be CRAVR staff unless you are
 - Do not create fake profiles of real people without their consent
 - Do not use manipulative tactics to extract payments (false scarcity, false emergency claims, etc.)
 
@@ -1416,8 +1416,8 @@ All creators and users must comply with:
 If you see content or behavior that violates these guidelines:
 
 1. **In-platform:** Use the "Report" button on any profile, chat message, or stream
-2. **Email:** support@LinkME.com
-3. **Trafficking/minors:** legal@LinkME.com (escalated to authorities immediately)
+2. **Email:** support@cravr.fun
+3. **Trafficking/minors:** legal@cravr.fun (escalated to authorities immediately)
 
 Reports are confidential. We take every report seriously and respond within 24 hours.
 
@@ -1425,7 +1425,7 @@ Reports are confidential. We take every report seriously and respond within 24 h
 
 ## SECTION 9: APPEALS
 
-If your content was removed or your account was suspended, you may appeal through our moderation appeal process. See our Code of Conduct (Section 8) for full appeal procedures, or email support@LinkME.com.
+If your content was removed or your account was suspended, you may appeal through our moderation appeal process. See our Code of Conduct (Section 8) for full appeal procedures, or email support@cravr.fun.
 
 ---
 
@@ -1435,9 +1435,9 @@ These guidelines are updated as the platform evolves. Material changes will be c
 
 ---
 
-**LinkME Trust & Safety Team**
-Email: support@LinkME.com
-Community: support@LinkME.com
+**CRAVR Trust & Safety Team**
+Email: support@cravr.fun
+Community: support@cravr.fun
 Address: 30 N Gould St Ste N, Sheridan, WY 82801, USA
 
 ---
@@ -1564,7 +1564,7 @@ export default function LegalPages() {
         <div className="mt-12 text-center text-gray-400 text-sm">
           <p>© 2026 LinkME LLC All rights reserved.</p>
           <p className="mt-2">
-            For legal inquiries, contact: <span className="text-teal-400">legal@LinkME.com</span>
+            For legal inquiries, contact: <span className="text-teal-400">legal@cravr.fun</span>
           </p>
         </div>
       </div>

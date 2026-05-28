@@ -1,5 +1,5 @@
 /**
- * LINKME — Admin Age Verification Queue
+ * CRAVR — Admin Age Verification Queue
  * Velvet Dark Design System
  *
  * Admin-only page for reviewing pending age verification submissions.

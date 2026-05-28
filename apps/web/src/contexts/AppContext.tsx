@@ -1,5 +1,5 @@
 /**
- * LINKME — App Context
+ * CRAVR — App Context
  * Velvet Dark Design System
  * Global state: age gate, age verification, credits, unlocked content, auth.
  */
@@ -170,9 +170,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   // Auth
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("linkme_token"));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("cravr_token"));
   const [user, setUser] = useState<{ id: string; username: string; role: string } | null>(() => {
-    try { return JSON.parse(localStorage.getItem("linkme_user") ?? "null"); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem("cravr_user") ?? "null"); } catch { return null; }
   });
   const syncedRef = useRef(false);
 
@@ -268,7 +268,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (data?.id) {
           const u = { id: data.id, username: data.username, role: data.role };
           setUser(u);
-          localStorage.setItem("linkme_user", JSON.stringify(u));
+          localStorage.setItem("cravr_user", JSON.stringify(u));
           if (typeof data.credits === "number") {
             setCredits(data.credits);
             safeSet(STORAGE_KEYS.CREDITS, data.credits);
@@ -330,8 +330,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCredits(data.user.credits);
         safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
       }
-      localStorage.setItem("linkme_token", data.accessToken);
-      localStorage.setItem("linkme_user", JSON.stringify(data.user));
+      localStorage.setItem("cravr_token", data.accessToken);
+      localStorage.setItem("cravr_user", JSON.stringify(data.user));
       syncedRef.current = true;
     } catch {
       // Any error (network, HTTP 502/503, timeout) → API offline → demo mode
@@ -339,8 +339,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const demoToken = `demo-token-${Date.now()}`;
       setToken(demoToken);
       setUser(demoUser);
-      localStorage.setItem("linkme_token", demoToken);
-      localStorage.setItem("linkme_user", JSON.stringify(demoUser));
+      localStorage.setItem("cravr_token", demoToken);
+      localStorage.setItem("cravr_user", JSON.stringify(demoUser));
       syncedRef.current = true;
       toast.info("Demo mode active", { description: "API server offline — browsing locally. Start the backend for full functionality." });
     }
@@ -349,8 +349,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("linkme_token");
-    localStorage.removeItem("linkme_user");
+    localStorage.removeItem("cravr_token");
+    localStorage.removeItem("cravr_user");
     syncedRef.current = false;
     fetch(`${API_BASE}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => null);
   }, []);

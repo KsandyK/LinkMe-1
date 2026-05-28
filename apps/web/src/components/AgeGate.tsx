@@ -1,5 +1,5 @@
 /**
- * LINKME — AgeGate Component
+ * CRAVR — AgeGate Component
  * Velvet Dark Design System
  * Full-screen +18 acknowledgement landing page with legal compliance.
  * Must be accepted before any site content is shown.
@@ -51,8 +51,8 @@ export function AgeGate() {
             {/* Logo */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-3 mb-3">
-                <img src="/vibelink-icon.png" alt="LINKME" className="w-10 h-10" />
-                <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>LINKME</h1>
+                <img src="/vibelink-icon.png" alt="CRAVR" className="w-10 h-10" />
+                <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>CRAVR</h1>
               </div>
               <p style={{ color: "#14b8a6", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Premium Live Interaction Platform</p>
             </div>
@@ -75,7 +75,7 @@ export function AgeGate() {
 
             {/* Description */}
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "1.5rem", textAlign: "center" }}>
-              LINKME is a premium adult live interaction platform. All creators are verified adults who have consented to share content on this platform. All content is legal and compliant with applicable laws.
+              CRAVR is a premium adult live interaction platform. All creators are verified adults who have consented to share content on this platform. All content is legal and compliant with applicable laws.
             </p>
 
             {/* Compliance badges */}

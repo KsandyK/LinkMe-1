@@ -71,19 +71,19 @@ const LEGAL_DOCS = [
 const CONTACTS = [
   {
     label: "General Support",
-    email: "support@LinkME.com",
+    email: "support@cravr.fun",
     desc: "Billing, account issues, safety reports, appeals",
     icon: "💬",
   },
   {
     label: "Creator Support",
-    email: "creators@LinkME.com",
+    email: "creators@cravr.fun",
     desc: "Payouts, verification, content disputes, creator tools",
     icon: "🎬",
   },
   {
     label: "Legal & Compliance",
-    email: "legal@LinkME.com",
+    email: "legal@cravr.fun",
     desc: "DMCA, law enforcement, GDPR, §2257 records, privacy requests",
     icon: "⚖️",
   },

@@ -1,5 +1,5 @@
 /**
- * LINKME — Stripe Checkout Modal
+ * CRAVR — Stripe Checkout Modal
  *
  * Gated behind VITE_STRIPE_ENABLED=true + VITE_STRIPE_PUBLIC_KEY.
  * When Stripe is not configured (no public key), the modal simply does not render

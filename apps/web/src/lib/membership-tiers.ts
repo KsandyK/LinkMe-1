@@ -1,5 +1,5 @@
 /**
- * LINKME — Single Source of Truth for Membership & Boost Tiers
+ * CRAVR — Single Source of Truth for Membership & Boost Tiers
  *
  * Import from here in: BoostsPage, Account, StreamView, AppContext.
  * Never define tier prices or bonus credits inline in a page file.

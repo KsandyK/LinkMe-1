@@ -4,7 +4,7 @@ import { Send, Radio, Smile, MessageCircle, RefreshCw, Plus, X } from "lucide-re
 import { useApp } from "@/contexts/AppContext";
 import { messages as msgApi, ConversationItem, MessageItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { createMsgSocket, LinkMeSocket } from "@/lib/socket";
+import { createMsgSocket, CravrSocket } from "@/lib/socket";
 
 const QUICK_REPLIES = ["Hey! 👋", "You're amazing!", "When are you live next?", "❤️"];
 
@@ -105,7 +105,7 @@ export default function Messages() {
   const [showNewChat, setShowNewChat] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const wsRef = useRef<LinkMeSocket | null>(null);
+  const wsRef = useRef<CravrSocket | null>(null);
   const selectedIdRef = useRef<string | null>(null);
   const urlProcessedRef = useRef(false);
 

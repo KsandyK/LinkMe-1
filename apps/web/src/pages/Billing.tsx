@@ -479,7 +479,7 @@ export default function Billing() {
 
             {cards.length === 0 && !showAddCard && (
               <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.25)" }}>
-                Processed securely · Statement shows "LINKME"
+                Processed securely · Statement shows "CRAVR"
               </p>
             )}
           </div>
@@ -613,7 +613,7 @@ export default function Billing() {
         )}
 
         <p className="text-xs mt-6" style={{ color: "rgba(255,255,255,0.25)" }}>
-          All transactions are processed securely. Charges will appear on your statement as "LINKME".
+          All transactions are processed securely. Charges will appear on your statement as "CRAVR".
         </p>
       </div>
     </div>

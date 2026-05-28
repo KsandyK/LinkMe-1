@@ -56,7 +56,7 @@ const s3 = new S3Client({
     : {}),
 });
 
-const AGE_VERIFY_BUCKET = process.env.AGE_VERIFY_S3_BUCKET ?? "linkme-age-verify-dev";
+const AGE_VERIFY_BUCKET = process.env.AGE_VERIFY_S3_BUCKET ?? "cravr-age-verify-dev";
 
 /** Generate a presigned PUT URL — browser uploads directly to S3 */
 async function presignedPutUrl(s3Key: string, contentType: string): Promise<string> {
@@ -327,7 +327,7 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
         userId,
         type: "age_verify_approved",
         title: "Age Verification Approved ✓",
-        body: "Your identity has been verified. You now have full access to LinkMe.",
+        body: "Your identity has been verified. You now have full access to CRAVR.",
         data: {},
       },
     });

@@ -535,7 +535,7 @@ export default function BoostsPage() {
                   {
                     step: "1", icon: "📊",
                     title: "We read the data",
-                    desc: "Our system tracks when fans are most active on LINKME — by day, time slot, and category — and identifies your personal peak windows.",
+                    desc: "Our system tracks when fans are most active on CRAVR — by day, time slot, and category — and identifies your personal peak windows.",
                   },
                   {
                     step: "2", icon: "⚡",
@@ -701,7 +701,7 @@ export default function BoostsPage() {
           </div>
 
           <p className="text-xs text-center mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
-            🔒 Charged securely to your saved card on file · Statement shows "LINKME"
+            🔒 Charged securely to your saved card on file · Statement shows "CRAVR"
           </p>
 
           <div className="flex gap-3">

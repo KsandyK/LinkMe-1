@@ -12,8 +12,8 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src="/vibelink-icon.png" alt="LINKME" className="w-6 h-6" />
-              <span className="font-bold text-white">LINKME</span>
+              <img src="/vibelink-icon.png" alt="CRAVR" className="w-6 h-6" />
+              <span className="font-bold text-white">CRAVR</span>
             </div>
             <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
               Premium adult live interaction platform. All content is consensual and created by verified adult performers.
@@ -82,7 +82,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-            © {new Date().getFullYear()} LINKME. All rights reserved. For adults 18+ only.
+            © {new Date().getFullYear()} CRAVR. All rights reserved. For adults 18+ only.
           </p>
           <div className="flex items-center gap-4">
             <span className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>🔒 Secure & Encrypted</span>

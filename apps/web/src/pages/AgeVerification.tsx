@@ -1,5 +1,5 @@
 /**
- * LINKME — Age Verification Page
+ * CRAVR — Age Verification Page
  * Velvet Dark Design System
  *
  * Full production-ready age verification flow:
@@ -416,7 +416,7 @@ export default function AgeVerification() {
               Why We Verify Age
             </h2>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-              LINKME is an adult platform that takes its legal and ethical obligations seriously. Age verification ensures all users are adults and protects minors from accessing age-restricted content, as required by law in many jurisdictions.
+              CRAVR is an adult platform that takes its legal and ethical obligations seriously. Age verification ensures all users are adults and protects minors from accessing age-restricted content, as required by law in many jurisdictions.
             </p>
 
             <div className="space-y-3 mb-6">
@@ -693,7 +693,7 @@ export default function AgeVerification() {
             </div>
 
             <button onClick={() => navigate("/")} className="vl-btn-primary w-full py-3">
-              Return to LINKME
+              Return to CRAVR
             </button>
           </div>
         )}

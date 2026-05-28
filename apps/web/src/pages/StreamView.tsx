@@ -1,5 +1,5 @@
 /**
- * LINKME — Stream Viewer Page
+ * CRAVR — Stream Viewer Page
  * Velvet Dark Design System
  */
 
@@ -11,7 +11,7 @@ import { Link, useParams, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from "@/lib/api";
 import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
-import { createLiveSocket, LinkMeSocket } from "@/lib/socket";
+import { createLiveSocket, CravrSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
   Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
@@ -239,7 +239,7 @@ export default function StreamView() {
   ];
 
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const wsRef = useRef<LinkMeSocket | null>(null);
+  const wsRef = useRef<CravrSocket | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const giftDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -363,7 +363,7 @@ export default function StreamView() {
   // ── WebSocket connection ────────────────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
-    const accessToken = token ?? localStorage.getItem("linkme_token");
+    const accessToken = token ?? localStorage.getItem("cravr_token");
     if (!accessToken) return; // guest — WS not available
 
     const ws = createLiveSocket(accessToken);

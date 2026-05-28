@@ -1,6 +1,6 @@
-# LinkMe — Production Deployment Guide
+# CRAVR — Production Deployment Guide
 
-Deploy LinkMe to any Linux VPS (Ubuntu 22.04 recommended) with a custom domain, SSL, and CCBill payment processing.
+Deploy CRAVR to any Linux VPS (Ubuntu 22.04 recommended) with a custom domain, SSL, and CCBill payment processing.
 
 ---
 
@@ -56,9 +56,9 @@ docker run --rm hello-world
 
 ```bash
 cd /opt
-sudo git clone https://github.com/YOUR_USERNAME/LinkMe-1.git linkme
-sudo chown -R $USER:$USER linkme
-cd linkme
+sudo git clone https://github.com/YOUR_USERNAME/CRAVR-1.git CRAVR
+sudo chown -R $USER:$USER CRAVR
+cd CRAVR
 ```
 
 ---
@@ -75,9 +75,9 @@ Fill in every field. The required ones are:
 
 | Variable | How to get the value |
 |----------|---------------------|
-| `DOMAIN` | Your domain, e.g. `linkme.live` |
-| `VITE_API_URL` | `https://linkme.live` |
-| `ALLOWED_ORIGINS` | `https://linkme.live,https://www.linkme.live` |
+| `DOMAIN` | Your domain, e.g. `cravr.fun` |
+| `VITE_API_URL` | `https://cravr.fun` |
+| `ALLOWED_ORIGINS` | `https://cravr.fun,https://www.cravr.fun` |
 | `POSTGRES_PASSWORD` | Make up a strong random password |
 | `JWT_SECRET` | Run: `openssl rand -hex 64` |
 | `CCBILL_CLIENT_ACCNUM` | Your CCBill account number |
@@ -92,10 +92,10 @@ Fill in every field. The required ones are:
 
 ```bash
 # Replace YOURDOMAIN.COM placeholder (run this once)
-sed -i 's/YOURDOMAIN\.COM/linkme.live/g' nginx/nginx.conf
+sed -i 's/YOURDOMAIN\.COM/cravr.fun/g' nginx/nginx.conf
 ```
 
-(Replace `linkme.live` with your actual domain.)
+(Replace `cravr.fun` with your actual domain.)
 
 ---
 
@@ -134,7 +134,7 @@ docker compose -f docker-compose.prod.yml run --rm api \
   node -e "const { execSync } = require('child_process'); execSync('npx prisma migrate deploy', { stdio: 'inherit' })"
 
 # Or if you have node/pnpm on the host:
-# cd apps/api && DATABASE_URL="postgresql://linkme:PASSWORD@localhost:5432/linkme" npx prisma migrate deploy
+# cd apps/api && DATABASE_URL="postgresql://CRAVR:PASSWORD@localhost:5432/CRAVR" npx prisma migrate deploy
 ```
 
 ---
@@ -190,7 +190,7 @@ curl https://yourdomain.com/api/health
 curl -I https://yourdomain.com/ws
 ```
 
-Open `https://yourdomain.com` in a browser — you should see the LinkMe landing page.
+Open `https://yourdomain.com` in a browser — you should see the CRAVR landing page.
 
 ---
 
@@ -199,7 +199,7 @@ Open `https://yourdomain.com` in a browser — you should see the LinkMe landing
 ### Update the app after a code change
 
 ```bash
-cd /opt/linkme
+cd /opt/CRAVR
 git pull
 docker compose -f docker-compose.prod.yml up -d --build
 ```
@@ -230,7 +230,7 @@ docker compose -f docker-compose.prod.yml logs -f
 
 ```bash
 docker compose -f docker-compose.prod.yml exec postgres \
-  pg_dump -U linkme linkme > backup_$(date +%Y%m%d).sql
+  pg_dump -U CRAVR CRAVR > backup_$(date +%Y%m%d).sql
 ```
 
 ### Restart a single service

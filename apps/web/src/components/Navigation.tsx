@@ -9,7 +9,7 @@ function getUnreadCount(): number {
   try {
     const convs: { lastReadAt: string | null; lastMessage: { createdAt: string; senderId?: string } | null }[] =
       JSON.parse(localStorage.getItem(LOCAL_CONVS_KEY) ?? "[]");
-    const userId = (() => { try { return JSON.parse(localStorage.getItem("linkme_user") ?? "{}").id ?? null; } catch { return null; } })();
+    const userId = (() => { try { return JSON.parse(localStorage.getItem("cravr_user") ?? "{}").id ?? null; } catch { return null; } })();
     return convs.filter(c => {
       if (!c.lastMessage) return false;
       // Don't count messages the current user sent themselves
@@ -61,8 +61,8 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <img src="/vibelink-icon.png" alt="LINKME" className="w-7 h-7" />
-              <span className="font-bold text-lg text-white tracking-tight">LINKME</span>
+              <img src="/vibelink-icon.png" alt="CRAVR" className="w-7 h-7" />
+              <span className="font-bold text-lg text-white tracking-tight">CRAVR</span>
             </div>
           </Link>
 

@@ -1,5 +1,5 @@
 /**
- * LinkMe API — entry point
+ * CRAVR API — entry point
  *
  * HTTP  → Express (port $PORT, default 3000)
  * WS    → ws.WebSocketServer (port $WS_PORT, default 3001)

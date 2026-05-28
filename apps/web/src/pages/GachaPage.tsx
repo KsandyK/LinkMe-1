@@ -1,5 +1,5 @@
 /**
- * LINKME — The Pull (Gacha System)
+ * CRAVR — The Pull (Gacha System)
  * Velvet Dark Design System
  * Spend credits to pull rare items from rotating banners.
  */

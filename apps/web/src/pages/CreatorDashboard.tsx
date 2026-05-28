@@ -187,7 +187,7 @@ export default function CreatorDashboard() {
   const [streamKeyRegenerating, setStreamKeyRegenerating] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [boostClaimed, setBoostClaimed] = useState(() => {
-    try { return localStorage.getItem("linkme_referral_claimed") === "1"; } catch { return false; }
+    try { return localStorage.getItem("CRAVR_referral_claimed") === "1"; } catch { return false; }
   });
   // Boost scheduling state (persisted to localStorage, same keys as BoostsPage)
   const [schedule, setSchedule] = useState<ScheduleMap>(() => {
@@ -229,7 +229,7 @@ export default function CreatorDashboard() {
     setStreamKeyLoading(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL ?? "";
-      const token  = localStorage.getItem("linkme_token") ?? "";
+      const token  = localStorage.getItem("cravr_token") ?? "";
       const res    = await fetch(`${apiUrl}/api/streams/key`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -260,7 +260,7 @@ export default function CreatorDashboard() {
     setStreamKeyRegenerating(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL ?? "";
-      const token  = localStorage.getItem("linkme_token") ?? "";
+      const token  = localStorage.getItem("cravr_token") ?? "";
       const res    = await fetch(`${apiUrl}/api/streams/key/regenerate`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -1330,7 +1330,7 @@ export default function CreatorDashboard() {
                         onClick={() => {
                           if (!referralMet) return;
                           setBoostClaimed(true);
-                          try { localStorage.setItem("linkme_referral_claimed", "1"); } catch {}
+                          try { localStorage.setItem("CRAVR_referral_claimed", "1"); } catch {}
                           showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket (e.g. 80% → 83%). Check your Creator Agreement §2.9 for details." });
                         }}
                         className="w-full py-3 rounded-xl text-sm font-bold transition-all"
@@ -1500,7 +1500,7 @@ export default function CreatorDashboard() {
                           {
                             step: "3",
                             title: 'Click "Start Streaming" in OBS',
-                            body: "Within 5 seconds your stream appears live on LinkMe. Viewers will see you in the Live section and on your profile page.",
+                            body: "Within 5 seconds your stream appears live on CRAVR. Viewers will see you in the Live section and on your profile page.",
                           },
                         ].map(s => (
                           <div key={s.step} className="flex gap-3">

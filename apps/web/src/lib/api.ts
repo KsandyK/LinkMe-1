@@ -1,5 +1,5 @@
 /**
- * LINKME — API client
+ * CRAVR — API client
  * Wraps every backend route with JWT injection + automatic token refresh.
  */
 
@@ -8,13 +8,13 @@ const BASE: string = (import.meta as any).env?.VITE_API_URL || "";
 
 // ── Token helpers ────────────────────────────────────────────────────────────
 
-let _accessToken: string | null = localStorage.getItem("linkme_token");
+let _accessToken: string | null = localStorage.getItem("cravr_token");
 let _refreshing: Promise<void> | null = null;
 
 export function setAccessToken(token: string | null) {
   _accessToken = token;
-  if (token) localStorage.setItem("linkme_token", token);
-  else localStorage.removeItem("linkme_token");
+  if (token) localStorage.setItem("cravr_token", token);
+  else localStorage.removeItem("cravr_token");
 }
 
 async function refreshTokens(): Promise<void> {
@@ -24,7 +24,7 @@ async function refreshTokens(): Promise<void> {
   });
   if (!res.ok) {
     setAccessToken(null);
-    localStorage.removeItem("linkme_user");
+    localStorage.removeItem("cravr_user");
     return;
   }
   const data = await res.json();

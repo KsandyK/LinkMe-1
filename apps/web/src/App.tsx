@@ -1,5 +1,5 @@
 /**
- * LINKME — App Router
+ * CRAVR — App Router
  * Velvet Dark Design System
  * All routes, providers, age gate, and navigation.
  * Heavy pages are lazy-loaded to keep the initial bundle lean.
