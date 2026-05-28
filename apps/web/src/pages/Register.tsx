@@ -155,9 +155,7 @@ export default function Register() {
         {/* Header */}
         <div className="text-center mb-8">
           <img src="/vibelink-icon.png" alt="CRAVR" className="w-14 h-14 mx-auto mb-3" />
-          <h1 className="text-3xl font-black text-foreground">
-            <span style={{ color: "#14B8A6" }}>Link</span>Me
-          </h1>
+          <h1 className="text-3xl font-black" style={{ color: "#14B8A6" }}>CRAVR</h1>
           <p className="text-muted-foreground text-sm mt-1">Create your free member account</p>
         </div>
 
