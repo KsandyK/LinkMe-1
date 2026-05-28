@@ -94,7 +94,7 @@ THIS AGREEMENT CONTAINS A MANDATORY ARBITRATION PROVISION AND CLASS ACTION WAIVE
 
 4.4 Pricing is in USD and subject to change with 7 days' notice for subscriptions. We reserve the right to modify credit-to-dollar ratios at any time.
 
-4.5 **Chargebacks & Disputes:** We encourage you to contact us first at billing@LINKME.com before initiating any payment dispute. Initiating a chargeback without first exhausting LINKME's internal dispute resolution process constitutes a breach of these Terms. In such cases:
+4.5 **Chargebacks & Disputes:** We encourage you to contact us first at support@LinkMe.com before initiating any payment dispute. Initiating a chargeback without first exhausting LINKME's internal dispute resolution process constitutes a breach of these Terms. In such cases:
 - Your account will be immediately suspended pending investigation
 - You will be liable for the disputed amount plus an administrative processing fee
 - LINKME reserves the right to pursue collection through any lawful means
@@ -142,7 +142,7 @@ Any violation of this section will result in immediate permanent termination, pr
 
 6.3 **Prohibited Content Actions:** You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
 
-6.4 **DMCA:** If you believe content infringes your copyright, see our DMCA Policy or send a compliant notice to: dmca@LINKME.com. Repeat infringers' accounts will be terminated.
+6.4 **DMCA:** If you believe content infringes your copyright, see our DMCA Policy or send a compliant notice to: legal@LinkMe.com. Repeat infringers' accounts will be terminated.
 
 6.5 **User Content License:** By submitting any content (messages, profile information, reviews), you grant LINKME a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.
 
@@ -326,7 +326,7 @@ We do **NOT** sell your personal information to third parties. We may share info
 ## 6. YOUR RIGHTS & CHOICES
 
 ### 6.1 Access & Portability
-You have the right to request a copy of your personal data in a portable, machine-readable format. Submit requests to privacy@LINKME.com.
+You have the right to request a copy of your personal data in a portable, machine-readable format. Submit requests to legal@LinkMe.com.
 
 ### 6.2 Correction
 You may request correction of inaccurate or incomplete personal data.
@@ -335,7 +335,7 @@ You may request correction of inaccurate or incomplete personal data.
 You may request deletion of your account and associated personal data. We will comply unless retention is required by law (e.g., payment records, age verification data, law enforcement holds).
 
 ### 6.4 Marketing Opt-Out
-You may opt out of marketing communications at any time by clicking "unsubscribe" in any email or contacting privacy@LINKME.com. You cannot opt out of essential service communications.
+You may opt out of marketing communications at any time by clicking "unsubscribe" in any email or contacting legal@LinkMe.com. You cannot opt out of essential service communications.
 
 ### 6.5 Cookie Preferences
 You can manage your cookie preferences through our cookie consent banner or your browser settings. See our Cookie Policy for details.
@@ -352,7 +352,7 @@ LINKME is not intended for users under 18 years of age. We do not knowingly coll
 
 Your information may be transferred to, stored in, and processed in the United States or other countries where our service providers operate. By using the Service, you consent to such transfers.
 
-For transfers from the EU/EEA/UK, we use appropriate safeguards including Standard Contractual Clauses (SCCs) approved by the European Commission or UK equivalent. Contact gdpr@LINKME.com for a copy of the applicable SCCs.
+For transfers from the EU/EEA/UK, we use appropriate safeguards including Standard Contractual Clauses (SCCs) approved by the European Commission or UK equivalent. Contact legal@LinkMe.com for a copy of the applicable SCCs.
 
 ---
 
@@ -361,8 +361,8 @@ For transfers from the EU/EEA/UK, we use appropriate safeguards including Standa
 For privacy inquiries:
 
 **LINKME Privacy Team**
-Email: privacy@LINKME.com
-GDPR inquiries: gdpr@LINKME.com
+Email: legal@LinkMe.com
+GDPR inquiries: legal@LinkMe.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
@@ -385,7 +385,7 @@ You have the right to request deletion of the personal information we have colle
 You have the right to request correction of inaccurate personal information we hold about you.
 
 ### 10.4 Right to Opt-Out of Sale / Sharing
-We do **not** sell personal information as defined by the CCPA. We do not share personal information with third parties for cross-context behavioral advertising. You may submit a "Do Not Sell or Share My Personal Information" request to privacy@LINKME.com, though such a request is not currently applicable given our current practices.
+We do **not** sell personal information as defined by the CCPA. We do not share personal information with third parties for cross-context behavioral advertising. You may submit a "Do Not Sell or Share My Personal Information" request to legal@LinkMe.com, though such a request is not currently applicable given our current practices.
 
 ### 10.5 Right to Limit Use of Sensitive Personal Information
 We use sensitive personal information (such as age verification data) only as necessary to provide the Service. You have the right to request that we limit the use and disclosure of such information to what is necessary to perform the services you requested.
@@ -394,11 +394,11 @@ We use sensitive personal information (such as age verification data) only as ne
 We will not discriminate against you for exercising any of your CCPA rights. We will not deny you services, charge different prices, or provide a different level of service because you exercised your privacy rights.
 
 ### 10.7 Shine the Light (California Civil Code § 1798.83)
-California residents who provide personal information in obtaining products or services for personal, family, or household use are entitled to request information about our sharing of their personal information with third parties for the other parties' direct marketing purposes. To make such a request, contact privacy@LINKME.com.
+California residents who provide personal information in obtaining products or services for personal, family, or household use are entitled to request information about our sharing of their personal information with third parties for the other parties' direct marketing purposes. To make such a request, contact legal@LinkMe.com.
 
 ### 10.8 How to Submit a Request
 Submit CCPA requests to:
-- **Email:** privacy@LINKME.com (Subject: "CCPA Request")
+- **Email:** legal@LinkMe.com (Subject: "CCPA Request")
 - **Mail:** LINKME INC., Attn: Privacy — CCPA, 1234 Platform Way, Wilmington, DE 19801
 
 We will respond to verifiable requests within 45 days (extendable by an additional 45 days with notice). We will verify your identity before processing requests.
@@ -420,7 +420,7 @@ We will respond to verifiable requests within 45 days (extendable by an addition
 This section applies to individuals in the European Economic Area (EEA), United Kingdom, and Switzerland.
 
 ### 11.1 Data Controller
-LINKME INC. is the data controller for personal information processed through the Service. Our EU/UK contact: gdpr@LINKME.com.
+LINKME INC. is the data controller for personal information processed through the Service. Our EU/UK contact: legal@LinkMe.com.
 
 ### 11.2 Legal Bases for Processing
 
@@ -442,10 +442,10 @@ You have the following rights regarding your personal data:
 - **Rights Related to Automated Decision-Making (Art. 22):** Not be subject to solely automated decisions that significantly affect you
 
 ### 11.4 How to Exercise Your Rights
-Submit requests to gdpr@LINKME.com. We will respond within 30 days (extendable by 2 additional months with notice). There is no charge for exercising your rights, unless requests are manifestly unfounded or excessive.
+Submit requests to legal@LinkMe.com. We will respond within 30 days (extendable by 2 additional months with notice). There is no charge for exercising your rights, unless requests are manifestly unfounded or excessive.
 
 ### 11.5 Data Transfers Outside the EEA/UK
-When we transfer your personal data outside the EEA or UK, we use Standard Contractual Clauses (SCCs) or other appropriate safeguards. Contact gdpr@LINKME.com for a copy.
+When we transfer your personal data outside the EEA or UK, we use Standard Contractual Clauses (SCCs) or other appropriate safeguards. Contact legal@LinkMe.com for a copy.
 
 ### 11.6 Right to Lodge a Complaint
 You have the right to lodge a complaint with your local data protection authority. A list of EU supervisory authorities is available at edpb.europa.eu. For UK residents: ico.org.uk.
@@ -594,7 +594,7 @@ Upon meeting both thresholds, your revenue share rate is boosted by one percenta
 Chief Compliance Officer, LINKME INC.
 1234 Platform Way, Suite 100
 Wilmington, DE 19801, USA
-Email: compliance@LINKME.com
+Email: legal@LinkMe.com
 
 Inspection of records is available during normal business hours (9 AM–5 PM ET, Monday–Friday) upon reasonable advance notice and presentation of appropriate credentials.
 
@@ -619,7 +619,7 @@ Inspection of records is available during normal business hours (9 AM–5 PM ET,
 - Mandatory reporting to the National Center for Missing & Exploited Children (NCMEC) and relevant law enforcement agencies
 - Civil and/or criminal liability
 
-5.4 You agree to immediately report to compliance@LINKME.com any user you believe is attempting to use the platform for trafficking or solicitation purposes.
+5.4 You agree to immediately report to legal@LinkMe.com any user you believe is attempting to use the platform for trafficking or solicitation purposes.
 
 ---
 
@@ -735,7 +735,7 @@ All users and creators agree to:
 - Do not engage in fraud, scams, or financial crimes
 - Do not distribute illegal drugs or controlled substances
 - Do not facilitate or promote any illegal activity
-- Any suspected trafficking activity must be reported to safety@LINKME.com immediately
+- Any suspected trafficking activity must be reported to support@LinkMe.com immediately
 
 ### 2.3 Exploitation & Abuse
 - Do not create, share, or request content involving minors
@@ -767,8 +767,8 @@ All users and creators agree to:
 
 ### 3.1 How to Report
 - Use the in-platform "Report" button on any profile, chat, or stream
-- Email: safety@LINKME.com
-- For emergencies involving minors or trafficking: law-enforcement@LINKME.com (escalated to authorities within 1 hour)
+- Email: support@LinkMe.com
+- For emergencies involving minors or trafficking: legal@LinkMe.com (escalated to authorities within 1 hour)
 
 All reports are treated confidentially. We review every report within 24 hours.
 
@@ -844,7 +844,7 @@ Appeals are **not** available for:
 ### 8.2 How to Submit an Appeal
 
 **Step 1 — Submit within 30 days:**
-Email appeals@LINKME.com with the subject line: "Moderation Appeal — [Your Username]"
+Email support@LinkMe.com with the subject line: "Moderation Appeal — [Your Username]"
 
 **Include in your appeal:**
 - Your username and account email
@@ -877,16 +877,16 @@ You will receive a written decision via email with:
 Appeal decisions are final. If you believe your legal rights have been violated (e.g., DMCA counter-notification, civil rights), you may pursue remedies through applicable legal channels.
 
 ### 8.5 DMCA Counter-Notification
-If content was removed pursuant to a DMCA takedown notice and you believe it was removed in error, you may file a counter-notification at dmca@LINKME.com. See our DMCA Policy for the required elements of a valid counter-notification.
+If content was removed pursuant to a DMCA takedown notice and you believe it was removed in error, you may file a counter-notification at legal@LinkMe.com. See our DMCA Policy for the required elements of a valid counter-notification.
 
 ---
 
 ## CONTACT & SUPPORT
 
 **LINKME Community Team**
-Email: community@LINKME.com
-Safety & Reports: safety@LINKME.com
-Appeals: appeals@LINKME.com
+Email: support@LinkMe.com
+Safety & Reports: support@LinkMe.com
+Appeals: support@LinkMe.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
@@ -920,7 +920,7 @@ LINKME has designated a Copyright Agent to receive notifications of claimed copy
 LINKME INC.
 1234 Platform Way
 Wilmington, DE 19801, USA
-Email: dmca@LINKME.com
+Email: legal@LinkMe.com
 
 For the fastest processing, send DMCA notices by email.
 
@@ -946,7 +946,7 @@ If you believe that content hosted on LINKME infringes your copyright, you may s
 
 ### 2.2 Where to Send
 
-Email (preferred): dmca@LINKME.com (Subject: "DMCA Takedown Notice")
+Email (preferred): legal@LinkMe.com (Subject: "DMCA Takedown Notice")
 
 **WARNING:** Knowingly submitting a materially false DMCA claim is perjury and may result in civil liability. See 17 U.S.C. § 512(f).
 
@@ -995,7 +995,7 @@ We recognize that many situations involve complex questions of fair use, transfo
 
 For content that violates our Terms of Service or Code of Conduct (harassment, illegal content, community standards) but does not constitute copyright infringement, please report using:
 - In-platform "Report" button
-- Email: safety@LINKME.com
+- Email: support@LinkMe.com
 
 ---
 
@@ -1006,7 +1006,7 @@ LINKME reserves the right to modify this policy at any time. Changes will be pos
 ---
 
 **Contact:**
-DMCA Agent: dmca@LINKME.com
+DMCA Agent: legal@LinkMe.com
 Legal: legal@LINKME.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
@@ -1050,16 +1050,16 @@ If a verifiable technical error on our platform caused:
 - A duplicate charge for the same transaction
 - A payment being processed for a cancelled subscription
 
-You must report the error within **7 days** of the transaction to billing@LINKME.com with your transaction ID and a description of the issue.
+You must report the error within **7 days** of the transaction to support@LinkMe.com with your transaction ID and a description of the issue.
 
 ### 2.2 Unauthorized Transactions
-If your account was accessed without your authorization and charges were made, contact us immediately at security@LINKME.com and billing@LINKME.com. We will investigate and, where confirmed, refund unauthorized charges. You must also:
+If your account was accessed without your authorization and charges were made, contact us immediately at support@LinkMe.com and support@LinkMe.com. We will investigate and, where confirmed, refund unauthorized charges. You must also:
 - Change your password immediately
 - Enable two-factor authentication
 - File a report with your bank or card issuer if appropriate
 
 ### 2.3 Consumer Protection Law Requirements
-Where applicable consumer protection laws in your jurisdiction mandate refund rights (e.g., EU/UK cooling-off periods for digital content), we will honor those rights. Note that for digital content that has been accessed or consumed, many such statutory rights may not apply. Contact privacy@LINKME.com for jurisdiction-specific guidance.
+Where applicable consumer protection laws in your jurisdiction mandate refund rights (e.g., EU/UK cooling-off periods for digital content), we will honor those rights. Note that for digital content that has been accessed or consumed, many such statutory rights may not apply. Contact legal@LinkMe.com for jurisdiction-specific guidance.
 
 ### 2.4 Platform Termination
 If LINKME permanently shuts down the platform and you have an unused credit balance at the time of shutdown, we will refund the equivalent dollar value of your unused credits at the purchase exchange rate.
@@ -1100,7 +1100,7 @@ If you believe a creator engaged in deceptive practices (e.g., promised specific
 
 ## 6. HOW TO REQUEST A REFUND
 
-**Step 1:** Contact billing@LINKME.com with the subject line "Refund Request — [Transaction ID]"
+**Step 1:** Contact support@LinkMe.com with the subject line "Refund Request — [Transaction ID]"
 
 **Step 2:** Include the following information:
 - Your username and account email
@@ -1127,7 +1127,7 @@ If you initiate a chargeback with your bank or card issuer without first contact
 For refund requests and billing inquiries:
 
 **LINKME Billing Team**
-Email: billing@LINKME.com
+Email: support@LinkMe.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 Response time: 2 business days for acknowledgment; 5–10 business days for resolution
 
@@ -1240,7 +1240,7 @@ Note: Deleting or blocking strictly necessary cookies will impair the platform's
 Our platform currently responds to Do Not Track browser signals by limiting non-essential tracking. We support user privacy preferences.
 
 ### 4.4 Opt-Out of Analytics
-To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible via the cookie icon in the footer) or contact privacy@LINKME.com.
+To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible via the cookie icon in the footer) or contact legal@LinkMe.com.
 
 ---
 
@@ -1274,7 +1274,7 @@ We may update this Cookie Policy as our practices change or as required by law. 
 For questions about our use of cookies:
 
 **LINKME Privacy Team**
-Email: privacy@LINKME.com
+Email: legal@LinkMe.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---
@@ -1416,8 +1416,8 @@ All creators and users must comply with:
 If you see content or behavior that violates these guidelines:
 
 1. **In-platform:** Use the "Report" button on any profile, chat message, or stream
-2. **Email:** safety@LINKME.com
-3. **Trafficking/minors:** law-enforcement@LINKME.com (escalated to authorities immediately)
+2. **Email:** support@LinkMe.com
+3. **Trafficking/minors:** legal@LinkMe.com (escalated to authorities immediately)
 
 Reports are confidential. We take every report seriously and respond within 24 hours.
 
@@ -1425,7 +1425,7 @@ Reports are confidential. We take every report seriously and respond within 24 h
 
 ## SECTION 9: APPEALS
 
-If your content was removed or your account was suspended, you may appeal through our moderation appeal process. See our Code of Conduct (Section 8) for full appeal procedures, or email appeals@LINKME.com.
+If your content was removed or your account was suspended, you may appeal through our moderation appeal process. See our Code of Conduct (Section 8) for full appeal procedures, or email support@LinkMe.com.
 
 ---
 
@@ -1436,8 +1436,8 @@ These guidelines are updated as the platform evolves. Material changes will be c
 ---
 
 **LINKME Trust & Safety Team**
-Email: safety@LINKME.com
-Community: community@LINKME.com
+Email: support@LinkMe.com
+Community: support@LinkMe.com
 Address: 1234 Platform Way, Wilmington, DE 19801, USA
 
 ---

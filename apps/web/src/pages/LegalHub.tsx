@@ -69,18 +69,24 @@ const LEGAL_DOCS = [
 ];
 
 const CONTACTS = [
-  { label: "General Support",    email: "support@LinkMe.com" },
-  { label: "Legal Department",   email: "legal@LinkMe.com" },
-  { label: "Privacy & Data",     email: "privacy@LinkMe.com" },
-  { label: "DMCA / Copyright",   email: "dmca@LinkMe.com" },
-  { label: "Safety & Reporting", email: "safety@LinkMe.com" },
-  { label: "Billing",            email: "billing@LinkMe.com" },
-  { label: "Creator Support",    email: "creators@LinkMe.com" },
-  { label: "Community & Trust",  email: "community@LinkMe.com" },
-  { label: "GDPR — EU",          email: "gdpr@LinkMe.com" },
-  { label: "Appeals",            email: "appeals@LinkMe.com" },
-  { label: "Compliance (§2257)", email: "compliance@LinkMe.com" },
-  { label: "Law Enforcement",    email: "law-enforcement@LinkMe.com" },
+  {
+    label: "General Support",
+    email: "support@LinkMe.com",
+    desc: "Billing, account issues, safety reports, appeals",
+    icon: "💬",
+  },
+  {
+    label: "Creator Support",
+    email: "creators@LinkMe.com",
+    desc: "Payouts, verification, content disputes, creator tools",
+    icon: "🎬",
+  },
+  {
+    label: "Legal & Compliance",
+    email: "legal@LinkMe.com",
+    desc: "DMCA, law enforcement, GDPR, §2257 records, privacy requests",
+    icon: "⚖️",
+  },
 ];
 
 export default function LegalHub() {
@@ -119,18 +125,25 @@ export default function LegalHub() {
           ))}
         </div>
 
-        {/* Contact Directory */}
+        {/* Contact */}
         <div className="p-6 rounded-xl border" style={{ background: "rgba(20,184,166,0.04)", borderColor: "rgba(20,184,166,0.2)" }}>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-1">
             <Mail className="w-4 h-4" style={{ color: "#14b8a6" }} />
-            <h2 className="text-sm font-bold text-white">Contact Directory</h2>
+            <h2 className="text-sm font-bold text-white">Contact Us</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+            Include a brief subject in your email so we can route it to the right person.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {CONTACTS.map(c => (
-              <div key={c.email} className="flex items-center justify-between gap-2 py-1.5 px-3 rounded-lg"
+              <div key={c.email} className="p-4 rounded-xl flex flex-col gap-2"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{c.label}</span>
-                <a href={`mailto:${c.email}`} className="text-xs font-mono hover:underline"
+                <div className="flex items-center gap-2">
+                  <span style={{ fontSize: "1.1rem" }}>{c.icon}</span>
+                  <span className="text-xs font-semibold text-white">{c.label}</span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{c.desc}</p>
+                <a href={`mailto:${c.email}`} className="text-xs font-mono mt-auto hover:underline"
                   style={{ color: "#14b8a6" }}>{c.email}</a>
               </div>
             ))}

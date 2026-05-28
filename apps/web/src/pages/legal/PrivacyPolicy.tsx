@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "8. Your Rights (GDPR / CCPA)",
-              content: `Depending on your location, you may have the following rights:\n\n• Right to access your personal data\n• Right to correct inaccurate data\n• Right to deletion ("right to be forgotten")\n• Right to data portability\n• Right to restrict processing\n• Right to opt out of marketing communications\n\nTo exercise these rights, contact: privacy@LinkMe.com\n\nCalifornia residents have additional rights under the CCPA, including the right to know what personal information is sold and the right to opt-out.`,
+              content: `Depending on your location, you may have the following rights:\n\n• Right to access your personal data\n• Right to correct inaccurate data\n• Right to deletion ("right to be forgotten")\n• Right to data portability\n• Right to restrict processing\n• Right to opt out of marketing communications\n\nTo exercise these rights, contact: legal@LinkMe.com\n\nCalifornia residents have additional rights under the CCPA, including the right to know what personal information is sold and the right to opt-out.`,
             },
             {
               title: "9. Cookies Policy",
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
             },
             {
               title: "10. Contact",
-              content: `Privacy inquiries:\n\nLinkMe Inc. — Data Privacy Officer\nprivacy@LinkMe.com\n\nFor GDPR requests (EU residents):\ngdpr@LinkMe.com`,
+              content: `Privacy inquiries:\n\nLinkMe Inc. — Data Privacy Officer\nlegal@LinkMe.com\n\nFor GDPR requests (EU residents):\nlegal@LinkMe.com`,
             },
           ].map(section => (
             <div key={section.title} className="p-5 rounded-xl border border-border bg-card">

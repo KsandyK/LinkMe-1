@@ -28,7 +28,7 @@ You must be at least 18 years of age. You represent under penalty of perjury tha
 Credits are virtual currency with no cash value. All purchases are final and non-refundable except as required by law or as described in our Refund Policy. Membership subscriptions auto-renew; cancel 48 hours before renewal.
 
 4. CHARGEBACKS
-Contact billing@LINKME.com before initiating any payment dispute. Chargebacks without prior contact result in account suspension and liability for an administrative processing fee.
+Contact support@LinkMe.com before initiating any payment dispute. Chargebacks without prior contact result in account suspension and liability for an administrative processing fee.
 
 5. USER CONDUCT & FOSTA-SESTA
 You may not use LINKME to facilitate prostitution, sex trafficking, or solicitation of real-world sexual services. Any violation is reported to NCMEC and law enforcement immediately. Full conduct rules in our Code of Conduct.
@@ -90,18 +90,18 @@ We do NOT sell your personal information. We share only with:
 AES-256 encryption at rest, TLS 1.3 in transit, PCI DSS Level 1 payment processing.
 
 5. YOUR RIGHTS
-Access, correct, or delete your data: privacy@LINKME.com
+Access, correct, or delete your data: legal@LinkMe.com
 
 6. CALIFORNIA RESIDENTS (CCPA)
 - Right to know, delete, correct, and opt-out of sale (we don't sell data)
 - Right to non-discrimination
-- Submit requests: privacy@LINKME.com (Subject: "CCPA Request")
+- Submit requests: legal@LinkMe.com (Subject: "CCPA Request")
 - Response within 45 days
 
 7. EU/EEA/UK RESIDENTS (GDPR)
 Legal bases: contract performance, legal obligation, legitimate interests, consent.
 Rights: access, rectification, erasure, portability, objection, restriction.
-Submit requests: gdpr@LINKME.com | Response within 30 days.
+Submit requests: legal@LinkMe.com | Response within 30 days.
 Right to lodge complaint with your local DPA.
 
 8. COOKIES
@@ -110,7 +110,7 @@ See our Cookie Policy for full details on cookies and your opt-out options.
 9. DATA RETENTION
 Account data: 1 year post-termination. Payment records: 7 years. Age verification: 5 years.
 
-Privacy: privacy@LINKME.com | GDPR: gdpr@LINKME.com
+Privacy: legal@LinkMe.com | GDPR: legal@LinkMe.com
 1234 Platform Way, Wilmington, DE 19801, USA
 © 2026 LINKME INC. All rights reserved.`,
 };
@@ -154,7 +154,7 @@ Bring 25 qualifying referrals to the platform using your unique Creator/Streamer
 
 3. § 2257 RECORD-KEEPING & CUSTODIAN OF RECORDS
 Compliance with 18 U.S.C. § 2257 is mandatory. Maintain age verification records for all depicted individuals for 5+ years.
-Custodian of Records: Chief Compliance Officer, LINKME INC., 1234 Platform Way Suite 100, Wilmington DE 19801. compliance@LINKME.com.
+Custodian of Records: Chief Compliance Officer, LINKME INC., 1234 Platform Way Suite 100, Wilmington DE 19801. legal@LinkMe.com.
 
 4. FOSTA-SESTA COMPLIANCE (MANDATORY)
 You are strictly prohibited from using LINKME to advertise, facilitate, or solicit real-world sexual services or sex trafficking. Violation = immediate permanent termination, forfeiture of all balances, reporting to NCMEC and law enforcement.
@@ -176,7 +176,7 @@ You agree to keep confidential all LINKME business information, algorithms, earn
 8. NDA SURVIVAL
 This confidentiality obligation survives termination for TWO (2) YEARS following the effective date of termination. After two years, publicly available information is no longer restricted.
 
-Creators: creators@LINKME.com | Compliance: compliance@LINKME.com
+Creators: creators@LINKME.com | Compliance: legal@LinkMe.com
 1234 Platform Way, Wilmington, DE 19801, USA
 © 2026 LINKME INC. All rights reserved.`,
 };
@@ -215,16 +215,16 @@ ENFORCEMENT TIERS:
 - Legal Action: CSAM, trafficking, fraud, criminal activity
 
 CONTENT MODERATION APPEALS:
-To appeal a removal or suspension, email appeals@LINKME.com within 30 days.
+To appeal a removal or suspension, email support@LinkMe.com within 30 days.
 Subject: "Moderation Appeal — [Username]"
 Include: username, account email, action appealed, date, explanation, evidence.
 Response time: 5–14 business days depending on severity.
 Appeals are reviewed by a different team member than the original decision.
 Zero-tolerance violations (CSAM, trafficking) are not eligible for appeal.
 
-Report violations: safety@LINKME.com
-Emergencies (minors/trafficking): law-enforcement@LINKME.com
-Appeals: appeals@LINKME.com
+Report violations: support@LinkMe.com
+Emergencies (minors/trafficking): legal@LinkMe.com
+Appeals: support@LinkMe.com
 © 2026 LINKME INC. All rights reserved.`,
 };
 
@@ -234,7 +234,7 @@ export const DMCA_POLICY: LegalDoc = {
   content: `LINKME INC. – DMCA POLICY
 Version 1.0 | Effective: May 27, 2026
 
-DMCA Agent: dmca@LINKME.com
+DMCA Agent: legal@LinkMe.com
 LINKME INC., 1234 Platform Way, Wilmington, DE 19801, USA
 
 TAKEDOWN NOTICE (17 U.S.C. § 512(c)(3))
@@ -246,7 +246,7 @@ To report copyright infringement, your notice must include:
 5. Statement of accuracy under penalty of perjury
 6. Your physical or electronic signature
 
-Send to: dmca@LINKME.com
+Send to: legal@LinkMe.com
 
 WARNING: Knowingly filing a false DMCA claim is perjury (17 U.S.C. § 512(f)).
 
@@ -263,7 +263,7 @@ After a valid counter-notice, the complainant has 10–14 business days to file 
 REPEAT INFRINGER POLICY
 Accounts with multiple valid DMCA notices within 12 months may be terminated.
 
-Non-copyright violations: safety@LINKME.com
+Non-copyright violations: support@LinkMe.com
 © 2026 LINKME INC. All rights reserved.`,
 };
 
@@ -277,9 +277,9 @@ GENERAL: All credit purchases are final and non-refundable.
 
 ELIGIBLE FOR REFUND:
 1. Technical errors — credits deducted without feature delivery, duplicate charges
-   (Report within 7 days to billing@LINKME.com with transaction ID)
+   (Report within 7 days to support@LinkMe.com with transaction ID)
 2. Unauthorized transactions — account accessed without your authorization
-   (Contact security@LINKME.com and billing@LINKME.com immediately)
+   (Contact support@LinkMe.com and support@LinkMe.com immediately)
 3. Consumer protection law requirements in your jurisdiction
 4. Platform permanent shutdown (pro-rated unused credit balance refunded)
 
@@ -296,13 +296,13 @@ SUBSCRIPTION CANCELLATIONS:
 - Cancel at least 48 hours before renewal to avoid next charge.
 
 HOW TO REQUEST A REFUND:
-Email: billing@LINKME.com
+Email: support@LinkMe.com
 Subject: "Refund Request — [Transaction ID]"
 Include: username, email, transaction ID, date, amount, reason, evidence.
 Response: 2 business days acknowledgment; 5–10 business days resolution.
 Approved refunds returned to original payment method within 5–10 business days.
 
-Billing: billing@LINKME.com
+Billing: support@LinkMe.com
 © 2026 LINKME INC. All rights reserved.`,
 };
 
@@ -337,14 +337,14 @@ WE DO NOT:
 YOUR CHOICES:
 - Manage preferences via cookie consent banner (shown on first visit)
 - Browser settings: Chrome/Firefox/Safari/Edge all allow cookie management
-- Opt out of analytics: privacy@LINKME.com
+- Opt out of analytics: legal@LinkMe.com
 
 GDPR: We obtain consent before placing non-essential cookies.
 CCPA: We do not sell personal information collected via cookies.
 
 Adult platform note: Age gate and verification cookies are essential. Clearing them will require re-verification on next visit.
 
-Privacy: privacy@LINKME.com
+Privacy: legal@LinkMe.com
 © 2026 LINKME INC. All rights reserved.`,
 };
 
@@ -390,12 +390,12 @@ MESSAGING:
 
 REPORTING VIOLATIONS:
 In-platform: Use "Report" button on any profile, message, or stream.
-Email: safety@LINKME.com
-Minors/Trafficking emergencies: law-enforcement@LINKME.com (escalated within 1 hour)
+Email: support@LinkMe.com
+Minors/Trafficking emergencies: legal@LinkMe.com (escalated within 1 hour)
 
-APPEALS: Email appeals@LINKME.com within 30 days of any moderation action.
+APPEALS: Email support@LinkMe.com within 30 days of any moderation action.
 
-Safety: safety@LINKME.com | Community: community@LINKME.com
+Safety: support@LinkMe.com | Community: support@LinkMe.com
 © 2026 LINKME INC. All rights reserved.`,
 };
 

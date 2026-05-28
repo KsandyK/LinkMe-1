@@ -17,22 +17,15 @@ export default function TermsOfService() {
 
           {/* ── Contact Directory ──────────────────────────────────────────── */}
           <div className="p-5 rounded-xl border" style={{ background: "rgba(20,184,166,0.04)", borderColor: "rgba(20,184,166,0.25)" }}>
-            <h2 className="text-foreground font-bold text-base mb-1">📬 Contact Directory</h2>
+            <h2 className="text-foreground font-bold text-base mb-1">📬 Contact Us</h2>
             <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Use the appropriate address below — routing your inquiry to the right team ensures the fastest response.
+              Include a brief subject line so we can route your message quickly.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               {[
-                { dept: "General Support",      email: "support@LinkMe.com",           desc: "Account issues, billing help, general questions" },
-                { dept: "Legal Department",     email: "legal@LinkMe.com",             desc: "Legal notices, subpoenas, contract matters" },
-                { dept: "Privacy & Data",       email: "privacy@LinkMe.com",           desc: "Data requests, GDPR/CCPA, privacy concerns" },
-                { dept: "DMCA / Copyright",     email: "dmca@LinkMe.com",              desc: "Copyright takedown notices & counter-notices" },
-                { dept: "Community & Trust",    email: "community@LinkMe.com",         desc: "Code of conduct, community standards, appeals" },
-                { dept: "Safety & Reporting",   email: "safety@LinkMe.com",            desc: "Abuse reports, harassment, urgent safety issues" },
-                { dept: "Billing",              email: "billing@LinkMe.com",           desc: "Payment disputes, refund requests, invoices" },
-                { dept: "Creator Support",      email: "creators@LinkMe.com",          desc: "Creator onboarding, payout questions, studio help" },
-                { dept: "GDPR — EU Residents",  email: "gdpr@LinkMe.com",              desc: "EU data subject rights requests" },
-                { dept: "Law Enforcement",      email: "law-enforcement@LinkMe.com",   desc: "Official law enforcement requests only" },
+                { dept: "💬 General Support",  email: "support@LinkMe.com",  desc: "Billing, account issues, safety reports, appeals" },
+                { dept: "🎬 Creator Support",  email: "creators@LinkMe.com", desc: "Payouts, verification, content disputes, studio help" },
+                { dept: "⚖️ Legal & Compliance", email: "legal@LinkMe.com",   desc: "DMCA, law enforcement, GDPR, §2257, privacy requests" },
               ].map(c => (
                 <div key={c.email} className="flex flex-col gap-0.5 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   <span className="text-xs font-bold text-foreground">{c.dept}</span>
@@ -141,7 +134,7 @@ export default function TermsOfService() {
 
 6.3 Prohibited Content Actions: You may not download, export, record, screenshot, or reproduce any platform content. Violation constitutes copyright infringement and may expose you to civil liability of up to $150,000 per work under 17 U.S.C. § 504, plus attorney's fees.
 
-6.4 DMCA: If you believe content infringes your copyright, send a DMCA notice to: dmca@LinkMe.com. Repeat infringers' accounts will be terminated.
+6.4 DMCA: If you believe content infringes your copyright, send a DMCA notice to: legal@LinkMe.com. Repeat infringers' accounts will be terminated.
 
 6.5 User Content License: By submitting any content (messages, profile information, reviews), you grant LinkMe a perpetual, irrevocable, royalty-free, worldwide license to use, store, display, and moderate that content for platform operations.`,
             },
@@ -225,16 +218,9 @@ YOUR USE OF THE SERVICE IS ENTIRELY AT YOUR OWN RISK.`,
 LinkMe Inc.
 1234 Platform Way, Wilmington, DE 19801, USA
 
-General Support:       support@LinkMe.com
-Legal Department:      legal@LinkMe.com
-Privacy & Data:        privacy@LinkMe.com
-DMCA / Copyright:      dmca@LinkMe.com
-Community & Trust:     community@LinkMe.com
-Safety & Reporting:    safety@LinkMe.com
-Billing:               billing@LinkMe.com
-Creator Support:       creators@LinkMe.com
-GDPR (EU Residents):   gdpr@LinkMe.com
-Law Enforcement:       law-enforcement@LinkMe.com`,
+General Support (billing, safety, appeals):  support@LinkMe.com
+Creator Support (payouts, verification):     creators@LinkMe.com
+Legal & Compliance (DMCA, GDPR, LE):        legal@LinkMe.com`,
             },
             {
               title: "14. DMCA Policy & Copyright Takedowns (17 U.S.C. § 512)",
@@ -244,7 +230,7 @@ LinkMe Inc. has designated the following agent to receive notifications of claim
   DMCA Designated Agent
   LinkMe Inc. — Copyright Department
   1234 Platform Way, Wilmington, DE 19801, USA
-  Email: dmca@LinkMe.com
+  Email: legal@LinkMe.com
   Subject line: "DMCA Takedown Notice"
 
 14.2 Filing a Valid DMCA Takedown Notice
@@ -267,7 +253,7 @@ If you believe your content was removed due to mistake or misidentification of t
 • A statement under penalty of perjury that you believe the material was removed by mistake or misidentification
 • Your full name, mailing address, and telephone number
 • A statement consenting to the jurisdiction of the Federal District Court for the District of Delaware (or your local jurisdiction if outside the US)
-• Email to: dmca@LinkMe.com with subject line "DMCA Counter-Notice"
+• Email to: legal@LinkMe.com with subject line "DMCA Counter-Notice"
 
 Upon receipt of a valid counter-notice, LinkMe will notify the original complainant. If the complainant does not file a court action within 10–14 business days, LinkMe may, at its discretion, restore the removed material.
 
@@ -282,9 +268,9 @@ LinkMe operates as a service provider within the meaning of 17 U.S.C. § 512 and
 
 14.7 Non-Copyright Reports
 For content that violates our policies (harassment, illegal material, community standards violations) but does not constitute copyright infringement, please use:
-  safety@LinkMe.com — urgent safety or abuse reports
-  community@LinkMe.com — general policy violations
-  law-enforcement@LinkMe.com — official law enforcement requests only`,
+  support@LinkMe.com — urgent safety or abuse reports
+  support@LinkMe.com — general policy violations
+  legal@LinkMe.com — official law enforcement requests only`,
             },
           ].map(section => (
             <div key={section.title} className="p-5 rounded-xl border border-border bg-card">
