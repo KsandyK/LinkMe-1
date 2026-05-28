@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { getRevenueSharePct, splitEarning } from "../lib/revenue.js";
 
 const router = Router();
 
@@ -47,7 +48,18 @@ router.post("/gifts/send", requireAuth, async (req, res) => {
     return;
   }
 
-  const [, , giftRecord] = await db.$transaction([
+  // Look up creator profile for the recipient to calculate revenue split
+  const recipientCreator = await db.creatorProfile.findUnique({
+    where: { userId: parsed.data.recipientId },
+    select: { id: true, creatorActivatedAt: true, monthlyEarnings: true, revenueSharePct: true },
+  });
+
+  const revenueSharePct = recipientCreator
+    ? getRevenueSharePct(recipientCreator.creatorActivatedAt, recipientCreator.monthlyEarnings)
+    : 0;
+  const { processingFee, creatorCredits, platformFee } = splitEarning(gift.creditCost, revenueSharePct);
+
+  const txOps: Parameters<typeof db.$transaction>[0] = [
     db.user.update({ where: { id: req.user!.sub }, data: { credits: { decrement: gift.creditCost } } }),
     db.transaction.create({
       data: {
@@ -67,7 +79,35 @@ router.post("/gifts/send", requireAuth, async (req, res) => {
         creditCost: gift.creditCost,
       },
     }),
-  ]);
+  ];
+
+  // Write earnings ledger entry if recipient is a creator
+  if (recipientCreator) {
+    txOps.push(
+      db.creatorEarning.create({
+        data: {
+          creatorId: recipientCreator.id,
+          spenderId: req.user!.sub,
+          type: "GIFT",
+          grossCredits: gift.creditCost,
+          processingFee,
+          platformFee,
+          creatorCredits,
+          revenueSharePct,
+        },
+      }) as any,
+      db.creatorProfile.update({
+        where: { id: recipientCreator.id },
+        data: {
+          totalEarnings: { increment: creatorCredits },
+          monthlyEarnings: { increment: creatorCredits },
+          revenueSharePct,
+        },
+      }) as any,
+    );
+  }
+
+  const [, , giftRecord] = await db.$transaction(txOps);
 
   db.notification.create({
     data: {

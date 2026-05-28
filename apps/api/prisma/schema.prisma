@@ -37,6 +37,14 @@ enum TransactionType {
   CREATOR_PAYOUT
 }
 
+enum EarningType {
+  TIP
+  GIFT
+  UNLOCK
+  SUBSCRIPTION
+  MESSAGE
+}
+
 enum TransactionStatus {
   PENDING
   COMPLETED
@@ -143,23 +151,28 @@ model Profile {
 }
 
 model CreatorProfile {
-  id                String    @id @default(cuid())
-  userId            String    @unique
-  subscriptionPrice Int       @default(0)   // credits per month
-  tipMenuItems      Json?                   // [{label: string, credits: number}]
-  totalEarnings     Int       @default(0)
-  monthlyEarnings   Int       @default(0)
-  subscriberCount   Int       @default(0)
-  isApproved        Boolean   @default(false)
-  isLive            Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  subscriptionPrice  Int       @default(0)   // credits per month
+  tipMenuItems       Json?                   // [{label: string, credits: number}]
+  totalEarnings      Int       @default(0)   // lifetime creator earnings in credits
+  monthlyEarnings    Int       @default(0)   // rolling 30-day earnings in credits
+  subscriberCount    Int       @default(0)
+  isApproved         Boolean   @default(false)
+  isLive             Boolean   @default(false)
+  // Revenue share
+  creatorActivatedAt DateTime?              // set when admin approves; starts 90-day grace period
+  revenueSharePct    Float     @default(0.80) // cached current tier %, recalculated weekly
   // SRS stream key — used as the RTMP stream name (rtmp://host/live/<streamKey>)
-  streamKey         String?   @unique
+  streamKey          String?   @unique
   streamKeyCreatedAt DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   liveFeeds LiveFeed[]
+  earnings  CreatorEarning[]
+  payouts   CreatorPayout[]
 
   @@index([userId])
   @@index([isLive])
@@ -410,6 +423,56 @@ model ContentFlag {
 
   @@index([reviewed, createdAt])
   @@index([contentType, contentId])
+}
+
+// ---------------------------------------------------------------------------
+// Creator earnings ledger & payouts
+// ---------------------------------------------------------------------------
+
+// One row per credit-spend event that earns a creator money
+model CreatorEarning {
+  id              String      @id @default(cuid())
+  creatorId       String                          // CreatorProfile.id
+  spenderId       String                          // User.id who spent the credits
+  type            EarningType
+  grossCredits    Int                             // credits the spender paid
+  processingFee   Int                             // ~4% deducted for CCBill
+  platformFee     Int                             // platform cut after processing
+  creatorCredits  Int                             // what the creator actually earns
+  revenueSharePct Float                           // tier % applied at time of transaction
+  isPaidOut       Boolean     @default(false)
+  payoutId        String?                         // set when included in a payout batch
+  referenceId     String?                         // giftId / transactionId / subscriptionId
+  createdAt       DateTime    @default(now())
+
+  creator  CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  payout   CreatorPayout? @relation(fields: [payoutId], references: [id])
+
+  @@index([creatorId, isPaidOut, createdAt])
+  @@index([creatorId, createdAt])
+  @@index([payoutId])
+}
+
+// Weekly payout batch — one row per creator per payout cycle
+model CreatorPayout {
+  id            String    @id @default(cuid())
+  creatorId     String
+  periodStart   DateTime
+  periodEnd     DateTime
+  totalCredits  Int                             // sum of creatorCredits in this batch
+  totalUsd      Decimal   @db.Decimal(10, 2)   // totalCredits × $0.10
+  status        String    @default("PENDING")  // PENDING | APPROVED | PAID | FAILED
+  approvedBy    String?                         // admin userId
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  creator  CreatorProfile  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  earnings CreatorEarning[]
+
+  @@index([creatorId, status])
+  @@index([status, createdAt])
 }
 
 // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { getRevenueSharePct, splitEarning } from "../lib/revenue.js";
 
 const router = Router();
 
@@ -123,6 +124,93 @@ router.post("/credits/webhook", async (req, res) => {
   ]);
 
   res.json({ ok: true });
+});
+
+// ── POST /api/credits/tip — send a tip to a creator ─────────────────────────
+const TipSchema = z.object({
+  recipientId: z.string(),
+  amount: z.number().int().min(1).max(100_000),
+  feedId: z.string().optional(),   // livestream feed if tipping during a stream
+});
+
+router.post("/credits/tip", requireAuth, async (req, res) => {
+  const parsed = TipSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Validation failed" });
+    return;
+  }
+  const { recipientId, amount, feedId } = parsed.data;
+
+  if (recipientId === req.user!.sub) {
+    res.status(400).json({ error: "Cannot tip yourself" });
+    return;
+  }
+
+  const sender = await db.user.findUnique({ where: { id: req.user!.sub } });
+  if (!sender || sender.credits < amount) {
+    res.status(402).json({ error: "Insufficient credits", required: amount });
+    return;
+  }
+
+  const recipientCreator = await db.creatorProfile.findUnique({
+    where: { userId: recipientId },
+    select: { id: true, creatorActivatedAt: true, monthlyEarnings: true, revenueSharePct: true },
+  });
+
+  const revenueSharePct = recipientCreator
+    ? getRevenueSharePct(recipientCreator.creatorActivatedAt, recipientCreator.monthlyEarnings)
+    : 0;
+  const { processingFee, creatorCredits, platformFee } = splitEarning(amount, revenueSharePct);
+
+  const ops: Parameters<typeof db.$transaction>[0] = [
+    db.user.update({ where: { id: req.user!.sub }, data: { credits: { decrement: amount } } }),
+    db.transaction.create({
+      data: {
+        userId: req.user!.sub,
+        amount: -amount,
+        type: "CREDIT_SPEND_TIP",
+        status: "COMPLETED",
+        metadata: { recipientId, feedId: feedId ?? null },
+      },
+    }),
+  ];
+
+  if (recipientCreator) {
+    ops.push(
+      db.creatorEarning.create({
+        data: {
+          creatorId: recipientCreator.id,
+          spenderId: req.user!.sub,
+          type: "TIP",
+          grossCredits: amount,
+          processingFee,
+          platformFee,
+          creatorCredits,
+          revenueSharePct,
+          referenceId: feedId ?? null,
+        },
+      }) as any,
+      db.creatorProfile.update({
+        where: { id: recipientCreator.id },
+        data: {
+          totalEarnings: { increment: creatorCredits },
+          monthlyEarnings: { increment: creatorCredits },
+          revenueSharePct,
+        },
+      }) as any,
+    );
+  }
+
+  await db.$transaction(ops);
+
+  res.status(201).json({
+    ok: true,
+    grossCredits: amount,
+    creatorCredits,
+    processingFee,
+    platformFee,
+    revenueSharePct,
+  });
 });
 
 // ── GET /api/credits/transactions ────────────────────────────────────────────

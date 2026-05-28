@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { getRevenueSharePct, revenueTierLabel, CREDITS_PER_USD, GRACE_PERIOD_DAYS } from "../lib/revenue.js";
 
 const router = Router();
 
@@ -39,12 +40,27 @@ router.get("/creator/dashboard", requireAuth, async (req, res) => {
     }),
   ]);
 
+  // Revenue tier info
+  const revenueSharePct = getRevenueSharePct(creator.creatorActivatedAt, creator.monthlyEarnings);
+  const daysSinceActivation = creator.creatorActivatedAt
+    ? Math.floor((Date.now() - creator.creatorActivatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const inGracePeriod = daysSinceActivation <= GRACE_PERIOD_DAYS;
+  const graceDaysRemaining = inGracePeriod ? GRACE_PERIOD_DAYS - daysSinceActivation : 0;
+
   res.json({
     profile: creator,
     stats: {
       totalEarnings: creator.totalEarnings,
       monthlyEarnings: creator.monthlyEarnings,
       subscriberCount: creator.subscriberCount,
+    },
+    revenueShare: {
+      pct: revenueSharePct,
+      label: revenueTierLabel(revenueSharePct),
+      inGracePeriod,
+      graceDaysRemaining,
+      monthlyEarningsUsd: creator.monthlyEarnings / CREDITS_PER_USD,
     },
     recentTips,
     recentSubs,
@@ -124,6 +140,38 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
     creatorProfile,
     message: "Application submitted — pending review by our team.",
   });
+});
+
+// ── POST /api/creator/approve/:userId — admin only ───────────────────────────
+router.post("/creator/approve/:userId", requireAuth, async (req, res) => {
+  if (req.user!.role !== "ADMIN" && req.user!.role !== "MODERATOR") {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const creator = await db.creatorProfile.findUnique({
+    where: { userId: req.params.userId },
+  });
+  if (!creator) {
+    res.status(404).json({ error: "Creator profile not found" });
+    return;
+  }
+  if (creator.isApproved) {
+    res.status(409).json({ error: "Already approved" });
+    return;
+  }
+
+  const now = new Date();
+  await db.creatorProfile.update({
+    where: { userId: req.params.userId },
+    data: {
+      isApproved: true,
+      creatorActivatedAt: now,  // starts 90-day grace period
+      revenueSharePct: 0.80,
+    },
+  });
+
+  res.json({ ok: true, activatedAt: now, gracePeriodEndsAt: new Date(now.getTime() + GRACE_PERIOD_DAYS * 86_400_000) });
 });
 
 // ── PATCH /api/creator/settings ───────────────────────────────────────────────
