@@ -379,7 +379,7 @@ export default function Home() {
               <p className="text-lg font-medium mb-2">No creators yet</p>
               <p className="text-sm mb-4">Be the first to join as a creator!</p>
               <Link href="/become-creator">
-                <button className="vl-btn-primary px-6 py-2.5 text-sm">Apply as Creator</button>
+                <button className="vl-btn-primary px-6 py-2.5 text-sm">Apply as a Cravr</button>
               </Link>
             </div>
           ) : (

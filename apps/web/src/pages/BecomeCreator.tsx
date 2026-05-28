@@ -231,12 +231,12 @@ export default function BecomeCreator() {
                 <>
                   <h2 className="vl-section-title text-2xl mb-3">Ready to Go Live?</h2>
                   <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    You're logged in! Apply now to start earning as a creator. Identity verification is required as part of the process.
+                    You're logged in! Apply now to start earning as a Cravr. Identity verification is required as part of the process.
                   </p>
                   <button
                     onClick={() => setApplyStep("intro")}
                     className="vl-btn-primary px-10 py-3 text-sm">
-                    Apply as Creator
+                    Apply as a Cravr
                   </button>
                   <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>No monthly fees · You keep up to 90% · ID verification required</p>
                 </>

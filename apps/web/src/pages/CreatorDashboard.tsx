@@ -355,7 +355,7 @@ export default function CreatorDashboard() {
             You may need to apply as a creator first.
           </p>
           <Link href="/become-creator">
-            <button className="vl-btn-primary px-6 py-2.5 text-sm mt-4">Apply as Creator</button>
+            <button className="vl-btn-primary px-6 py-2.5 text-sm mt-4">Apply as a Cravr</button>
           </Link>
         </div>
       </div>
