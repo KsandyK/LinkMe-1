@@ -500,7 +500,7 @@ export default function Home() {
             <Link href="/become-creator">
               <button className="px-8 py-2.5 rounded-xl font-bold text-sm transition-all"
                 style={{ background: "rgba(232,168,124,0.08)", border: "1px solid rgba(232,168,124,0.22)", color: "#e8a87c" }}>
-                Become a Creator
+                Become a Cravr
               </button>
             </Link>
           </div>

@@ -29,7 +29,7 @@ export function Footer() {
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Platform</h4>
             <ul className="space-y-2">
               {[
-                { href: "/profiles", label: "Browse Creators" },
+                { href: "/profiles", label: "Browse Cravr's" },
                 { href: "/live", label: "Live Streams" },
                 { href: "/credits", label: "Credits Store" },
                 { href: "/gifts", label: "Gifts" },
@@ -49,7 +49,7 @@ export function Footer() {
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Creators</h4>
             <ul className="space-y-2">
               {[
-                { href: "/become-creator", label: "Become a Creator" },
+                { href: "/become-creator", label: "Become a Cravr" },
                 { href: "/creator", label: "Creator Dashboard" },
                 { href: "/boosts", label: "Boost Your Profile" },
               ].map(l => (
