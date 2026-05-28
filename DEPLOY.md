@@ -56,7 +56,7 @@ docker run --rm hello-world
 
 ```bash
 cd /opt
-sudo git clone https://github.com/YOUR_USERNAME/CRAVR-1.git CRAVR
+sudo git clone https://github.com/KsandyK/LinkMe-1.git CRAVR
 sudo chown -R $USER:$USER CRAVR
 cd CRAVR
 ```
@@ -91,7 +91,7 @@ Fill in every field. The required ones are:
 ## Step 5 — Update nginx.conf With Your Domain
 
 ```bash
-# Replace YOURDOMAIN.COM placeholder (run this once)
+# Replace cravr.fun placeholder (run this once)
 sed -i 's/YOURDOMAIN\.COM/cravr.fun/g' nginx/nginx.conf
 ```
 
@@ -107,14 +107,14 @@ The certificate must be obtained **before** the proxy container starts with SSL 
 # Temporarily allow HTTP for the ACME challenge
 # Start just the proxy in HTTP-only mode first:
 sudo certbot certonly --standalone \
-  -d yourdomain.com \
-  -d www.yourdomain.com \
+  -d cravr.fun \
+  -d www.cravr.fun \
   --agree-tos \
   --email your@email.com \
   --non-interactive
 
 # Verify certs were created:
-sudo ls /etc/letsencrypt/live/yourdomain.com/
+sudo ls /etc/letsencrypt/live/cravr.fun/
 ```
 
 You should see: `cert.pem  chain.pem  fullchain.pem  privkey.pem`
@@ -166,7 +166,7 @@ In your **CCBill Merchant Panel**:
 1. Go to **Account Info → Webhook / Background Post URL**
 2. Set the URL to:
    ```
-   https://yourdomain.com/api/credits/webhook
+   https://cravr.fun/api/credits/webhook
    ```
 3. Set the method to **POST**
 4. Enable the **Approval Post** and **Denial Post** events
@@ -180,17 +180,17 @@ When a customer completes a payment, CCBill will call this URL and the server wi
 
 ```bash
 # Check HTTPS works
-curl -I https://yourdomain.com
+curl -I https://cravr.fun
 
 # Check API health
-curl https://yourdomain.com/api/health
+curl https://cravr.fun/api/health
 
 # Check WebSocket endpoint is reachable
 # (should return 400 "Bad Request" — that means nginx is routing it correctly)
-curl -I https://yourdomain.com/ws
+curl -I https://cravr.fun/ws
 ```
 
-Open `https://yourdomain.com` in a browser — you should see the CRAVR landing page.
+Open `https://cravr.fun` in a browser — you should see the CRAVR landing page.
 
 ---
 

@@ -54,8 +54,8 @@ COPY --from=builder /app/apps/api/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/api/node_modules/@prisma ./node_modules/@prisma
 
 # Non-root user
-RUN addgroup -S linkme && adduser -S linkme -G linkme
-USER linkme
+RUN addgroup -S cravr && adduser -S cravr -G cravr
+USER cravr
 
 EXPOSE 3000 3001
 

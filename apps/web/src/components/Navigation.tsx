@@ -61,7 +61,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <img src="/vibelink-icon.png" alt="CRAVR" className="w-7 h-7" />
+              <img src="/cravr-icon.png" alt="CRAVR" className="w-7 h-7" />
               <span className="font-bold text-lg text-white tracking-tight">CRAVR</span>
             </div>
           </Link>

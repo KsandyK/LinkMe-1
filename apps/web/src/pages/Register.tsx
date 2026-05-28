@@ -142,7 +142,7 @@ export default function Register() {
           </Link>
           <p className="mt-4 text-xs text-muted-foreground">
             Want to earn from content?{" "}
-            <Link href="/become-creator" className="text-primary hover:underline">Become a Creator</Link>
+            <Link href="/become-creator" className="text-primary hover:underline">Become a Cravr</Link>
           </p>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function Register() {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src="/vibelink-icon.png" alt="CRAVR" className="w-14 h-14 mx-auto mb-3" />
+          <img src="/cravr-icon.png" alt="CRAVR" className="w-14 h-14 mx-auto mb-3" />
           <h1 className="text-3xl font-black" style={{ color: "#14B8A6" }}>CRAVR</h1>
           <p className="text-muted-foreground text-sm mt-1">Create your free member account</p>
         </div>
