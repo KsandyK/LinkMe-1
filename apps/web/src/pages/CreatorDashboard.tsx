@@ -184,6 +184,35 @@ export default function CreatorDashboard() {
   const [streamKeyLoading, setStreamKeyLoading] = useState(false);
   const [streamKeyVisible, setStreamKeyVisible] = useState(false);
   const [streamKeyCopied, setStreamKeyCopied] = useState<"server" | "key" | "hls" | null>(null);
+  const [selectedApp, setSelectedApp] = useState("OBS Studio");
+
+  const APP_INSTRUCTIONS: Record<string, { step: string; title: string; body: string }[]> = {
+    "OBS Studio": [
+      { step: "1", title: "Open OBS → Settings → Stream", body: 'Set Service to "Custom…". Paste the Server URL above. Paste your Stream Key. Click Apply.' },
+      { step: "2", title: "Configure your scene", body: "Add a Video Capture Device source (your webcam) and/or a Window Capture source. Set output resolution to 1280×720 or 1920×1080." },
+      { step: "3", title: 'Click "Start Streaming" in OBS', body: "Within 5 seconds your stream appears live on CRAVR. Viewers will see you in the Live section and on your profile page." },
+    ],
+    "Streamlabs": [
+      { step: "1", title: "Open Streamlabs → Settings → Stream", body: 'Select "Custom RTMP Server". Paste the Server URL and your Stream Key. Click Done.' },
+      { step: "2", title: "Set up your scene", body: "Add your webcam and/or screen capture as sources. Set output resolution to 1280×720 or 1920×1080 in Video Settings." },
+      { step: "3", title: 'Click "Go Live"', body: "Your stream appears on CRAVR within 5 seconds. Viewers will see you in the Live section." },
+    ],
+    "Meld Studio": [
+      { step: "1", title: "Open Meld → Output → Stream Settings", body: 'Select "Custom RTMP". Enter the Server URL and your Stream Key. Save.' },
+      { step: "2", title: "Add your sources", body: "Add camera and/or screen capture sources to your scene. Set resolution to 1280×720 or 1920×1080." },
+      { step: "3", title: 'Click "Start Stream"', body: "Your stream goes live on CRAVR within a few seconds. Check the Live section to confirm." },
+    ],
+    "XSplit": [
+      { step: "1", title: "Broadcast → Add Channel → Custom RTMP", body: "In XSplit Broadcaster open Broadcast, add a new channel, choose Custom RTMP, and enter the Server URL and Stream Key." },
+      { step: "2", title: "Configure your scene", body: "Add your webcam and screen capture sources. Set output resolution to 1280×720 or 1920×1080 in the output settings." },
+      { step: "3", title: "Click the Broadcast button", body: "Your stream will appear live on CRAVR within seconds of starting." },
+    ],
+    "vMix": [
+      { step: "1", title: "Settings → Streaming → Add Destination", body: 'Choose "Custom RTMP". Enter the Server URL as the URL and paste your Stream Key. Click OK.' },
+      { step: "2", title: "Add your inputs", body: "Add camera, screen capture, or media sources as inputs in vMix. Set output resolution to 1280×720 or 1920×1080." },
+      { step: "3", title: 'Click "Stream"', body: "Your stream appears on CRAVR within seconds. The Stream button turns red when active." },
+    ],
+  };
   const [streamKeyRegenerating, setStreamKeyRegenerating] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [boostClaimed, setBoostClaimed] = useState(() => {
@@ -1393,7 +1422,7 @@ export default function CreatorDashboard() {
                     {/* Connection credentials */}
                     <div className="vl-card p-5 space-y-4">
                       <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        OBS / Streamlabs Settings
+                        {selectedApp} Settings
                       </p>
 
                       {/* RTMP Server */}
@@ -1454,27 +1483,25 @@ export default function CreatorDashboard() {
 
                     {/* Quick-start guide */}
                     <div className="vl-card p-5">
+                      {/* Software selector */}
+                      <p className="text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>Select your software</p>
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        {["OBS Studio", "Streamlabs", "Meld Studio", "XSplit", "vMix"].map(app => (
+                          <button key={app} onClick={() => setSelectedApp(app)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+                            style={selectedApp === app
+                              ? { background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }
+                              : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.45)" }}>
+                            {app}
+                          </button>
+                        ))}
+                      </div>
+
                       <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        OBS Setup — 3 Steps
+                        {selectedApp} Setup — 3 Steps
                       </p>
                       <div className="space-y-4">
-                        {[
-                          {
-                            step: "1",
-                            title: "Open OBS → Settings → Stream",
-                            body: 'Set Service to "Custom…". Paste the Server URL above. Paste your Stream Key. Click Apply.',
-                          },
-                          {
-                            step: "2",
-                            title: "Configure your scene",
-                            body: "Add a Video Capture Device source (your webcam) and/or a Window Capture source. Set output resolution to 1280×720 or 1920×1080.",
-                          },
-                          {
-                            step: "3",
-                            title: 'Click "Start Streaming" in OBS',
-                            body: "Within 5 seconds your stream appears live on CRAVR. Viewers will see you in the Live section and on your profile page.",
-                          },
-                        ].map(s => (
+                        {(APP_INSTRUCTIONS[selectedApp] ?? []).map(s => (
                           <div key={s.step} className="flex gap-3">
                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
                               style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
@@ -1486,19 +1513,6 @@ export default function CreatorDashboard() {
                             </div>
                           </div>
                         ))}
-                      </div>
-
-                      {/* Supported software */}
-                      <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                        <p className="text-xs font-semibold mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>Works with</p>
-                        <div className="flex flex-wrap gap-2">
-                          {["OBS Studio", "Streamlabs", "Meld Studio", "XSplit", "vMix"].map(app => (
-                            <span key={app} className="px-2.5 py-1 rounded-lg text-xs font-medium"
-                              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
-                              {app}
-                            </span>
-                          ))}
-                        </div>
                       </div>
                     </div>
 
