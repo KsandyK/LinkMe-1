@@ -1540,7 +1540,7 @@ export default function CreatorDashboard() {
                           Head to the Live Studio to manage your chat, tip goals, drops, and viewer subscriptions in real time.
                         </p>
                       </div>
-                      <Link href="/studio">
+                      <Link href="/creator/studio">
                         <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold flex-shrink-0 transition-all hover:opacity-90"
                           style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", color: "white" }}>
                           <ExternalLink className="w-3.5 h-3.5" /> Studio
