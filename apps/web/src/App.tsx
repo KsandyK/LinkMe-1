@@ -41,6 +41,7 @@ const AgeVerification    = lazy(() => import("./pages/AgeVerification"));
 const AdminVerifyQueue   = lazy(() => import("./pages/AdminVerifyQueue"));
 const LegalPages         = lazy(() => import("./pages/LegalPages"));
 const ForgotPassword     = lazy(() => import("./pages/ForgotPassword"));
+const DevReset           = lazy(() => import("./pages/DevReset"));
 
 // ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
@@ -78,6 +79,7 @@ function Router() {
         <Route path="/admin/verify-queue" component={AdminVerifyQueue} />
         <Route path="/legal" component={LegalHub} />
         <Route path="/legal/:page" component={LegalPages} />
+        <Route path="/dev/reset" component={DevReset} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
