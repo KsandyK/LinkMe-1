@@ -3,7 +3,7 @@ import { Link, useParams, useLocation } from "wouter";
 import { profiles as profilesApi, messages as messagesApi, content as contentApi, CreatorProfileItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { useApp } from "@/contexts/AppContext";
-import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2 } from "lucide-react";
+import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2, Bot } from "lucide-react";
 
 interface ContentItem {
   id: string;
@@ -69,6 +69,7 @@ export default function ProfileDetail() {
             userId: mock.id,
             isLive: mock.isLive ?? false,
             isApproved: true,
+            isAiPersona: true,   // all demo/mock profiles are AI companions
             subscriberCount: mock.followersCount ?? 0,
             totalEarnings: mock.totalEarnings ?? 0,
             monthlyEarnings: 0,
@@ -219,6 +220,13 @@ export default function ProfileDetail() {
                 <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                   style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
                   ✓ Verified
+                </span>
+              )}
+              {creator.isAiPersona && (
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                  style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.35)", color: "#a78bfa" }}
+                  title="This is an AI companion — always available to chat">
+                  <Bot className="w-3 h-3" /> AI Companion
                 </span>
               )}
             </div>

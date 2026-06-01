@@ -157,6 +157,7 @@ export interface CreatorProfileItem {
   userId: string;
   isLive: boolean;
   isApproved: boolean;
+  isAiPersona?: boolean;         // true = AI companion (labelled on profile)
   subscriberCount: number;
   totalEarnings: number;
   monthlyEarnings: number;

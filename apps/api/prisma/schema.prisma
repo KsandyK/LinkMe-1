@@ -167,6 +167,9 @@ model CreatorProfile {
   // SRS stream key — used as the RTMP stream name (rtmp://host/live/<streamKey>)
   streamKey          String?   @unique
   streamKeyCreatedAt DateTime?
+  // AI companion — when true this profile is an AI persona, not a human creator
+  isAiPersona        Boolean   @default(false)
+  aiPersonaPrompt    String?   @db.Text   // Claude system prompt defining the character
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

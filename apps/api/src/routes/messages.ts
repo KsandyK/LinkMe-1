@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { generatePersonaReply } from "../lib/ai-persona.js";
 
 const router = Router();
 
@@ -146,7 +147,13 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
   // Deduct credits if sending to a creator
   const otherLink = await db.conversationParticipant.findFirst({
     where: { conversationId: String(req.params.id), userId: { not: req.user!.sub } },
-    include: { user: { include: { creatorProfile: { select: { isApproved: true } } } } },
+    include: {
+      user: {
+        include: {
+          creatorProfile: { select: { isApproved: true, isAiPersona: true, aiPersonaPrompt: true } },
+        },
+      },
+    },
   });
 
   let creditCost = 0;
@@ -187,6 +194,48 @@ router.post("/messages/conversations/:id/send", requireAuth, async (req, res) =>
   });
 
   res.status(201).json(message);
+
+  // ── AI Companion auto-reply ────────────────────────────────────────────────
+  // Fire-and-forget: if the recipient is an AI persona, generate a Claude reply
+  // after a realistic "typing" delay of 3–8 seconds so it feels natural.
+  const personaProfile = otherLink?.user?.creatorProfile;
+  if (personaProfile?.isAiPersona && otherLink?.user) {
+    const aiUserId      = otherLink.user.id;
+    const convId        = String(req.params.id);
+    const personaPrompt = personaProfile.aiPersonaPrompt ?? "";
+    const userText      = parsed.data.text;
+
+    const delay = 3000 + Math.random() * 5000; // 3–8 seconds
+
+    setTimeout(async () => {
+      try {
+        // Fetch last 6 messages for context
+        const recent = await db.message.findMany({
+          where: { conversationId: convId },
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          select: { senderId: true, text: true },
+        });
+
+        const history = recent.reverse().map(m => ({
+          fromUser: m.senderId !== aiUserId,
+          text: m.text,
+        }));
+
+        const reply = await generatePersonaReply(personaPrompt, history, userText);
+
+        await db.message.create({
+          data: { conversationId: convId, senderId: aiUserId, text: reply, creditCost: 0 },
+        });
+        await db.conversation.update({
+          where: { id: convId },
+          data: { updatedAt: new Date() },
+        });
+      } catch {
+        // Silently fail — user just won't get a reply this time
+      }
+    }, delay);
+  }
 });
 
 export default router;
