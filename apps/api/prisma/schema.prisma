@@ -105,6 +105,7 @@ model User {
   notifications        Notification[]
   reportsSubmitted     ModerationReport[]     @relation("ReporterReports")
   reportsReceived      ModerationReport[]     @relation("ReportedUserReports")
+  creatorContents      CreatorContent[]       @relation("CreatorContents")
 
   @@index([email])
   @@index([username])
@@ -176,6 +177,31 @@ model CreatorProfile {
 
   @@index([userId])
   @@index([isLive])
+}
+
+// ---------------------------------------------------------------------------
+// Creator content (photos & videos sold à la carte)
+// ---------------------------------------------------------------------------
+
+model CreatorContent {
+  id           String   @id @default(cuid())
+  creatorId    String                        // userId of the creator
+  title        String
+  type         String   @default("PHOTO")   // PHOTO | VIDEO
+  mediaUrl     String                        // cdn.cravr.fun path for photos; Bunny Stream videoId for videos
+  thumbnailUrl String?                       // Bunny-generated thumb or creator-supplied preview
+  creditCost   Int      @default(50)         // credits to unlock
+  sortOrder    Int      @default(0)          // creator-controlled display order
+  isPublished  Boolean  @default(true)
+  bunnyVideoId String?                       // Bunny Stream video ID (videos only)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  creator  User            @relation("CreatorContents", fields: [creatorId], references: [id], onDelete: Cascade)
+  unlocks  ContentUnlock[]
+
+  @@index([creatorId, sortOrder])
+  @@index([creatorId, isPublished])
 }
 
 // ---------------------------------------------------------------------------

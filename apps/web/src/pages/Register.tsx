@@ -18,7 +18,7 @@ const LOOKING_FOR = [
 ];
 
 export default function Register() {
-  const { login, addCredits } = useApp();
+  const { login } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("account");
   const [submitting, setSubmitting] = useState(false);
@@ -89,13 +89,26 @@ export default function Register() {
           username: form.username,
           email: form.email || undefined,
           password: form.password,
+          displayName: form.displayName.trim() || undefined,
+          location: form.location.trim() || undefined,
+          bio: form.bio.trim() || undefined,
         });
       } catch {
-        // API offline or error — login() below will create a demo session automatically
+        // API offline or registration error — login() below will try to authenticate
+        // or fall through to demo mode on network failures
       }
-      // login() never throws: catches all errors internally and falls through to demo mode
-      await login(form.username, form.password);
-      addCredits(200, "Welcome bonus — thanks for joining CRAVR!");
+      // Authenticate — login() re-throws if the API rejected the credentials (e.g.
+      // username was taken and registration silently failed). Demo mode on network errors.
+      try {
+        await login(form.username, form.password);
+      } catch {
+        // Registration likely failed (username taken) — go back to step 1 with error
+        setErrors({ username: "Username or email already taken. Please choose another." });
+        setStep("account");
+        setSubmitting(false);
+        return;
+      }
+      // Credits are granted server-side (250 on register) — no local addCredits needed
       setStep("done");
       setSubmitting(false);
     }
@@ -119,7 +132,7 @@ export default function Register() {
             Your account <span className="text-primary font-bold">@{form.username}</span> is ready.
           </p>
           <div className="my-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
-            <p className="text-primary font-bold text-lg">+200 Welcome Credits! 🎁</p>
+            <p className="text-primary font-bold text-lg">+250 Welcome Credits! 🎁</p>
             <p className="text-muted-foreground text-sm mt-1">Added to your account as a new member bonus</p>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -324,7 +337,7 @@ export default function Register() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
                 <p className="text-primary font-semibold text-sm">🎁 Welcome Bonus</p>
                 <p className="text-muted-foreground text-xs mt-1">
-                  Complete registration and receive <strong className="text-foreground">200 free credits</strong> to start exploring!
+                  Complete registration and receive <strong className="text-foreground">250 free credits</strong> to start exploring!
                 </p>
               </div>
             </div>

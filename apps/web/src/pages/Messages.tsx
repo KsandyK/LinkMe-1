@@ -379,10 +379,10 @@ export default function Messages() {
             <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
               Create an account or sign in to start chatting with creators.
             </p>
-            <a href="/register" className="inline-block px-6 py-3 rounded-xl text-white font-semibold text-sm"
+            <Link href="/register" className="inline-block px-6 py-3 rounded-xl text-white font-semibold text-sm"
               style={{ background: "#14b8a6" }}>
               Get Started
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -664,7 +664,7 @@ export default function Messages() {
                   <div className="flex gap-2 items-center">
                     <button className="p-2 rounded-xl transition-all hover:bg-white/5 flex-shrink-0"
                       style={{ color: "rgba(255,255,255,0.35)" }}
-                      onClick={() => showToast({ title: "Emoji picker", description: "Coming soon — use keyboard shortcuts for now! 😊" })}>
+                      onClick={() => showToast({ title: "Emoji picker coming soon", description: "Use Win + . (Windows) or Cmd+Ctrl+Space (Mac) to open your system emoji picker 😊" })}>
                       <Smile className="w-5 h-5" />
                     </button>
                     <input

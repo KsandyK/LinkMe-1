@@ -90,16 +90,37 @@ export async function handleLiveMessage(
       const text = (data.text as string)?.trim();
       if (!text || text.length > 500) { send(sock, { type: "error", message: "Invalid message" }); return; }
 
-      const creditTip = Number(data.creditTip ?? 0);
+      // creditTip > 0 means this was a gift message — the gift API already
+      // deducted the tip amount server-side, so don't deduct again here.
+      const creditTip = Math.max(0, Number(data.creditTip ?? 0));
 
-      // Deduct credits for tips
-      if (creditTip > 0) {
-        const user = await db.user.findUnique({ where: { id: userId } });
-        if (!user || user.credits < creditTip) {
+      // Base chat cost (same as private messages — charged for every text message)
+      const CHAT_CREDIT_COST = 5;
+
+      // Verify the user has enough credits to cover the base chat cost.
+      // Gift chat messages (creditTip > 0) are exempt — their cost was already
+      // enforced by the gifts API route.
+      const sender = await db.user.findUnique({ where: { id: userId }, select: { credits: true } });
+      if (!sender) { send(sock, { type: "error", message: "User not found" }); return; }
+
+      if (creditTip === 0) {
+        // Regular text chat — deduct base cost
+        if (sender.credits < CHAT_CREDIT_COST) {
           send(sock, { type: "error", message: "Insufficient credits" });
           return;
         }
-        await db.user.update({ where: { id: userId }, data: { credits: { decrement: creditTip } } });
+        await db.$transaction([
+          db.user.update({ where: { id: userId }, data: { credits: { decrement: CHAT_CREDIT_COST } } }),
+          db.transaction.create({
+            data: {
+              userId,
+              amount: -CHAT_CREDIT_COST,
+              type: "CREDIT_SPEND_MESSAGE",
+              status: "COMPLETED",
+              metadata: { feedId, context: "live_chat" },
+            },
+          }),
+        ]);
       }
 
       // Simple keyword moderation

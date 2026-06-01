@@ -15,13 +15,19 @@
  * sets status to "pending" (never auto-grants "verified"), and shows a review notice.
  */
 import { useState, useRef, useCallback } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { ageVerify as ageVerifyApi } from "@/lib/api";
 import {
   Shield, Lock, CheckCircle, AlertTriangle, Upload, ChevronRight,
-  FileImage, Loader2, X,
+  FileImage, Loader2, X, CreditCard, Zap,
 } from "lucide-react";
+
+// Minimum credit balance required before age verification is available.
+// This ensures the user has a real payment method on file and offsets the
+// cost of running the verification session. Verification unlocks automatically
+// once this threshold is met.
+const MIN_CREDITS_TO_VERIFY = 10;
 
 const VERIFY_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -48,7 +54,7 @@ const emptyUpload = (): FileUploadState => ({
 });
 
 export default function AgeVerification() {
-  const { ageVerificationStatus, setAgeVerificationStatus, showToast, isLoggedIn } = useApp();
+  const { ageVerificationStatus, setAgeVerificationStatus, showToast, isLoggedIn, credits } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<VerifyStep>("intro");
   const [dob, setDob] = useState({ month: "", day: "", year: "" });
@@ -65,6 +71,106 @@ export default function AgeVerification() {
   // Hidden file inputs
   const idInputRef = useRef<HTMLInputElement>(null);
   const selfieInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Credit gate — must purchase credits before verification unlocks ────────
+  // We check after login so guests are handled by the intro step's login redirect.
+  if (isLoggedIn && ageVerificationStatus !== "verified" && credits < MIN_CREDITS_TO_VERIFY) {
+    return (
+      <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #09091a 0%, #0d1a1a 100%)" }}>
+        {/* Hero */}
+        <div className="relative overflow-hidden" style={{ background: `url(${VERIFY_BG}) center/cover`, minHeight: "200px" }}>
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative z-10 container py-12 text-center">
+            <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full text-xs font-bold"
+              style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6", letterSpacing: "0.1em" }}>
+              <Shield className="w-3.5 h-3.5" /> SECURE AGE VERIFICATION
+            </div>
+            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.5rem", fontWeight: 700, color: "white" }}>
+              Verify Your Age
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.6)", marginTop: "0.5rem" }}>
+              Required to access all platform features.
+            </p>
+          </div>
+        </div>
+
+        <div className="container py-10 max-w-lg mx-auto">
+          {/* Unlock card */}
+          <div className="vl-card p-8 text-center">
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
+              style={{ background: "rgba(20,184,166,0.1)", border: "2px solid rgba(20,184,166,0.3)" }}>
+              <Lock className="w-9 h-9" style={{ color: "#14b8a6" }} />
+            </div>
+
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.75rem", fontWeight: 700, color: "white", marginBottom: "0.75rem" }}>
+              One Step Away
+            </h2>
+
+            {/* The key messaging */}
+            <div className="mb-6 px-2 py-4 rounded-xl"
+              style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.2)" }}>
+              <Zap className="w-5 h-5 mx-auto mb-2" style={{ color: "#14b8a6" }} />
+              <p className="text-sm font-semibold mb-1" style={{ color: "#5eead4" }}>
+                Purchasing credits automatically unlocks age verification
+              </p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+                Add credits to your account and your verification will open instantly — no separate sign-up or fee required.
+              </p>
+            </div>
+
+            {/* How it works */}
+            <div className="space-y-3 mb-7 text-left">
+              {[
+                {
+                  step: "1",
+                  title: "Purchase any credit pack",
+                  desc: "Starting from $5 — choose the size that suits you.",
+                  done: false,
+                },
+                {
+                  step: "2",
+                  title: "Verification unlocks automatically",
+                  desc: "Once your credits are confirmed, this page opens the full verification flow.",
+                  done: false,
+                },
+                {
+                  step: "3",
+                  title: "Submit your ID",
+                  desc: "Upload your government ID and a selfie. Review takes 1–2 business days.",
+                  done: false,
+                },
+              ].map(item => (
+                <div key={item.step} className="flex items-start gap-3 p-3 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5"
+                    style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.3)" }}>
+                    {item.step}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "white" }}>{item.title}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <Link href="/credits">
+              <button className="vl-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold">
+                <CreditCard className="w-4 h-4" />
+                Get Credits &amp; Unlock Verification
+              </button>
+            </Link>
+
+            <p className="text-xs mt-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+              Credits are used to unlock exclusive content, send messages, and support creators.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Already verified ───────────────────────────────────────────────────────
   if (ageVerificationStatus === "verified") {

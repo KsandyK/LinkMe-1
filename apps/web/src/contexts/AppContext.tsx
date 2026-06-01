@@ -6,7 +6,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { toast } from "sonner";
 import { MEMBERSHIP_DISCOUNTS } from "@/lib/membership-tiers";
-import { credits as creditsApi, boosts as boostsApi, content as contentApi } from "@/lib/api";
+import { credits as creditsApi, boosts as boostsApi, content as contentApi, setAccessToken, setRefreshToken } from "@/lib/api";
 
 // Use VITE_API_URL if set, otherwise same-origin (Vite proxy handles /api → localhost:3000)
 const API_BASE: string = (import.meta as any).env?.VITE_API_URL || "";
@@ -333,6 +333,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const login = useCallback(async (username: string, password: string) => {
+    // Track whether the API was reachable but rejected the credentials.
+    // On API rejection (401) we re-throw so callers can show an error.
+    // On network/timeout failure we fall through to demo mode instead.
+    let apiRejected = false;
     try {
       // Race the API call against a 4-second timeout so a hung Vite proxy
       // doesn't block indefinitely — falls through to demo mode on timeout.
@@ -349,10 +353,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         timeout,
       ]);
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Login failed" }));
-        throw new Error(err.error ?? "Login failed");
+        apiRejected = true;
+        const err = await res.json().catch(() => ({ error: "Invalid credentials" }));
+        throw new Error(err.error ?? "Invalid credentials");
       }
       const data = await res.json();
+      // Persist both tokens — the refresh token enables silent re-auth
+      setAccessToken(data.accessToken);
+      setRefreshToken(data.refreshToken ?? null);
       setToken(data.accessToken);
       setUser(data.user);
       if (typeof data.user?.credits === "number") {
@@ -363,7 +371,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("cravr_user", JSON.stringify(data.user));
       syncedRef.current = true;
     } catch {
-      // Any error (network, HTTP 502/503, timeout) → API offline → demo mode
+      if (apiRejected) {
+        // API was reachable but rejected — re-throw so Login/Register can show the error
+        throw new Error("Invalid credentials");
+      }
+      // Network error or timeout → API offline → demo mode
       const demoUser = { id: `demo-${username}`, username, role: "USER" };
       const demoToken = `demo-token-${Date.now()}`;
       setToken(demoToken);

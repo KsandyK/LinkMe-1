@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "wouter";
-import { profiles as profilesApi, messages as messagesApi, CreatorProfileItem } from "@/lib/api";
+import { profiles as profilesApi, messages as messagesApi, content as contentApi, CreatorProfileItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { useApp } from "@/contexts/AppContext";
 import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2 } from "lucide-react";
@@ -34,17 +34,33 @@ export default function ProfileDetail() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     profilesApi.get(id)
-      .then(data => {
+      .then(async data => {
         setCreator(data);
-        // Placeholder content items for real API profiles
-        setContentItems([
-          { id: `${data.id}-ph-1`, creditCost: 50, title: "Exclusive Photo", type: "photo", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-a/400/300` },
-          { id: `${data.id}-ph-2`, creditCost: 75, title: "Photo Set", type: "photo", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-b/400/300` },
-          { id: `${data.id}-v-1`, creditCost: 150, title: "Private Video", type: "video", thumbnailUrl: `https://picsum.photos/seed/${data.user.username}-c/400/300` },
-        ]);
+        // Fetch real content for this creator
+        try {
+          const items = await contentApi.getForCreator(data.userId);
+          setContentItems(
+            items.map(item => ({
+              id: item.id,
+              title: item.title,
+              type: item.type.toLowerCase(),   // API returns PHOTO/VIDEO → normalize to lowercase
+              thumbnailUrl: item.thumbnailUrl
+                ?? `https://picsum.photos/seed/${item.id}/400/300`,
+              creditCost: item.creditCost,
+            }))
+          );
+        } catch {
+          // Content fetch failed (API offline) — leave empty, no placeholder
+          setContentItems([]);
+        }
       })
       .catch(() => {
+        clearTimeout(timeoutId);
         // API unavailable — look for matching mock profile
         const mock = MOCK_PROFILES.find(p => p.id === id || p.username === id);
         if (mock) {
@@ -84,7 +100,15 @@ export default function ProfileDetail() {
           setNotFound(true);
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [id]);
 
   const handleLike = () => {
@@ -280,41 +304,51 @@ export default function ProfileDetail() {
           {/* Right panel — Exclusive Content */}
           <div className="lg:col-span-3">
             <h3 className="font-bold text-sm text-white mb-4">Exclusive Content</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {contentItems.map(item => {
-                const isUnlocked = unlockedContent.has(item.id);
-                return (
-                  <div key={item.id} className="vl-card overflow-hidden cursor-pointer group"
-                    onClick={() => !isUnlocked && unlockContent(
-                      item.id,
-                      item.creditCost,
-                      undefined,
-                      creator?.userId,
-                      item.type === "video" ? "VIDEO" : "PHOTO",
-                    )}>
-                    <div className="relative h-28 overflow-hidden">
-                      <img
-                        src={item.thumbnailUrl}
-                        alt={item.title}
-                        className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!isUnlocked ? "blur-sm scale-105" : ""}`}
-                      />
-                      {!isUnlocked && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center"
-                          style={{ background: "rgba(9,9,26,0.5)" }}>
-                          <Lock className="w-5 h-5 mb-1" style={{ color: "#14b8a6" }} />
-                          <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
-                          <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
-                        </div>
-                      )}
+            {contentItems.length === 0 ? (
+              <div className="vl-card p-10 text-center">
+                <Lock className="w-8 h-8 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                <p className="text-sm font-medium text-white mb-1">No content yet</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  This creator hasn't uploaded any exclusive content.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {contentItems.map(item => {
+                  const isUnlocked = unlockedContent.has(item.id);
+                  return (
+                    <div key={item.id} className="vl-card overflow-hidden cursor-pointer group"
+                      onClick={() => !isUnlocked && unlockContent(
+                        item.id,
+                        item.creditCost,
+                        undefined,
+                        creator?.userId,
+                        item.type === "video" ? "VIDEO" : "PHOTO",
+                      )}>
+                      <div className="relative h-28 overflow-hidden">
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.title}
+                          className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!isUnlocked ? "blur-sm scale-105" : ""}`}
+                        />
+                        {!isUnlocked && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center"
+                            style={{ background: "rgba(9,9,26,0.5)" }}>
+                            <Lock className="w-5 h-5 mb-1" style={{ color: "#14b8a6" }} />
+                            <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
+                            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p className="text-xs font-medium text-white truncate">{item.title}</p>
+                        <p className="text-xs capitalize" style={{ color: "rgba(255,255,255,0.35)" }}>{item.type}</p>
+                      </div>
                     </div>
-                    <div className="p-2">
-                      <p className="text-xs font-medium text-white truncate">{item.title}</p>
-                      <p className="text-xs capitalize" style={{ color: "rgba(255,255,255,0.35)" }}>{item.type}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

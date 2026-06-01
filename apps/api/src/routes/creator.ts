@@ -93,7 +93,10 @@ router.get("/creator/earnings", requireAuth, async (req, res) => {
 const ApplySchema = z.object({
   displayName: z.string().min(1).max(60),
   bio: z.string().min(20).max(500),
-  subscriptionPrice: z.number().int().min(0).max(10000),
+  // Default to 0 (free subscriptions) — creator can update via PATCH /api/creator/settings later
+  subscriptionPrice: z.number().int().min(0).max(10000).default(0),
+  // Optional referral code for tracking creator-to-creator referrals
+  referralCode: z.string().max(20).optional(),
   tipMenuItems: z
     .array(z.object({ label: z.string().max(50), credits: z.number().int().min(1) }))
     .max(10)

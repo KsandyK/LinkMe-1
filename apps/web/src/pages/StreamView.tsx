@@ -443,10 +443,23 @@ export default function StreamView() {
     if (videoRef.current) videoRef.current.muted = muted;
   }, [muted]);
 
+  // ── Chat message credit cost (matches private message cost in Messages.tsx) ──
+  const CHAT_CREDIT_COST = 5;
+
   // ── Send chat message ───────────────────────────────────────────────────────
   const sendMessage = useCallback(() => {
     const text = draft.trim();
     if (!text) return;
+
+    if (!isLoggedIn) {
+      showToast({ title: "Sign in to chat", description: "Create a free account to join the conversation." });
+      return;
+    }
+
+    // Deduct chat credits (same cost as private messages)
+    const ok = spendCredits(CHAT_CREDIT_COST, `Chat message in live stream`);
+    if (!ok) return; // spendCredits shows "Insufficient credits" toast automatically
+
     setDraft("");
 
     if (wsRef.current?.isOpen) {
@@ -461,7 +474,7 @@ export default function StreamView() {
         createdAt: new Date().toISOString(),
       }]);
     }
-  }, [draft, user]);
+  }, [draft, user, isLoggedIn, spendCredits, showToast]);
 
   // ── Send gift / tip ─────────────────────────────────────────────────────────
   const sendGift = useCallback(async (gift: GiftItem) => {
@@ -1079,7 +1092,7 @@ export default function StreamView() {
               </button>
             </div>
             <p className="text-xs mt-1.5 text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Be respectful · No spam
+              {CHAT_CREDIT_COST} credits per message · Be respectful
             </p>
           </div>
         </div>

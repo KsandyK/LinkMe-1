@@ -9,6 +9,7 @@ const BASE: string = (import.meta as any).env?.VITE_API_URL || "";
 // ── Token helpers ────────────────────────────────────────────────────────────
 
 let _accessToken: string | null = localStorage.getItem("cravr_token");
+let _refreshToken: string | null = localStorage.getItem("cravr_refresh");
 let _refreshing: Promise<void> | null = null;
 
 export function setAccessToken(token: string | null) {
@@ -17,18 +18,35 @@ export function setAccessToken(token: string | null) {
   else localStorage.removeItem("cravr_token");
 }
 
+export function setRefreshToken(token: string | null) {
+  _refreshToken = token;
+  if (token) localStorage.setItem("cravr_refresh", token);
+  else localStorage.removeItem("cravr_refresh");
+}
+
 async function refreshTokens(): Promise<void> {
+  if (!_refreshToken) {
+    setAccessToken(null);
+    setRefreshToken(null);
+    localStorage.removeItem("cravr_user");
+    return;
+  }
   const res = await fetch(`${BASE}/api/auth/refresh`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken: _refreshToken }),
     credentials: "include",
   });
   if (!res.ok) {
     setAccessToken(null);
+    setRefreshToken(null);
     localStorage.removeItem("cravr_user");
     return;
   }
   const data = await res.json();
   setAccessToken(data.accessToken);
+  // Backend rotates the refresh token on every use — persist the new one
+  if (data.refreshToken) setRefreshToken(data.refreshToken);
 }
 
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
@@ -88,7 +106,9 @@ export const auth = {
     email?: string;
     password: string;
     displayName?: string;
-  }) => post<{ accessToken: string; user: object }>("/api/auth/register", data, { skipAuth: true }),
+    location?: string;
+    bio?: string;
+  }) => post<{ accessToken: string; refreshToken: string; user: object }>("/api/auth/register", data, { skipAuth: true }),
 
   login: (data: { username: string; password: string }) =>
     post<{ accessToken: string; user: object }>("/api/auth/login", data, { skipAuth: true }),
@@ -99,7 +119,10 @@ export const auth = {
   logout: () => post("/api/auth/logout"),
   logoutAll: () => post("/api/auth/logout-all"),
   /** Returns the user object directly (not wrapped). */
-  me: () => get<{ id: string; username: string; role: string; credits: number; email?: string }>("/api/auth/me"),
+  me: () => get<{
+    id: string; username: string; role: string; credits: number; email?: string;
+    profile: { displayName: string | null; bio: string | null; avatarUrl: string | null; location: string | null; } | null;
+  }>("/api/auth/me"),
 };
 
 // ── Profiles ─────────────────────────────────────────────────────────────────
@@ -355,7 +378,7 @@ export interface CreatorDashboardData {
 export const creator = {
   dashboard: () => get<CreatorDashboardData>("/api/creator/dashboard"),
   /** POST /api/creator/apply — requires age verification */
-  apply: (data: { displayName: string; bio: string; subscriptionPrice: number }) =>
+  apply: (data: { displayName: string; bio: string; subscriptionPrice?: number; referralCode?: string }) =>
     post<{ creatorProfile: object; message: string }>("/api/creator/apply", data),
   settings: (data: { subscriptionPrice?: number; tipMenuItems?: unknown[] }) =>
     patch<object>("/api/creator/settings", data),
@@ -437,6 +460,34 @@ export const content = {
     get<{ contentId: string; contentType: string; creditCost: number; createdAt: string }[]>(
       "/api/content/unlocked"
     ),
+
+  /** GET /api/content/creator/:creatorId — public published listing for a creator's profile page */
+  getForCreator: (creatorId: string) =>
+    get<{
+      id: string;
+      title: string;
+      type: string;
+      thumbnailUrl: string | null;
+      creditCost: number;
+      sortOrder: number;
+      createdAt: string;
+    }[]>(`/api/content/creator/${encodeURIComponent(creatorId)}`),
+
+  /** GET /api/content/my — creator's own full library (requires auth) */
+  getMy: () =>
+    get<{
+      id: string;
+      title: string;
+      type: string;
+      mediaUrl: string;
+      thumbnailUrl: string | null;
+      accessUrl: string;
+      creditCost: number;
+      sortOrder: number;
+      isPublished: boolean;
+      bunnyVideoId: string | null;
+      createdAt: string;
+    }[]>("/api/content/my"),
 };
 
 // ── Subscriptions ─────────────────────────────────────────────────────────────

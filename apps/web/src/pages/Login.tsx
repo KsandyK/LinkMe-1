@@ -9,6 +9,7 @@ export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   // Already logged in — redirect home
   if (isLoggedIn) {
@@ -20,14 +21,17 @@ export default function Login() {
     e.preventDefault();
     if (!form.username.trim() || !form.password) return;
     setLoading(true);
+    setLoginError(null);
     try {
       await login(form.username.trim(), form.password);
+      navigate("/");
     } catch {
-      // login() handles all errors internally — falls through to demo mode and never re-throws
+      // login() re-throws when the API was reachable but rejected credentials (401).
+      // It falls through to demo mode on network/timeout errors (and then navigates fine).
+      setLoginError("Incorrect username or password. Please try again.");
     } finally {
       setLoading(false);
     }
-    navigate("/");
   };
 
   return (
@@ -40,6 +44,13 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-border bg-card space-y-4">
+          {loginError && (
+            <div className="p-3 rounded-lg text-sm text-center"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+              {loginError}
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">
               Username or Email
@@ -77,6 +88,12 @@ export default function Login() {
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="flex justify-end -mt-1">
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              Forgot password?
+            </Link>
           </div>
 
           <button

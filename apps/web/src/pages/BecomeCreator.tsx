@@ -37,7 +37,7 @@ export default function BecomeCreator() {
   const [applying, setApplying]     = useState(false);
   const [applied, setApplied]       = useState(false);
   const [applyStep, setApplyStep]   = useState<ApplyStep>("prompt");
-  const [applyForm, setApplyForm]   = useState({ displayName: "", bio: "", referralCode: "" });
+  const [applyForm, setApplyForm]   = useState({ displayName: "", bio: "", referralCode: "", subscriptionPrice: "" });
   const [applyError, setApplyError] = useState<string | null>(null);
 
   const handleApply = async () => {
@@ -48,6 +48,7 @@ export default function BecomeCreator() {
       await creatorApi.apply({
         displayName: applyForm.displayName,
         bio: applyForm.bio,
+        subscriptionPrice: Number(applyForm.subscriptionPrice) || 0,
         ...(applyForm.referralCode.trim() && { referralCode: applyForm.referralCode.trim().toUpperCase() }),
       });
       setApplied(true);
@@ -385,6 +386,24 @@ export default function BecomeCreator() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        Monthly Subscription Price{" "}
+                        <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(credits — optional)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10000"
+                        value={applyForm.subscriptionPrice}
+                        onChange={e => setApplyForm(f => ({ ...f, subscriptionPrice: e.target.value.replace(/\D/g, "") }))}
+                        placeholder="0 = free (e.g. 100 = $10/month)"
+                        className="vl-input w-full"
+                      />
+                      <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        Leave at 0 for free subscriptions. You can update this anytime in Creator Settings. 100 credits = $10/month.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
                         Referral Code{" "}
                         <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(optional)</span>
                       </label>
@@ -433,6 +452,14 @@ export default function BecomeCreator() {
                     <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Bio</p>
                       <p className="text-sm text-white" style={{ lineHeight: 1.5 }}>{applyForm.bio}</p>
+                    </div>
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Monthly Subscription Price</p>
+                      <p className="text-sm font-semibold text-white">
+                        {Number(applyForm.subscriptionPrice) > 0
+                          ? `${Number(applyForm.subscriptionPrice)} credits/month ($${(Number(applyForm.subscriptionPrice) / 10).toFixed(2)}/mo)`
+                          : "Free subscriptions"}
+                      </p>
                     </div>
                     {applyForm.referralCode && (
                       <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>

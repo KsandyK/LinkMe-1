@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X } from "lucide-react";
 import { BOOST_TIERS } from "@/lib/membership-tiers";
 import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
 
@@ -355,6 +355,145 @@ export default function CreatorDashboard() {
     return () => clearTimeout(fallbackTimer);
   }, [isLoggedIn]);
 
+  // ── Content library state ─────────────────────────────────────────────────
+  interface ContentItem {
+    id: string; title: string; type: "PHOTO" | "VIDEO";
+    thumbnailUrl: string | null; creditCost: number;
+    sortOrder: number; isPublished: boolean; mediaUrl: string;
+  }
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState<"PHOTO" | "VIDEO">("PHOTO");
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadPrice, setUploadPrice] = useState("50");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadContent = async () => {
+    setContentLoading(true);
+    try {
+      const token = localStorage.getItem("vl_token");
+      if (!token) { setContentLoading(false); return; }
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch("/api/content/my", {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) setContentItems(await res.json());
+    } catch {}
+    setContentLoading(false);
+  };
+
+  useEffect(() => {
+    if (activeTab === "content") loadContent();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadFile(file);
+    setUploadType(file.type.startsWith("video/") ? "VIDEO" : "PHOTO");
+    const url = URL.createObjectURL(file);
+    setUploadPreview(url);
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile || !uploadTitle.trim()) return;
+    setUploading(true);
+    const token = localStorage.getItem("vl_token");
+    try {
+      const price = Math.max(1, parseInt(uploadPrice) || 50);
+      if (uploadType === "PHOTO") {
+        const res = await fetch("/api/content/upload-photo", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": uploadFile.type,
+            "x-content-title": encodeURIComponent(uploadTitle.trim()),
+            "x-credit-cost": String(price),
+          },
+          body: uploadFile,
+        });
+        if (res.ok) {
+          const item = await res.json();
+          setContentItems(prev => [item, ...prev]);
+          showToast({ title: "Photo uploaded!", description: `"${uploadTitle}" is now in your library` });
+        } else {
+          showToast({ title: "Upload failed", description: "Storage unavailable — try again shortly", variant: "destructive" });
+        }
+      } else {
+        // Video: create Bunny Stream entry, then browser uploads via TUS
+        const res = await fetch("/api/content/create-video", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ title: uploadTitle.trim(), creditCost: price }),
+        });
+        if (res.ok) {
+          showToast({ title: "Video upload initiated", description: "Large videos may take a few minutes to process" });
+          await loadContent();
+        } else {
+          showToast({ title: "Upload failed", description: "Try again shortly", variant: "destructive" });
+        }
+      }
+      setShowUploadModal(false);
+      setUploadTitle(""); setUploadPrice("50"); setUploadFile(null); setUploadPreview(null);
+    } catch {
+      showToast({ title: "Upload failed", description: "Check your connection", variant: "destructive" });
+    }
+    setUploading(false);
+  };
+
+  const handleDelete = async (item: ContentItem) => {
+    if (!confirm(`Delete "${item.title}"? This cannot be undone.`)) return;
+    const token = localStorage.getItem("vl_token");
+    try {
+      await fetch(`/api/content/${item.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      setContentItems(prev => prev.filter(c => c.id !== item.id));
+    } catch {}
+  };
+
+  const handleReorder = async (item: ContentItem, direction: "up" | "down") => {
+    const idx = contentItems.findIndex(c => c.id === item.id);
+    const newIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= contentItems.length) return;
+    const reordered = [...contentItems];
+    [reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]];
+    // Assign sortOrder values
+    const updated = reordered.map((c, i) => ({ ...c, sortOrder: i }));
+    setContentItems(updated);
+    const token = localStorage.getItem("vl_token");
+    try {
+      await fetch(`/api/content/${item.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ sortOrder: newIdx }),
+      });
+    } catch {}
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    const token = localStorage.getItem("vl_token");
+    try {
+      const res = await fetch(`/api/content/${editingItem.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editingItem.title, creditCost: editingItem.creditCost }),
+      });
+      if (res.ok) {
+        setContentItems(prev => prev.map(c => c.id === editingItem.id ? editingItem : c));
+        setEditingItem(null);
+      }
+    } catch {}
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -538,15 +677,158 @@ export default function CreatorDashboard() {
 
             {activeTab === "content" && (
               <div className="vl-card p-5">
-                <h3 className="text-base font-bold text-white mb-4">Content Library</h3>
-                <div className="text-center py-12">
-                  <Upload className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
-                  <p className="text-base" style={{ color: "rgba(255,255,255,0.4)" }}>No content uploaded yet</p>
-                  <p className="text-sm mt-1 mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>Upload photos and videos to share with your subscribers</p>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-base font-bold text-white">Content Library</h3>
                   <button
-                    className="vl-btn-primary px-6 py-2 text-sm"
-                    onClick={() => showToast({ title: "Upload Content", description: "File upload is coming soon — this feature is in development." })}
-                  >Upload First Content</button>
+                    className="vl-btn-primary px-4 py-2 text-sm flex items-center gap-2"
+                    onClick={() => setShowUploadModal(true)}
+                  >
+                    <Upload className="w-4 h-4" /> Upload Content
+                  </button>
+                </div>
+
+                {contentLoading ? (
+                  <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: "#14b8a6" }} /></div>
+                ) : contentItems.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Upload className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <p className="text-base mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>No content uploaded yet</p>
+                    <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>Upload photos and videos — set your own price for each</p>
+                    <button className="vl-btn-primary px-6 py-2 text-sm" onClick={() => setShowUploadModal(true)}>Upload First Content</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {contentItems.map((item, idx) => (
+                      <div key={item.id} className="flex items-center gap-3 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                        {/* Thumbnail */}
+                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0" style={{ background: "rgba(255,255,255,0.08)" }}>
+                          {item.thumbnailUrl
+                            ? <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center">
+                                {item.type === "VIDEO" ? <Video className="w-6 h-6" style={{ color: "rgba(255,255,255,0.3)" }} /> : <ImagePlus className="w-6 h-6" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                              </div>}
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          {editingItem?.id === item.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                className="vl-input text-sm flex-1 py-1 px-2"
+                                value={editingItem.title}
+                                onChange={e => setEditingItem({ ...editingItem, title: e.target.value })}
+                              />
+                              <input
+                                className="vl-input text-sm w-20 py-1 px-2"
+                                type="number" min="1"
+                                value={editingItem.creditCost}
+                                onChange={e => setEditingItem({ ...editingItem, creditCost: parseInt(e.target.value) || 1 })}
+                              />
+                              <button className="text-xs px-2 py-1 rounded-lg font-semibold" style={{ background: "#14b8a6", color: "#fff" }} onClick={handleSaveEdit}>Save</button>
+                              <button className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }} onClick={() => setEditingItem(null)}><X className="w-4 h-4" /></button>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-sm font-semibold text-white truncate">{item.title}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
+                                <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>•</span>
+                                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{item.type}</span>
+                                {!item.isPublished && <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24" }}>Processing</span>}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        {/* Controls */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button onClick={() => handleReorder(item, "up")} disabled={idx === 0}
+                            className="p-1.5 rounded-lg transition-opacity disabled:opacity-20" style={{ color: "rgba(255,255,255,0.5)" }} title="Move up">
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleReorder(item, "down")} disabled={idx === contentItems.length - 1}
+                            className="p-1.5 rounded-lg transition-opacity disabled:opacity-20" style={{ color: "rgba(255,255,255,0.5)" }} title="Move down">
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setEditingItem(item)}
+                            className="p-1.5 rounded-lg" style={{ color: "rgba(255,255,255,0.5)" }} title="Edit">
+                            <PencilLine className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(item)}
+                            className="p-1.5 rounded-lg" style={{ color: "#f87171" }} title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Upload modal ─────────────────────────────────────────────────── */}
+            {showUploadModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)" }}
+                onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false); }}>
+                <div className="w-full max-w-md rounded-2xl p-6" style={{ background: "#12121a", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-base font-bold text-white">Upload Content</h3>
+                    <button onClick={() => setShowUploadModal(false)}><X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.5)" }} /></button>
+                  </div>
+
+                  {/* Type selector */}
+                  <div className="flex gap-2 mb-4">
+                    {(["PHOTO", "VIDEO"] as const).map(t => (
+                      <button key={t} onClick={() => setUploadType(t)}
+                        className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                        style={uploadType === t
+                          ? { background: "rgba(20,184,166,0.2)", border: "1px solid #14b8a6", color: "#14b8a6" }
+                          : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                        {t === "PHOTO" ? <ImagePlus className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                        {t === "PHOTO" ? "Photo" : "Video"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* File drop zone */}
+                  <div
+                    className="relative rounded-xl mb-4 flex items-center justify-center cursor-pointer overflow-hidden"
+                    style={{ height: 160, background: "rgba(255,255,255,0.04)", border: "2px dashed rgba(255,255,255,0.1)" }}
+                    onClick={() => fileInputRef.current?.click()}>
+                    {uploadPreview
+                      ? uploadType === "PHOTO"
+                        ? <img src={uploadPreview} className="w-full h-full object-cover" alt="preview" />
+                        : <div className="text-center"><Video className="w-10 h-10 mx-auto mb-2" style={{ color: "#14b8a6" }} /><p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>{uploadFile?.name}</p></div>
+                      : <div className="text-center pointer-events-none">
+                          <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Click to select {uploadType === "PHOTO" ? "photo" : "video"}</p>
+                          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.25)" }}>{uploadType === "PHOTO" ? "JPG, PNG, WebP — max 20MB" : "MP4, MOV — any size"}</p>
+                        </div>}
+                    <input ref={fileInputRef} type="file"
+                      accept={uploadType === "PHOTO" ? "image/jpeg,image/png,image/webp" : "video/*"}
+                      className="hidden" onChange={handleFileSelect} />
+                  </div>
+
+                  {/* Title */}
+                  <input className="vl-input w-full mb-3 text-sm" placeholder="Title (e.g. Art Session Photos)"
+                    value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} maxLength={100} />
+
+                  {/* Price */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex-1">
+                      <label className="text-xs mb-1 block" style={{ color: "rgba(255,255,255,0.5)" }}>Price (credits)</label>
+                      <input className="vl-input w-full text-sm" type="number" min="1" max="100000"
+                        value={uploadPrice} onChange={e => setUploadPrice(e.target.value)} />
+                    </div>
+                    <div className="text-xs pt-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      = ${(parseInt(uploadPrice || "0") * 0.10).toFixed(2)} USD
+                    </div>
+                  </div>
+
+                  <button
+                    className="vl-btn-primary w-full py-3 text-sm font-semibold flex items-center justify-center gap-2"
+                    onClick={handleUpload}
+                    disabled={uploading || !uploadFile || !uploadTitle.trim()}>
+                    {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</> : <><Upload className="w-4 h-4" /> Upload</>}
+                  </button>
                 </div>
               </div>
             )}

@@ -40,6 +40,7 @@ const Billing          = lazy(() => import("./pages/Billing"));
 const AgeVerification    = lazy(() => import("./pages/AgeVerification"));
 const AdminVerifyQueue   = lazy(() => import("./pages/AdminVerifyQueue"));
 const LegalPages         = lazy(() => import("./pages/LegalPages"));
+const ForgotPassword     = lazy(() => import("./pages/ForgotPassword"));
 
 // ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
@@ -67,6 +68,7 @@ function Router() {
         <Route path="/vip-lounge" component={VipLounge} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/become-creator" component={BecomeCreator} />
         <Route path="/account" component={Account} />
         <Route path="/creator/studio" component={CreatorLiveStudio} />

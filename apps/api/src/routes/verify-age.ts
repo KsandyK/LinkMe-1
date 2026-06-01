@@ -22,6 +22,7 @@ import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } fro
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import db from "../lib/db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { Emails } from "../lib/email.js";
 
 const router = Router();
 
@@ -320,7 +321,12 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
     } catch {}
   }
 
-  // Notify user
+  // Notify user — DB notification + transactional email
+  const notifiedUser = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true, username: true },
+  });
+
   if (action === "approve") {
     await db.notification.create({
       data: {
@@ -331,6 +337,9 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
         data: {},
       },
     });
+    if (notifiedUser?.email) {
+      Emails.ageVerifyApproved(notifiedUser.email, notifiedUser.username).catch(() => null);
+    }
   } else {
     await db.notification.create({
       data: {
@@ -341,6 +350,12 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
         data: {},
       },
     });
+    if (notifiedUser?.email) {
+      Emails.ageVerifyRejected(
+        notifiedUser.email,
+        reason ?? "Your document was not accepted. Please re-submit with a clearer photo."
+      ).catch(() => null);
+    }
   }
 
   res.json({ id: record.id, status: record.status, userId: record.userId });

@@ -5,7 +5,10 @@
  * No CCBill references. No AI watermarks.
  */
 import { useParams } from "wouter";
+import { Link } from "wouter";
 import { ChevronRight } from "lucide-react";
+import { LEGAL_DOCS } from "@/lib/legal-content";
+import { LegalDownloadBar } from "@/components/LegalDownloadBar";
 
 const LEGAL_CONTENT: Record<string, { title: string; content: string }> = {
   terms: {
@@ -198,7 +201,7 @@ These Terms are governed by the laws of the State of Wyoming, without regard to 
 - You must send a written Notice of Dispute to legal@cravr.fun before initiating arbitration, describing your claim and desired relief
 - We have 30 days to resolve the claim informally
 - If not resolved, either party may initiate arbitration with AAA (adr.org)
-- Arbitration shall take place in Sheridan, WYlaware or via videoconference at your election
+- Arbitration shall take place in Sheridan, Wyoming or via videoconference at your election
 - For claims under $75,000, CRAVR will pay all AAA filing fees and arbitrator costs
 
 11.5 **Governing Law for Arbitration:** The Federal Arbitration Act (9 U.S.C. § 1 et seq.) governs the interpretation and enforcement of this arbitration agreement.
@@ -1240,7 +1243,7 @@ Note: Deleting or blocking strictly necessary cookies will impair the platform's
 Our platform currently responds to Do Not Track browser signals by limiting non-essential tracking. We support user privacy preferences.
 
 ### 4.4 Opt-Out of Analytics
-To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible via the cookie icon in the footer) or contact legal@cravr.fun.
+To opt out of analytics cookies, adjust your preferences in the Cookie Preferences panel (accessible at /legal/cookies) or contact legal@cravr.fun.
 
 ---
 
@@ -1455,23 +1458,19 @@ export default function LegalPages() {
 
   if (!legal) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 pt-24 pb-12">
+      <div className="min-h-screen py-12 px-4" style={{ background: "#09091a" }}>
         <div className="container max-w-4xl">
           <h1 className="text-4xl font-bold text-white mb-8">Legal Documents</h1>
           <div className="grid gap-4">
             {Object.entries(LEGAL_CONTENT).map(([key, { title }]) => (
-              <a
-                key={key}
-                href={`/legal/${key}`}
-                className="vl-card p-6 hover:border-teal-500 transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center justify-between">
+              <Link key={key} href={`/legal/${key}`}>
+                <div className="vl-card p-6 hover:border-teal-500 transition-colors cursor-pointer group flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-white group-hover:text-teal-400 transition-colors">
                     {title}
                   </h3>
                   <ChevronRight className="w-5 h-5 text-teal-500" />
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -1479,17 +1478,22 @@ export default function LegalPages() {
     );
   }
 
+  const downloadDoc = LEGAL_DOCS[page];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 pt-24 pb-12">
+    <div className="min-h-screen py-12 px-4" style={{ background: "#09091a" }}>
       <div className="container max-w-4xl">
         {/* Back Link */}
-        <a href="/legal" className="text-teal-400 hover:text-teal-300 mb-6 inline-flex items-center gap-2">
+        <Link href="/legal" className="text-teal-400 hover:text-teal-300 mb-6 inline-flex items-center gap-2">
           <ChevronRight className="w-4 h-4 rotate-180" />
-          Back to Legal
-        </a>
+          Back to Legal Centre
+        </Link>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-white mb-8">{legal.title}</h1>
+        <h1 className="text-4xl font-bold text-white mt-4 mb-6">{legal.title}</h1>
+
+        {/* Download bar — shown when a matching doc exists in legal-content.ts */}
+        {downloadDoc && <LegalDownloadBar doc={downloadDoc} />}
 
         {/* Content */}
         <div className="vl-card p-8 prose prose-invert max-w-none">
@@ -1561,10 +1565,17 @@ export default function LegalPages() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-gray-400 text-sm">
-          <p>© 2026 Cravr LLC All rights reserved.</p>
+        <div className="mt-12 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+          <p>© 2026 Cravr LLC · 30 N Gould St Ste N, Sheridan, WY 82801, USA · EIN 42-2815300</p>
           <p className="mt-2">
-            For legal inquiries, contact: <span className="text-teal-400">legal@cravr.fun</span>
+            Legal inquiries:{" "}
+            <a href="mailto:legal@cravr.fun" className="hover:underline" style={{ color: "#14b8a6" }}>
+              legal@cravr.fun
+            </a>
+            {" · "}
+            <Link href="/legal" className="hover:underline" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Legal Centre
+            </Link>
           </p>
         </div>
       </div>

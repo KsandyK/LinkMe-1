@@ -46,7 +46,7 @@ CRAVR's liability is limited to the greater of amounts paid in the prior 12 mont
 CRAVR may terminate accounts with or without cause. Credits are forfeited on termination for cause.
 
 10. GOVERNING LAW
-Laws of the State of Delaware. Subject to mandatory arbitration (Section 11).
+Laws of the State of Wyoming. Subject to mandatory arbitration (Section 11).
 
 11. MANDATORY ARBITRATION & CLASS ACTION WAIVER
 ALL DISPUTES RESOLVED BY BINDING INDIVIDUAL ARBITRATION (AAA Consumer Rules). YOU WAIVE THE RIGHT TO JURY TRIAL AND CLASS ACTION PARTICIPATION.
@@ -279,7 +279,7 @@ ELIGIBLE FOR REFUND:
 1. Technical errors — credits deducted without feature delivery, duplicate charges
    (Report within 7 days to support@cravr.fun with transaction ID)
 2. Unauthorized transactions — account accessed without your authorization
-   (Contact support@cravr.fun and support@cravr.fun immediately)
+   (Contact support@cravr.fun and your payment provider immediately)
 3. Consumer protection law requirements in your jurisdiction
 4. Platform permanent shutdown (pro-rated unused credit balance refunded)
 

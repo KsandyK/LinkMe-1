@@ -11,6 +11,7 @@ import {
 } from "../lib/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
 import rateLimit from "express-rate-limit";
+import { Emails } from "../lib/email.js";
 
 const router = Router();
 
@@ -33,6 +34,10 @@ const RegisterSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128),
+  // Optional profile fields collected during multi-step registration
+  displayName: z.string().min(1).max(60).optional(),
+  location:    z.string().max(100).optional(),
+  bio:         z.string().max(500).optional(),
 });
 
 const LoginSchema = z.object({
@@ -79,7 +84,7 @@ router.post("/auth/register", authLimiter, async (req, res) => {
     res.status(400).json({ error: "Validation failed", issues: parsed.error.flatten() });
     return;
   }
-  const { username, email, password } = parsed.data;
+  const { username, email, password, displayName, location, bio } = parsed.data;
 
   // Check uniqueness
   const existing = await db.user.findFirst({
@@ -102,9 +107,13 @@ router.post("/auth/register", authLimiter, async (req, res) => {
       username,
       email,
       passwordHash,
-      credits: 250, // welcome credits
+      credits: 250, // welcome credits — shown as bonus on register confirmation screen
       profile: {
-        create: { displayName: username },
+        create: {
+          displayName: displayName || username,
+          ...(location ? { location } : {}),
+          ...(bio ? { bio } : {}),
+        },
       },
     },
     select: { id: true, username: true, role: true, credits: true },
@@ -112,6 +121,11 @@ router.post("/auth/register", authLimiter, async (req, res) => {
 
   const { accessToken, rawRefresh } = issueTokens(user.id, user.username, user.role);
   await storeRefreshToken(user.id, rawRefresh, req as any);
+
+  // Send welcome email (fire-and-forget — don't delay registration response)
+  if (email) {
+    Emails.welcome(email, user.username).catch(() => null);
+  }
 
   res.status(201).json({
     user,

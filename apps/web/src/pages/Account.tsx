@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { profiles as profilesApi } from "@/lib/api";
+import { profiles as profilesApi, subscriptions as subsApi, credits as creditsApi, auth as authApi } from "@/lib/api";
+import type { LocalTransaction } from "@/contexts/AppContext";
 import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
 import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users, Camera, Loader2 } from "lucide-react";
 
@@ -128,8 +129,6 @@ export default function Account() {
 
   // Security sub-states
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
-  const [twoFALoading, setTwoFALoading] = useState(false);
-  const [pwChanged, setPwChanged] = useState(false);
 
   // 2FA setup modal
   const [show2FAModal, setShow2FAModal] = useState(false);
@@ -153,6 +152,71 @@ export default function Account() {
     localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(next));
   };
 
+  // ── Merged transaction list (local + API) ─────────────────────────────────
+  const [allTransactions, setAllTransactions] = useState<LocalTransaction[]>(transactions);
+
+  // ── On mount: fetch profile data, subscriptions, and transactions ──────────
+  useEffect(() => {
+    if (!user) return;
+    // 1. Load profile fields (displayName, bio) from server
+    (async () => {
+      try {
+        const me = await authApi.me();
+        if (me.profile?.displayName) setDisplayName(me.profile.displayName);
+        if (me.profile?.bio) setBio(me.profile.bio);
+      } catch {/* API offline — keep defaults from user object */}
+    })();
+
+    // 2. Load creator subscriptions from API
+    (async () => {
+      try {
+        const apiSubs = await subsApi.list();
+        const mapped: CreatorSub[] = apiSubs.map(s => ({
+          id: s.id,
+          username: s.creator.username,
+          displayName: s.creator.profile?.displayName ?? s.creator.username,
+          avatarUrl: s.creator.profile?.avatarUrl ?? null,
+          tier: s.tier ?? "Subscriber",
+          tierColor: "#a78bfa",
+          price: Number((s.creditCost / 10).toFixed(2)),
+          renewDate: new Date(s.endsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        }));
+        setCreatorSubs(mapped);
+      } catch {/* API offline — show empty state */}
+    })();
+
+    // 3. Load and merge transactions from API
+    const TYPE_LABELS: Record<string, string> = {
+      PURCHASE: "Credit purchase",
+      SPEND: "Credits spent",
+      TIP: "Tip sent",
+      GIFT: "Gift sent",
+      WELCOME: "Welcome bonus",
+      SUBSCRIPTION: "Creator subscription",
+      MESSAGE: "Message sent",
+    };
+    (async () => {
+      try {
+        const apiTxs = await creditsApi.transactions({ limit: 50 });
+        const mapped: LocalTransaction[] = apiTxs.map(tx => ({
+          id: tx.id,
+          amount: tx.amount,
+          type: tx.type,
+          description: TYPE_LABELS[tx.type] ?? tx.type,
+          createdAt: tx.createdAt,
+          status: "COMPLETED" as const,
+        }));
+        const localIds = new Set(transactions.map(t => t.id));
+        const dedupedApi = mapped.filter(t => !localIds.has(t.id));
+        const merged = [...transactions, ...dedupedApi].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setAllTransactions(merged);
+      } catch {/* API offline — keep local transactions */}
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Cards (billing tab)
   const [cards, setCards] = useState<SavedCard[]>(loadCards);
   const [showAddCard, setShowAddCard] = useState(false);
@@ -160,8 +224,8 @@ export default function Account() {
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
   const [cardSaved, setCardSaved] = useState(false);
 
-  // Creator subscriptions
-  const [creatorSubs, setCreatorSubs] = useState<CreatorSub[]>(MOCK_CREATOR_SUBS);
+  // Creator subscriptions (loaded from API; fallback to mock data)
+  const [creatorSubs, setCreatorSubs] = useState<CreatorSub[]>([]);
 
   // Cancel plan confirmation modal
   const [cancelPlanModal, setCancelPlanModal] = useState<{
@@ -327,9 +391,7 @@ export default function Account() {
   };
 
   const handleChangePassword = () => {
-    setPwChanged(true);
-    showToast({ title: "Password email sent", description: "Check your inbox for a reset link." });
-    setTimeout(() => setPwChanged(false), 3000);
+    navigate("/forgot-password");
   };
 
   const handleSignOutAll = async () => {
@@ -514,9 +576,12 @@ export default function Account() {
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Username</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>@</span>
-                      <input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-                        className="vl-input pl-7" placeholder="your_username" />
+                      <input value={username} readOnly disabled
+                        className="vl-input pl-7 opacity-50 cursor-not-allowed" placeholder="your_username" />
                     </div>
+                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Username cannot be changed — contact <a href="mailto:support@cravr.fun" className="hover:underline" style={{ color: "#14b8a6" }}>support@cravr.fun</a> to request a change
+                    </p>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
@@ -965,11 +1030,11 @@ export default function Account() {
                   <h2 className="text-base font-bold text-white">Transaction History</h2>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                     style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)", color: "#14b8a6" }}>
-                    {transactions.length} transactions
+                    {allTransactions.length} transactions
                   </span>
                 </div>
 
-                {transactions.length === 0 ? (
+                {allTransactions.length === 0 ? (
                   <div className="text-center py-14">
                     <Receipt className="w-12 h-12 mx-auto mb-4" style={{ color: "rgba(255,255,255,0.1)" }} />
                     <p className="text-sm font-semibold text-white mb-1">No transactions yet</p>
@@ -979,7 +1044,7 @@ export default function Account() {
                   </div>
                 ) : (
                   <div className="space-y-1.5">
-                    {transactions.map(tx => {
+                    {allTransactions.map(tx => {
                       const isPurchase = tx.type === "PURCHASE";
                       const isCredit = tx.amount > 0;
                       // For real-money purchases: amount is stored as negative dollar value
@@ -1026,13 +1091,13 @@ export default function Account() {
                     <div>
                       <p className="text-sm font-semibold text-white">Password</p>
                       <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        {pwChanged ? "Reset email sent ✓" : "Last changed: Never"}
+                        Request a password reset link via email
                       </p>
                     </div>
                     <button onClick={handleChangePassword}
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:bg-white/5"
                       style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-                      {pwChanged ? "Email Sent ✓" : "Change Password"}
+                      Change Password
                     </button>
                   </div>
                 </div>
