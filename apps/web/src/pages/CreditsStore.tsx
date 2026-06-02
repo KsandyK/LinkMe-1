@@ -44,20 +44,25 @@ export default function CreditsStore() {
       return;
     }
 
-    // ── Demo / CCBill fallback path ────────────────────────────────────────────
-    if (!isLoggedIn) {
-      const total = pkg.credits + pkg.bonusCredits;
-      addCredits(total, `Purchased ${pkg.name} package (${pkg.credits} + ${pkg.bonusCredits} bonus credits)`);
-      return;
-    }
+    // ── CCBill checkout ──────────────────────────────────────────────────────
+    if (!isLoggedIn) return; // route is auth-gated; safety no-op (never grant free credits)
     setPurchasing(pkg.id);
     try {
       const { redirectUrl } = await creditsApi.purchase(pkg.id);
       window.location.href = redirectUrl;
     } catch {
-      showToast({ title: "Payment redirect failed", description: `Adding ${pkg.credits + pkg.bonusCredits} credits locally for demo.`, variant: "destructive" });
-      const total = pkg.credits + pkg.bonusCredits;
-      addCredits(total, `[Demo] ${pkg.name} package`);
+      // NEVER grant free credits in production. Only simulate locally in dev.
+      if (import.meta.env.DEV) {
+        const total = pkg.credits + pkg.bonusCredits;
+        addCredits(total, `[Demo] ${pkg.name} package`);
+        showToast({ title: "Demo mode", description: `Added ${total.toLocaleString()} credits locally (no real charge).` });
+      } else {
+        showToast({
+          title: "Payments coming soon",
+          description: "Credit purchases aren't available just yet — please check back shortly.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setPurchasing(null);
     }

@@ -60,6 +60,13 @@ router.post("/credits/purchase", requireAuth, async (req, res) => {
     return;
   }
 
+  // CCBill not configured yet — return a clean error instead of a broken redirect
+  // (an empty-param CCBill URL bounces to the CCBill homepage).
+  if (!process.env.CCBILL_CLIENT_ACCNUM || !process.env.CCBILL_FORM_NAME) {
+    res.status(503).json({ error: "Credit purchases aren't available yet — payment processing is being set up." });
+    return;
+  }
+
   const totalCredits = pack.credits + pack.bonusCredits;
 
   // Build CCBill URL — x-credits carries the TOTAL (base + bonus) so the
