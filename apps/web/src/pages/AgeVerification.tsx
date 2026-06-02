@@ -171,20 +171,37 @@ export default function AgeVerification() {
 
           {/* CTA */}
           {isLoggedIn ? (
+            /* Signed in but unverified → drive straight to the purchase that verifies */
             <Link href="/credits">
               <button className="vl-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold">
                 <CreditCard className="w-4 h-4" />
-                Get Credits &amp; Verify My Age
+                Choose a Credit Pack &amp; Verify
               </button>
             </Link>
           ) : (
             <div className="space-y-3">
               <Link href="/register">
                 <button className="vl-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold">
-                  Create Account to Continue
+                  <CreditCard className="w-4 h-4" />
+                  Create Account &amp; Buy Credits
                 </button>
               </Link>
-              <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Create your free account, then choose a credit pack — your age verifies instantly at checkout.
+              </p>
+
+              {/* Alternative: creator account */}
+              <div className="pt-3 mt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                <Link href="/become-creator">
+                  <button className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:bg-white/5"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+                    <Zap className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                    Want to earn? Create a creator account
+                  </button>
+                </Link>
+              </div>
+
+              <p className="text-center text-xs pt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
                 Already have an account?{" "}
                 <Link href="/login">
                   <span className="underline cursor-pointer" style={{ color: "#14b8a6" }}>Sign in</span>
