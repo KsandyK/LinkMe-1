@@ -186,7 +186,11 @@ function StripeAddCardForm({ onSuccess, onCancel }: StripeAddCardProps) {
 }
 
 export default function Billing() {
-  const { credits, isLoggedIn, transactions, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
+  const { credits, isLoggedIn, transactions, activeMembership, setActiveMembership, activeBoost, setActiveBoost, showToast } = useApp();
+  // Real card vaulting requires a live processor (CCBill/Stripe). Until then,
+  // adding a card is disabled in production (the old flow saved a fake card to
+  // localStorage). Demo entry still works in local dev.
+  const cardEntryEnabled = import.meta.env.DEV;
 
   // Build active subscription list from AppContext state
   const activeSubs: { id: string; type: "membership" | "boost"; name: string; price: number; detail: string; color: string; emoji: string }[] = [];
@@ -208,6 +212,11 @@ export default function Billing() {
   const [cardSaved, setCardSaved] = useState(false);
 
   const handleSaveCard = () => {
+    if (!cardEntryEnabled) {
+      setShowAddCard(false);
+      showToast({ title: "Coming soon", description: "Saved payment methods will be available once checkout is live.", variant: "destructive" });
+      return;
+    }
     const errs: Record<string, string> = {};
     const rawNum = cardForm.number.replace(/\s/g, "");
     if (rawNum.length < 13) errs.number = "Enter a valid card number";
@@ -469,12 +478,23 @@ export default function Billing() {
                 )}
               </div>
             ) : (
-              <button onClick={() => setShowAddCard(true)}
-                className="w-full vl-card p-4 flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:border-white/20"
-                style={{ color: "#14b8a6", borderStyle: "dashed" }}>
-                <Plus className="w-4 h-4" />
-                Add Payment Method
-              </button>
+              cardEntryEnabled ? (
+                <button onClick={() => setShowAddCard(true)}
+                  className="w-full vl-card p-4 flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:border-white/20"
+                  style={{ color: "#14b8a6", borderStyle: "dashed" }}>
+                  <Plus className="w-4 h-4" />
+                  Add Payment Method
+                </button>
+              ) : (
+                <div className="vl-card p-4 text-center" style={{ borderStyle: "dashed" }}>
+                  <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Payment methods available once checkout is live
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    Cards are added securely through our payment processor at checkout — coming soon.
+                  </p>
+                </div>
+              )
             )}
 
             {cards.length === 0 && !showAddCard && (
