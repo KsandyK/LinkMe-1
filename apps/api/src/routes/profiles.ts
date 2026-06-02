@@ -8,27 +8,27 @@ const router = Router();
 // ── GET /api/profiles ────────────────────────────────────────────────────────
 // Public — supports search, live filter, pagination
 router.get("/profiles", optionalAuth, async (req, res) => {
-  const { search, live, page = "1", limit = "20" } = req.query as Record<string, string>;
+  const { live, sort, page = "1", limit = "20" } = req.query as Record<string, string>;
   const skip = (Number(page) - 1) * Number(limit);
 
+  // Ordering: "newest" (recently joined), "top" (highest earnings), or default popular ranking
+  const orderBy =
+    sort === "newest" ? [{ createdAt: "desc" as const }]
+    : sort === "top"  ? [{ totalEarnings: "desc" as const }, { subscriberCount: "desc" as const }]
+    :                   [{ isLive: "desc" as const }, { subscriberCount: "desc" as const }];
+
   const where = {
-    user: { isActive: true, role: { in: ["CREATOR"] as const } },
+    isApproved: true,
+    user: { isActive: true },
     ...(live === "true" && { isLive: true }),
-    ...(search && {
-      OR: [
-        { displayName: { contains: search, mode: "insensitive" as const } },
-        { bio: { contains: search, mode: "insensitive" as const } },
-        { location: { contains: search, mode: "insensitive" as const } },
-      ],
-    }),
   };
 
   const [profiles, total] = await Promise.all([
     db.creatorProfile.findMany({
-      where: { isApproved: true, user: { isActive: true } },
+      where,
       skip,
       take: Number(limit),
-      orderBy: [{ isLive: "desc" }, { subscriberCount: "desc" }],
+      orderBy,
       include: {
         user: {
           select: {
@@ -47,9 +47,7 @@ router.get("/profiles", optionalAuth, async (req, res) => {
         },
       },
     }),
-    db.creatorProfile.count({
-      where: { isApproved: true, user: { isActive: true } },
-    }),
+    db.creatorProfile.count({ where }),
   ]);
 
   res.json({ profiles, total, page: Number(page), limit: Number(limit) });

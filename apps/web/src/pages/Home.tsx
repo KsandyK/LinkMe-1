@@ -54,8 +54,8 @@ const PROMOTED_BADGES = [
   { boost: "Inferno", color: "#f97316" },
 ];
 
-// Build sorted creator lists from mock data for demo sections
-const NEW_CREATORS: CreatorProfileItem[] = [...MOCK_PROFILES]
+// Mock fallbacks for the New / Top Gifted sections (used only when the API is offline)
+const MOCK_NEW_CREATORS: CreatorProfileItem[] = [...MOCK_PROFILES]
   .sort((a, b) => (b.joinedDate ?? "").localeCompare(a.joinedDate ?? ""))
   .slice(0, 3)
   .map(p => ({
@@ -65,7 +65,7 @@ const NEW_CREATORS: CreatorProfileItem[] = [...MOCK_PROFILES]
     user: { id: p.id, username: p.username, profile: { displayName: p.displayName, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl, location: p.location, isVerified: false } },
   }));
 
-const TOP_GIFTED: CreatorProfileItem[] = [...MOCK_PROFILES]
+const MOCK_TOP_GIFTED: CreatorProfileItem[] = [...MOCK_PROFILES]
   .sort((a, b) => (b.totalEarnings ?? 0) - (a.totalEarnings ?? 0))
   .slice(0, 3)
   .map(p => ({
@@ -81,6 +81,8 @@ export default function Home() {
   const hasFeaturedSpot = activeBoost === "inferno" || activeBoost === "legend";
   const [liveFeeds, setLiveFeeds] = useState<LiveFeedItem[]>([]);
   const [featuredCreators, setFeaturedCreators] = useState<CreatorProfileItem[]>([]);
+  const [newCreators, setNewCreators] = useState<CreatorProfileItem[]>(MOCK_NEW_CREATORS);
+  const [topGifted, setTopGifted] = useState<CreatorProfileItem[]>(MOCK_TOP_GIFTED);
   const [liveCount, setLiveCount] = useState(0);
   const [heroSearch, setHeroSearch] = useState("");
   const heroSearchRef = useRef<HTMLInputElement>(null);
@@ -149,6 +151,16 @@ export default function Home() {
         }));
         setFeaturedCreators(mockCreators);
       });
+
+    // New to CRAVR — most recently joined creators (mock fallback stays on error)
+    profilesApi.list({ sort: "newest", limit: 3 })
+      .then(data => { if (data.profiles?.length) setNewCreators(data.profiles); })
+      .catch(() => {/* keep mock fallback */});
+
+    // Top Gifted — highest-earning creators (mock fallback stays on error)
+    profilesApi.list({ sort: "top", limit: 3 })
+      .then(data => { if (data.profiles?.length) setTopGifted(data.profiles); })
+      .catch(() => {/* keep mock fallback */});
   }, []);
 
   return (
@@ -412,7 +424,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {NEW_CREATORS.map(creator => (
+            {newCreators.map(creator => (
               <CreatorCard key={creator.id} creator={creator} />
             ))}
           </div>
@@ -436,7 +448,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {TOP_GIFTED.map((creator, i) => {
+            {topGifted.map((creator, i) => {
               const p = creator.user.profile;
               const displayName = p?.displayName ?? creator.user.username;
               const avatarUrl = p?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.user.username}`;
