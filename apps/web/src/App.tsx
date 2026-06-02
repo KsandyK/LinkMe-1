@@ -14,6 +14,7 @@ import { AppProvider } from "./contexts/AppContext";
 import { AgeGate } from "./components/AgeGate";
 import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
+import { RequireAuth } from "./components/RequireAuth";
 
 // ── Eager pages (lightweight — always needed on first visit) ──────────────────
 import Home from "./pages/Home";
@@ -57,24 +58,27 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
+        {/* Public — browsable without an account */}
         <Route path="/" component={Home} />
         <Route path="/profiles" component={Profiles} />
         <Route path="/profile/:id" component={ProfileDetail} />
         <Route path="/live" component={LiveFeeds} />
         <Route path="/live/:id" component={StreamView} />
-        <Route path="/messages" component={Messages} />
-        <Route path="/credits" component={CreditsStore} />
-        <Route path="/gifts" component={GiftsStore} />
-        <Route path="/boosts" component={BoostsPage} />
-        <Route path="/vip-lounge" component={VipLounge} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/forgot-password" component={ForgotPassword} />
-        <Route path="/become-creator" component={BecomeCreator} />
-        <Route path="/account" component={Account} />
-        <Route path="/creator/studio" component={CreatorLiveStudio} />
-        <Route path="/creator" component={CreatorDashboard} />
-        <Route path="/billing" component={Billing} />
+
+        {/* Account-required — prompt sign-in/register when signed out */}
+        <Route path="/messages" component={() => <RequireAuth action="view your messages"><Messages /></RequireAuth>} />
+        <Route path="/credits" component={() => <RequireAuth action="buy credits"><CreditsStore /></RequireAuth>} />
+        <Route path="/gifts" component={() => <RequireAuth action="send gifts"><GiftsStore /></RequireAuth>} />
+        <Route path="/boosts" component={() => <RequireAuth action="boost your profile"><BoostsPage /></RequireAuth>} />
+        <Route path="/vip-lounge" component={() => <RequireAuth action="access the VIP lounge"><VipLounge /></RequireAuth>} />
+        <Route path="/become-creator" component={() => <RequireAuth action="become a creator"><BecomeCreator /></RequireAuth>} />
+        <Route path="/account" component={() => <RequireAuth action="manage your account"><Account /></RequireAuth>} />
+        <Route path="/creator/studio" component={() => <RequireAuth action="open the creator studio"><CreatorLiveStudio /></RequireAuth>} />
+        <Route path="/creator" component={() => <RequireAuth action="view your creator dashboard"><CreatorDashboard /></RequireAuth>} />
+        <Route path="/billing" component={() => <RequireAuth action="manage billing"><Billing /></RequireAuth>} />
         <Route path="/verify-age" component={AgeVerification} />
         <Route path="/admin/verify-queue" component={AdminVerifyQueue} />
         <Route path="/legal" component={LegalHub} />
