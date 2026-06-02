@@ -124,7 +124,6 @@ router.post("/credits/webhook", async (req, res) => {
       data: {
         userId,
         amount: credits,
-        // usdAmount now resolvable for all 8 pack IDs
         usdAmount: pack ? pack.usdCents / 100 : null,
         type: "CREDIT_PURCHASE",
         status: "COMPLETED",
@@ -139,6 +138,32 @@ router.post("/credits/webhook", async (req, res) => {
       },
     }),
   ]);
+
+  // ── Auto-verify age via CCBill ──────────────────────────────────────────────
+  // CCBill independently verifies that all cardholders are 18+.
+  // A completed payment is therefore proof of age — no separate ID upload needed.
+  // Upsert so repeat purchases don't overwrite an already-verified record.
+  // Only upgrade — never downgrade an already-verified record.
+  const existing = await db.ageVerification.findUnique({ where: { userId }, select: { status: true } }).catch(() => null);
+  if (existing?.status !== "VERIFIED") {
+    await db.ageVerification.upsert({
+      where: { userId },
+      update: {
+        status:     "VERIFIED",
+        verifiedAt: new Date(),
+        reviewedBy: "ccbill",
+      },
+      create: {
+        userId,
+        status:       "VERIFIED",
+        documentType: "ccbill_payment",
+        reviewedBy:   "ccbill",
+        verifiedAt:   new Date(),
+      },
+    }).catch(() => {
+      // Non-fatal: credits were already added. Log in production; ignore in dev.
+    });
+  }
 
   res.json({ ok: true });
 });

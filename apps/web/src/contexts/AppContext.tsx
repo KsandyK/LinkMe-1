@@ -332,6 +332,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .catch(() => {/* API offline — keep local state */});
   }, [token]);
 
+  // ── Age verification status sync ─────────────────────────────────────────────
+  // Sync age verification status from the server on login.
+  // Critical for CCBill flow: user pays → CCBill webhook auto-verifies DB →
+  // user returns to site → this effect picks up VERIFIED and updates localStorage.
+  useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    fetch(`${API_BASE}/api/age-verify/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        clearTimeout(timer);
+        if (!data?.status) return;
+        // Map API status → local status
+        const s = data.status as string;
+        const mapped: AgeVerificationStatus =
+          s === "VERIFIED"     ? "verified" :
+          s === "UNDER_REVIEW" ? "pending"  :
+          s === "PENDING"      ? "pending"  : "unverified";
+        setAgeVerificationStatusState(mapped);
+        safeSet(STORAGE_KEYS.AGE_VERIFY, mapped);
+      })
+      .catch(() => { clearTimeout(timer); /* API offline — keep local state */ });
+  }, [token]);
+
   const login = useCallback(async (username: string, password: string) => {
     // Track whether the API was reachable but rejected the credentials.
     // On API rejection (401) we re-throw so callers can show an error.
