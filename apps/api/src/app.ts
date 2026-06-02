@@ -23,6 +23,11 @@ import healthRouter    from "./routes/health.js";
 
 const app = express();
 
+// Behind nginx + Cloudflare — trust the proxy chain so req.ip and
+// express-rate-limit read the forwarded client IP instead of throwing on
+// the X-Forwarded-For header.
+app.set("trust proxy", 1);
+
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(
   helmet({
@@ -42,6 +47,8 @@ app.use(
 const ALLOWED_ORIGINS = [
   "http://localhost:5175",
   "http://localhost:3000",
+  "https://cravr.fun",
+  "https://www.cravr.fun",
   ...(process.env.ALLOWED_ORIGINS?.split(",") ?? []),
 ];
 
