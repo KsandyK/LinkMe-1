@@ -103,17 +103,19 @@ export function Navigation() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Credits pill */}
-            <Link href="/credits">
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all hover:bg-white/5"
-                style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}>
-                <Zap className="w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
-                <span style={{ color: "#14b8a6", fontFamily: "monospace" }}>{credits.toLocaleString()}</span>
-              </div>
-            </Link>
+            {/* Credits pill — only when signed in */}
+            {isLoggedIn && (
+              <Link href="/credits">
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all hover:bg-white/5"
+                  style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}>
+                  <Zap className="w-3.5 h-3.5" style={{ color: "#14b8a6" }} />
+                  <span style={{ color: "#14b8a6", fontFamily: "monospace" }}>{credits.toLocaleString()}</span>
+                </div>
+              </Link>
+            )}
 
-            {/* Verify Age */}
-            {ageVerificationStatus !== "verified" && (
+            {/* Verify Age — only when signed in and not yet verified */}
+            {isLoggedIn && ageVerificationStatus !== "verified" && (
               <Link href="/verify-age">
                 <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all"
                   style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)", color: "#5eead4" }}>
@@ -123,35 +125,35 @@ export function Navigation() {
               </Link>
             )}
 
-            {/* User menu */}
-            <div className="relative">
-              <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all hover:bg-white/5">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
-                  {user?.username?.[0]?.toUpperCase() ?? "U"}
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 hidden sm:block" style={{ color: "rgba(255,255,255,0.35)" }} />
-              </button>
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl overflow-hidden z-50 animate-fade-up"
-                  style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}>
-                  {[
-                    { href: "/account", label: "My Account", icon: User },
-                    { href: "/creator", label: "Creator Dashboard", icon: LayoutDashboard },
-                    { href: "/become-creator", label: "Become a Cravr", icon: Crown },
-                  ].map(item => (
-                    <Link key={item.href} href={item.href}>
-                      <div onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
-                        style={{ color: "rgba(255,255,255,0.7)" }}>
-                        <item.icon className="w-4 h-4" style={{ color: "#14b8a6" }} />
-                        {item.label}
-                      </div>
-                    </Link>
-                  ))}
-                  <div className="h-px mx-3 my-1" style={{ background: "rgba(255,255,255,0.06)" }} />
-                  {isLoggedIn ? (
+            {isLoggedIn ? (
+              /* Signed-in user menu */
+              <div className="relative">
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all hover:bg-white/5">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                    {user?.username?.[0]?.toUpperCase() ?? "U"}
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 hidden sm:block" style={{ color: "rgba(255,255,255,0.35)" }} />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl overflow-hidden z-50 animate-fade-up"
+                    style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}>
+                    {[
+                      { href: "/account", label: "My Account", icon: User },
+                      { href: "/creator", label: "Creator Dashboard", icon: LayoutDashboard },
+                      { href: "/become-creator", label: "Become a Cravr", icon: Crown },
+                    ].map(item => (
+                      <Link key={item.href} href={item.href}>
+                        <div onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                          style={{ color: "rgba(255,255,255,0.7)" }}>
+                          <item.icon className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                          {item.label}
+                        </div>
+                      </Link>
+                    ))}
+                    <div className="h-px mx-3 my-1" style={{ background: "rgba(255,255,255,0.06)" }} />
                     <button
                       type="button"
                       onClick={handleSignOut}
@@ -160,27 +162,26 @@ export function Navigation() {
                     >
                       Sign Out
                     </button>
-                  ) : (
-                    <>
-                      <Link href="/login">
-                        <div onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
-                          style={{ color: "#14b8a6" }}>
-                          Sign In
-                        </div>
-                      </Link>
-                      <Link href="/register">
-                        <div onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
-                          style={{ color: "rgba(255,255,255,0.6)" }}>
-                          Register
-                        </div>
-                      </Link>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Signed-out — explicit Sign In / Register, no fake account */
+              <div className="hidden sm:flex items-center gap-2">
+                <Link href="/login">
+                  <div className="px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"
+                    style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Sign In
+                  </div>
+                </Link>
+                <Link href="/register">
+                  <div className="px-3.5 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all"
+                    style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                    Register
+                  </div>
+                </Link>
+              </div>
+            )}
 
             {/* Mobile toggle */}
             <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-1.5 rounded-lg hover:bg-white/5 transition-all">
@@ -219,10 +220,29 @@ export function Navigation() {
               );
             })}
             <div className="pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-              <div className="flex items-center gap-2 px-3 py-2">
-                <Zap className="w-4 h-4" style={{ color: "#14b8a6" }} />
-                <span className="text-sm font-bold font-mono" style={{ color: "#14b8a6" }}>{credits.toLocaleString()} credits</span>
-              </div>
+              {isLoggedIn ? (
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <Zap className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                  <span className="text-sm font-bold font-mono" style={{ color: "#14b8a6" }}>{credits.toLocaleString()} credits</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <Link href="/login">
+                    <div onClick={() => setMobileOpen(false)}
+                      className="flex-1 text-center px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                      style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)" }}>
+                      Sign In
+                    </div>
+                  </Link>
+                  <Link href="/register">
+                    <div onClick={() => setMobileOpen(false)}
+                      className="flex-1 text-center px-3 py-2 rounded-lg text-sm font-bold cursor-pointer"
+                      style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" }}>
+                      Register
+                    </div>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
