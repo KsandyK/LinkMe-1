@@ -12,6 +12,7 @@ import app from "./app.js";
 import { createWsServer } from "./ws/index.js";
 import { logger } from "./lib/logger.js";
 import db from "./lib/db.js";
+import { startCronJobs } from "./lib/cron.js";
 
 const HTTP_PORT = Number(process.env.PORT ?? 3000);
 const WS_PORT   = Number(process.env.WS_PORT ?? 3001);
@@ -31,6 +32,7 @@ const server = app.listen(HTTP_PORT, () => {
 });
 
 createWsServer(WS_PORT);
+startCronJobs();
 
 server.on("error", (err) => {
   logger.error({ err }, "HTTP server error");

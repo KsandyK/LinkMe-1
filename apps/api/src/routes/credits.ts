@@ -149,9 +149,10 @@ router.post("/credits/webhook", async (req, res) => {
     await db.ageVerification.upsert({
       where: { userId },
       update: {
-        status:     "VERIFIED",
-        verifiedAt: new Date(),
-        reviewedBy: "ccbill",
+        status:      "VERIFIED",
+        verifiedAt:  new Date(),
+        reviewedBy:  "ccbill",
+        dateOfBirth: null,   // GDPR minimisation: never retain raw DOB after verification
       },
       create: {
         userId,

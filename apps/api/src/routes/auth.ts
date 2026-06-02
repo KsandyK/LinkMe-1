@@ -59,6 +59,22 @@ function issueTokens(userId: string, username: string, role: string) {
   return { accessToken, rawRefresh };
 }
 
+/**
+ * Anonymize an IP address for GDPR/CCPA compliance.
+ * IPv4 → zero out last octet  (192.168.1.100 → 192.168.1.0)
+ * IPv6 → keep first 4 groups only (mask last 64 bits)
+ * Handles IPv4-mapped IPv6 (::ffff:1.2.3.4) transparently.
+ */
+function anonymizeIp(ip: string | undefined): string | null {
+  if (!ip) return null;
+  const raw = ip.replace(/^::ffff:/, "");           // unwrap IPv4-mapped IPv6
+  const v4 = raw.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.)\d{1,3}$/);
+  if (v4) return `${v4[1]}0`;
+  const v6parts = raw.split(":");
+  if (v6parts.length >= 4) return v6parts.slice(0, 4).join(":") + "::";
+  return null;
+}
+
 async function storeRefreshToken(
   userId: string,
   rawToken: string,
@@ -67,9 +83,9 @@ async function storeRefreshToken(
   await db.session.create({
     data: {
       userId,
-      token: hashToken(rawToken),
+      token:     hashToken(rawToken),
       userAgent: req.headers["user-agent"] ?? null,
-      ipAddress: req.ip ?? null,
+      ipAddress: anonymizeIp(req.ip),   // store anonymised IP only
       expiresAt: refreshExpiresAt(),
     },
   });
@@ -234,6 +250,54 @@ router.get("/auth/me", requireAuth, async (req, res) => {
     return;
   }
   res.json(user);
+});
+
+/**
+ * DELETE /api/auth/me
+ *
+ * Permanently deletes the authenticated user's account and all associated
+ * data (profile, messages, transactions, age verification, sessions, etc.)
+ * via Prisma CASCADE. Satisfies GDPR Article 17 "right to erasure."
+ *
+ * Requires the user to confirm their password to prevent accidental deletion.
+ */
+const DeleteAccountSchema = z.object({
+  password: z.string().min(1, "Password is required to confirm account deletion"),
+});
+
+router.delete("/auth/me", requireAuth, async (req, res) => {
+  const parsed = DeleteAccountSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Password confirmation is required" });
+    return;
+  }
+
+  // Re-authenticate to prevent CSRF / session-hijack abuse
+  const user = await db.user.findUnique({
+    where: { id: req.user!.sub },
+    select: { id: true, passwordHash: true, role: true },
+  });
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  // Block ADMIN accounts from self-deletion via API (must be done manually)
+  if (user.role === "ADMIN") {
+    res.status(403).json({ error: "Admin accounts cannot be self-deleted. Contact a platform administrator." });
+    return;
+  }
+
+  const passwordOk = await bcrypt.compare(parsed.data.password, user.passwordHash);
+  if (!passwordOk) {
+    res.status(401).json({ error: "Incorrect password" });
+    return;
+  }
+
+  // Delete — Prisma CASCADE handles all related rows
+  await db.user.delete({ where: { id: user.id } });
+
+  res.status(204).end();
 });
 
 export default router;

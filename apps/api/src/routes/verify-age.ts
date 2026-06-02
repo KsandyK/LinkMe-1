@@ -302,7 +302,12 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
     where: { userId },
     data:
       action === "approve"
-        ? { status: "VERIFIED", verifiedAt: now, reviewedBy: req.user!.sub }
+        ? {
+            status:      "VERIFIED",
+            verifiedAt:  now,
+            reviewedBy:  req.user!.sub,
+            dateOfBirth: null,   // GDPR minimisation: retain only the verified status, not the raw DOB
+          }
         : {
             status: "REJECTED",
             rejectedAt: now,
