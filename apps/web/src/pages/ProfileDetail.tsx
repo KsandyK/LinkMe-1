@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { profiles as profilesApi, messages as messagesApi, content as contentApi, CreatorProfileItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
@@ -23,6 +23,30 @@ export default function ProfileDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  // Real signed media URLs for unlocked content, keyed by contentId
+  const [accessUrls, setAccessUrls] = useState<Record<string, string>>({});
+  const [revealing, setRevealing] = useState<Record<string, boolean>>({});
+
+  // Fetch a short-lived signed URL for unlocked content. Retries briefly to
+  // cover the gap between an optimistic unlock and the server writing the
+  // ContentUnlock row. Falls back silently (tile shows the blurred preview).
+  const revealContent = useCallback(async (contentId: string) => {
+    if (accessUrls[contentId] || revealing[contentId]) return;
+    setRevealing(prev => ({ ...prev, [contentId]: true }));
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const { accessUrl } = await contentApi.access(contentId);
+        if (accessUrl) {
+          setAccessUrls(prev => ({ ...prev, [contentId]: accessUrl }));
+          break;
+        }
+      } catch {
+        // 403 (unlock row not written yet) or API offline — wait and retry
+        await new Promise(r => setTimeout(r, 700));
+      }
+    }
+    setRevealing(prev => ({ ...prev, [contentId]: false }));
+  }, [accessUrls, revealing]);
 
   // Persist heart/favourite to localStorage
   const FAV_KEY = "vl_favorites_v1";
@@ -111,6 +135,15 @@ export default function ProfileDetail() {
       controller.abort();
     };
   }, [id]);
+
+  // Auto-reveal real media for content the user has already unlocked
+  useEffect(() => {
+    if (!isLoggedIn || contentItems.length === 0) return;
+    contentItems.forEach(item => {
+      if (unlockedContent.has(item.id)) revealContent(item.id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentItems, isLoggedIn]);
 
   const handleLike = () => {
     const adding = !liked;
@@ -324,28 +357,54 @@ export default function ProfileDetail() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {contentItems.map(item => {
                   const isUnlocked = unlockedContent.has(item.id);
+                  const realUrl = accessUrls[item.id];
+                  const isRevealing = revealing[item.id];
+                  const handleUnlock = () => {
+                    if (isUnlocked) return;
+                    const ok = unlockContent(
+                      item.id,
+                      item.creditCost,
+                      undefined,
+                      creator?.userId,
+                      item.type === "video" ? "VIDEO" : "PHOTO",
+                    );
+                    if (ok) revealContent(item.id);   // fetch the real signed URL
+                  };
                   return (
-                    <div key={item.id} className="vl-card overflow-hidden cursor-pointer group"
-                      onClick={() => !isUnlocked && unlockContent(
-                        item.id,
-                        item.creditCost,
-                        undefined,
-                        creator?.userId,
-                        item.type === "video" ? "VIDEO" : "PHOTO",
-                      )}>
+                    <div key={item.id} className="vl-card overflow-hidden group"
+                      onClick={handleUnlock}
+                      style={{ cursor: isUnlocked ? "default" : "pointer" }}>
                       <div className="relative h-28 overflow-hidden">
-                        <img
-                          src={item.thumbnailUrl}
-                          alt={item.title}
-                          className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!isUnlocked ? "blur-sm scale-105" : ""}`}
-                        />
-                        {!isUnlocked && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center"
-                            style={{ background: "rgba(9,9,26,0.5)" }}>
-                            <Lock className="w-5 h-5 mb-1" style={{ color: "#14b8a6" }} />
-                            <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
-                            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
-                          </div>
+                        {/* Unlocked + real media available */}
+                        {isUnlocked && realUrl ? (
+                          item.type === "video" ? (
+                            <video src={realUrl} controls playsInline
+                              className="w-full h-full object-cover bg-black" />
+                          ) : (
+                            <img src={realUrl} alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                          )
+                        ) : (
+                          <>
+                            {/* Locked, or unlocked-but-still-fetching → blurred public preview */}
+                            <img
+                              src={item.thumbnailUrl ?? `https://picsum.photos/seed/${item.id}/400/300`}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 blur-sm scale-105"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center"
+                              style={{ background: "rgba(9,9,26,0.5)" }}>
+                              {isUnlocked && isRevealing ? (
+                                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#14b8a6" }} />
+                              ) : (
+                                <>
+                                  <Lock className="w-5 h-5 mb-1" style={{ color: "#14b8a6" }} />
+                                  <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
+                                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
+                                </>
+                              )}
+                            </div>
+                          </>
                         )}
                       </div>
                       <div className="p-2">

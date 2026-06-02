@@ -8,6 +8,28 @@ import { createVideoUpload, deleteVideo, getTusHeaders } from "../lib/bunny-stre
 
 const router = Router();
 
+/**
+ * Generate a safe public preview from a full-res image buffer:
+ * downscaled, blurred, and re-encoded as a low-quality JPEG. This is what
+ * non-unlocked visitors see — the original is never publicly reachable.
+ *
+ * sharp is loaded via dynamic import so a missing/broken native binary
+ * degrades gracefully (no preview) instead of crashing the whole API at
+ * import time. Returns null on any failure; caller falls back to no thumbnail.
+ */
+async function makePreview(buffer: Buffer): Promise<Buffer | null> {
+  try {
+    const { default: sharp } = await import("sharp");
+    return await sharp(buffer)
+      .resize(400, 500, { fit: "cover", position: "centre" })
+      .blur(18)
+      .jpeg({ quality: 35 })
+      .toBuffer();
+  } catch {
+    return null;
+  }
+}
+
 // ── POST /api/content/unlock ──────────────────────────────────────────────────
 // Unlocks a single piece of premium content for the authenticated user.
 //
@@ -172,6 +194,44 @@ router.get("/content/creator/:creatorId", async (req, res) => {
   res.json(items);
 });
 
+// ── GET /api/content/:id/access — signed URL for unlocked / owned content ────
+// Verifies the requester either owns the content or has a ContentUnlock row,
+// then returns a short-lived signed CDN URL for the REAL media. This is the
+// only path that ever exposes the original — never the public listing.
+router.get("/content/:id/access", requireAuth, async (req, res) => {
+  const item = await db.creatorContent.findUnique({ where: { id: String(req.params.id) } });
+  if (!item || !item.isPublished) {
+    res.status(404).json({ error: "Content not found" });
+    return;
+  }
+
+  const userId = req.user!.sub;
+
+  // Owner always has access; everyone else must have unlocked it
+  if (item.creatorId !== userId) {
+    const unlock = await db.contentUnlock.findUnique({
+      where: { userId_contentId: { userId, contentId: item.id } },
+    });
+    if (!unlock) {
+      res.status(403).json({ error: "Content locked — unlock required" });
+      return;
+    }
+  }
+
+  // Build a short-lived signed URL for the real media
+  let accessUrl: string;
+  if (item.type === "VIDEO" && item.bunnyVideoId) {
+    accessUrl = signCdnUrl(`/${item.bunnyVideoId}/playlist.m3u8`, 3600);
+  } else if (/^https?:\/\//.test(item.mediaUrl)) {
+    // Demo/seeded content may store a full external URL — return as-is
+    accessUrl = item.mediaUrl;
+  } else {
+    accessUrl = signCdnUrl(`/${item.mediaUrl}`, 3600);
+  }
+
+  res.json({ accessUrl, type: item.type, expiresIn: 3600 });
+});
+
 // ── POST /api/content/upload-photo — upload photo to Bunny storage ───────────
 // Accepts raw binary body (Content-Type: image/jpeg|png|webp)
 // Max 20MB — enforce via nginx/express in production
@@ -198,24 +258,34 @@ router.post("/content/upload-photo", requireAuth, async (req, res) => {
 
     const ext = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
     const contentId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const path = BunnyPaths.content(req.user!.sub, contentId, ext);
 
-    const { url } = await uploadFile(path, buffer, mimeType);
+    // Original → PRIVATE path (token-auth required; never publicly reachable)
+    const originalPath = BunnyPaths.content(req.user!.sub, contentId, ext);
+    await uploadFile(originalPath, buffer, mimeType);
 
-    // Persist to DB
+    // Degraded preview → PUBLIC path (safe to expose as the locked thumbnail)
+    const preview = await makePreview(buffer);
+    let thumbnailUrl: string | null = null;
+    if (preview) {
+      const previewPath = BunnyPaths.preview(req.user!.sub, contentId);
+      const { url } = await uploadFile(previewPath, preview, "image/jpeg");
+      thumbnailUrl = url;
+    }
+
+    // Persist to DB — mediaUrl is the PRIVATE original path
     const item = await db.creatorContent.create({
       data: {
         creatorId: req.user!.sub,
         title,
         type: "PHOTO",
-        mediaUrl: path,
-        thumbnailUrl: url,
+        mediaUrl: originalPath,
+        thumbnailUrl,   // public blurred preview, or null (frontend shows a generic locked tile)
         creditCost,
         sortOrder: 0,
       },
     });
 
-    res.status(201).json({ ...item, accessUrl: url });
+    res.status(201).json(item);
   } catch {
     res.status(500).json({ error: "Upload failed — storage unavailable" });
   }
@@ -314,7 +384,12 @@ router.delete("/content/:id", requireAuth, async (req, res) => {
 
   // Delete from Bunny (fire-and-forget)
   if (item.type === "PHOTO") {
-    deleteFile(item.mediaUrl).catch(() => null);
+    deleteFile(item.mediaUrl).catch(() => null);   // private original
+    // Public preview: derive storage path from the stored CDN thumbnail URL
+    if (item.thumbnailUrl && /^https?:\/\//.test(item.thumbnailUrl)) {
+      const previewPath = item.thumbnailUrl.replace(/^https?:\/\/[^/]+\//, "");
+      deleteFile(previewPath).catch(() => null);
+    }
   } else if (item.bunnyVideoId) {
     deleteVideo(item.bunnyVideoId).catch(() => null);
   }

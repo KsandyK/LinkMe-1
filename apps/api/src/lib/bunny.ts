@@ -142,9 +142,13 @@ export const BunnyPaths = {
   /** Profile avatar: profiles/{userId}/avatar.{ext} */
   avatar: (userId: string, ext = "jpg") => `profiles/${userId}/avatar.${ext}`,
 
-  /** Creator content: content/{creatorId}/{contentId}.{ext} */
+  /** Creator content (PRIVATE — token-auth required): content/{creatorId}/{contentId}.{ext} */
   content: (creatorId: string, contentId: string, ext = "jpg") =>
     `content/${creatorId}/${contentId}.${ext}`,
+
+  /** Public low-res preview (safe to expose): previews/{creatorId}/{contentId}.jpg */
+  preview: (creatorId: string, contentId: string) =>
+    `previews/${creatorId}/${contentId}.jpg`,
 
   /** VIP-gated content: vip/{creatorId}/{contentId}.{ext} */
   vipContent: (creatorId: string, contentId: string, ext = "mp4") =>

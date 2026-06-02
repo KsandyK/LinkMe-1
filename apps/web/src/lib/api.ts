@@ -462,6 +462,15 @@ export const content = {
       "/api/content/unlocked"
     ),
 
+  /**
+   * GET /api/content/:id/access — short-lived signed URL for the REAL media.
+   * Backend verifies the user owns or has unlocked the content (else 403).
+   */
+  access: (contentId: string) =>
+    get<{ accessUrl: string; type: string; expiresIn: number }>(
+      `/api/content/${encodeURIComponent(contentId)}/access`
+    ),
+
   /** GET /api/content/creator/:creatorId — public published listing for a creator's profile page */
   getForCreator: (creatorId: string) =>
     get<{
