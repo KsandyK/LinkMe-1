@@ -13,7 +13,21 @@ import bcrypt from "bcryptjs";
 const db = new PrismaClient();
 
 async function main() {
-  // Safety guard — refuse to run against a remote/production database
+  // Safety guard 1 — NEVER run in production. A production server runs its own
+  // Postgres on localhost, so a "localhost" check alone is NOT enough.
+  if (process.env.NODE_ENV === "production") {
+    console.error("❌  Refusing to run db:reset-local while NODE_ENV=production.");
+    console.error("    This script wipes ALL users. It is for local development only.");
+    process.exit(1);
+  }
+
+  // Safety guard 2 — require an explicit opt-in flag, so it can't run by accident
+  if (process.env.ALLOW_DB_RESET !== "yes") {
+    console.error("❌  Refusing to run. Set ALLOW_DB_RESET=yes to confirm a destructive local reset.");
+    process.exit(1);
+  }
+
+  // Safety guard 3 — must target a localhost database
   const url = process.env.DATABASE_URL ?? "";
   if (!url.includes("localhost") && !url.includes("127.0.0.1")) {
     console.error("❌  Refusing to run reset against a non-localhost database.");
