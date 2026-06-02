@@ -197,6 +197,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const spendCredits = (amount: number, reason?: string): boolean => {
+    // Auth guard — anonymous visitors cannot spend credits. All paid actions
+    // (unlock, tip, gift, chat, message) flow through here, so this is the
+    // single chokepoint that blocks engagement until the user signs in.
+    if (!token || !user) {
+      toast.error("Sign in to continue", { description: "Create a free account or sign in to unlock content, tip, and message creators." });
+      return false;
+    }
     if (credits < amount) {
       toast.error("Insufficient credits", { description: `You need ${amount} credits. Buy more in the Credits Store.` });
       return false;
