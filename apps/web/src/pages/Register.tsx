@@ -366,10 +366,6 @@ export default function Register() {
           Already have an account?{" "}
           <Link href="/login" className="text-primary hover:underline">Sign in</Link>
         </p>
-        <p className="text-center mt-2 text-xs text-muted-foreground">
-          Want to earn as a creator?{" "}
-          <Link href="/become-creator" className="text-primary hover:underline">Creator registration →</Link>
-        </p>
       </div>
     </div>
   );
