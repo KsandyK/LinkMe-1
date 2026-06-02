@@ -80,7 +80,7 @@ function Router() {
         <Route path="/creator" component={() => <RequireAuth action="view your creator dashboard"><CreatorDashboard /></RequireAuth>} />
         <Route path="/billing" component={() => <RequireAuth action="manage billing"><Billing /></RequireAuth>} />
         <Route path="/verify-age" component={AgeVerification} />
-        <Route path="/admin/verify-queue" component={AdminVerifyQueue} />
+        <Route path="/admin/verify-queue" component={() => <RequireAuth admin><AdminVerifyQueue /></RequireAuth>} />
         <Route path="/legal" component={LegalHub} />
         <Route path="/legal/:page" component={LegalPages} />
         <Route path="/dev/reset" component={DevReset} />

@@ -17,10 +17,29 @@ interface RequireAuthProps {
   children: ReactNode;
   /** Short label shown in the prompt, e.g. "send messages" or "buy credits". */
   action?: string;
+  /** When true, also requires ADMIN role; non-admins get a 404-style screen
+   *  so the page stays invisible to regular users (silent admin). */
+  admin?: boolean;
 }
 
-export function RequireAuth({ children, action }: RequireAuthProps) {
-  const { isLoggedIn } = useApp();
+export function RequireAuth({ children, action, admin }: RequireAuthProps) {
+  const { isLoggedIn, user } = useApp();
+
+  // Admin-only pages render as "not found" for anyone who isn't an admin —
+  // this keeps the silent admin tooling undiscoverable.
+  if (admin && (!isLoggedIn || user?.role !== "ADMIN")) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 700, color: "white" }}>
+          404
+        </h1>
+        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>Page not found.</p>
+        <Link href="/">
+          <span className="text-sm mt-4 cursor-pointer underline" style={{ color: "#14b8a6" }}>Return home</span>
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoggedIn) return <>{children}</>;
 
