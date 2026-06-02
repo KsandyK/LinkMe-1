@@ -5,6 +5,17 @@ import { requireAuth, optionalAuth } from "../middleware/auth.js";
 
 const router = Router();
 
+// ── GET /api/stats ─────────────────────────────────────────────────────────
+// Public homepage stats — real counts (no fabricated numbers).
+router.get("/stats", async (_req, res) => {
+  const [creators, members, liveNow] = await Promise.all([
+    db.creatorProfile.count({ where: { isApproved: true, user: { isActive: true } } }),
+    db.user.count({ where: { isActive: true } }),
+    db.creatorProfile.count({ where: { isApproved: true, isLive: true, user: { isActive: true } } }),
+  ]);
+  res.json({ creators, members, liveNow });
+});
+
 // ── GET /api/profiles ────────────────────────────────────────────────────────
 // Public — supports search, live filter, pagination
 router.get("/profiles", optionalAuth, async (req, res) => {

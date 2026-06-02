@@ -131,6 +131,11 @@ export const auth = {
 
 // ── Profiles ─────────────────────────────────────────────────────────────────
 
+/** GET /api/stats — public homepage counts (real, not fabricated) */
+export const stats = {
+  get: () => get<{ creators: number; members: number; liveNow: number }>("/api/stats"),
+};
+
 export const profiles = {
   /** GET /api/profiles — returns { profiles, total, page, limit } */
   list: (params?: { search?: string; live?: string; sort?: "newest" | "top" | "popular"; page?: number; limit?: number }) => {

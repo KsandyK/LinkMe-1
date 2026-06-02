@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { profiles as profilesApi, livefeeds as liveApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
+import { profiles as profilesApi, livefeeds as liveApi, stats as statsApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Star, Search, Gift, Sparkles } from "lucide-react";
 
@@ -84,6 +84,7 @@ export default function Home() {
   const [newCreators, setNewCreators] = useState<CreatorProfileItem[]>(MOCK_NEW_CREATORS);
   const [topGifted, setTopGifted] = useState<CreatorProfileItem[]>(MOCK_TOP_GIFTED);
   const [liveCount, setLiveCount] = useState(0);
+  const [siteStats, setSiteStats] = useState<{ creators: number; members: number; liveNow: number } | null>(null);
   const [heroSearch, setHeroSearch] = useState("");
   const heroSearchRef = useRef<HTMLInputElement>(null);
 
@@ -152,6 +153,11 @@ export default function Home() {
         setFeaturedCreators(mockCreators);
       });
 
+    // Real site stats for the hero (no fabricated numbers; hidden if API offline)
+    statsApi.get()
+      .then(s => setSiteStats(s))
+      .catch(() => {/* API offline — fall back to dashes below */});
+
     // New to CRAVR — most recently joined creators (mock fallback stays on error)
     profilesApi.list({ sort: "newest", limit: 3 })
       .then(data => { if (data.profiles?.length) setNewCreators(data.profiles); })
@@ -218,9 +224,9 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-8 mt-7">
               {[
-                { label: "Active Creators", value: "2,400+" },
-                { label: "Live Right Now", value: liveCount > 0 ? liveCount.toString() : "—" },
-                { label: "Members", value: "180K+" },
+                { label: "Active Creators", value: siteStats ? siteStats.creators.toLocaleString() : "—" },
+                { label: "Live Right Now", value: (siteStats?.liveNow ?? liveCount) > 0 ? (siteStats?.liveNow ?? liveCount).toString() : "—" },
+                { label: "Members", value: siteStats ? siteStats.members.toLocaleString() : "—" },
               ].map(s => (
                 <div key={s.label}>
                   <div className="text-xl font-bold font-mono" style={{ color: "#14b8a6" }}>{s.value}</div>
