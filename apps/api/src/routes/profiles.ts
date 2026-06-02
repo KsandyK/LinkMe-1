@@ -11,45 +11,66 @@ router.get("/profiles", optionalAuth, async (req, res) => {
   const { live, sort, page = "1", limit = "20" } = req.query as Record<string, string>;
   const skip = (Number(page) - 1) * Number(limit);
 
-  // Ordering: "newest" (recently joined), "top" (highest earnings), or default popular ranking
-  const orderBy =
-    sort === "newest" ? [{ createdAt: "desc" as const }]
-    : sort === "top"  ? [{ totalEarnings: "desc" as const }, { subscriberCount: "desc" as const }]
-    :                   [{ isLive: "desc" as const }, { subscriberCount: "desc" as const }];
-
   const where = {
     isApproved: true,
     user: { isActive: true },
     ...(live === "true" && { isLive: true }),
   };
 
-  const [profiles, total] = await Promise.all([
-    db.creatorProfile.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      orderBy,
-      include: {
-        user: {
+  const userSelect = {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        profile: {
           select: {
-            id: true,
-            username: true,
-            profile: {
-              select: {
-                displayName: true,
-                avatarUrl: true,
-                coverUrl: true,
-                location: true,
-                isVerified: true,
-              },
-            },
+            displayName: true, avatarUrl: true, coverUrl: true, location: true, isVerified: true,
           },
         },
       },
+    },
+  };
+
+  // "newest" / "top" are explicit user-chosen orderings — boost does NOT override them.
+  if (sort === "newest" || sort === "top") {
+    const orderBy = sort === "newest"
+      ? [{ createdAt: "desc" as const }]
+      : [{ totalEarnings: "desc" as const }, { subscriberCount: "desc" as const }];
+    const [profiles, total] = await Promise.all([
+      db.creatorProfile.findMany({ where, skip, take: Number(limit), orderBy, include: userSelect }),
+      db.creatorProfile.count({ where }),
+    ]);
+    res.json({ profiles, total, page: Number(page), limit: Number(limit) });
+    return;
+  }
+
+  // Default "popular" ranking — boost-weighted placement.
+  // Active boost holders rank first, weighted by tier (boostsTotal: Sovereign 9999 … Starter 2),
+  // then live status, then subscriber count. Degrades to the old behaviour when no boosts exist.
+  const [allCreators, activeBoosts] = await Promise.all([
+    db.creatorProfile.findMany({ where, take: 500, include: userSelect }),
+    db.boostPurchase.findMany({
+      where: { endsAt: { gte: new Date() } },
+      select: { userId: true, boostsTotal: true },
     }),
-    db.creatorProfile.count({ where }),
   ]);
 
+  // userId → highest active boost weight
+  const weightByUser = new Map<string, number>();
+  for (const b of activeBoosts) {
+    weightByUser.set(b.userId, Math.max(weightByUser.get(b.userId) ?? 0, b.boostsTotal));
+  }
+
+  allCreators.sort((a, b) => {
+    const wa = weightByUser.get(a.userId) ?? 0;
+    const wb = weightByUser.get(b.userId) ?? 0;
+    if (wb !== wa) return wb - wa;                       // boosted first, by tier
+    if (a.isLive !== b.isLive) return a.isLive ? -1 : 1; // live next
+    return b.subscriberCount - a.subscriberCount;        // then popularity
+  });
+
+  const total = allCreators.length;
+  const profiles = allCreators.slice(skip, skip + Number(limit));
   res.json({ profiles, total, page: Number(page), limit: Number(limit) });
 });
 
