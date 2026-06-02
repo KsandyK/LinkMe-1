@@ -47,11 +47,11 @@ function CreatorCard({ creator }: { creator: CreatorProfileItem }) {
   );
 }
 
-// Mock promoted creator data (simulates server-side featured ranking)
-const PROMOTED_CREATORS = [
-  { id: "promo-1", name: "Aria Valencia", username: "aria_v", location: "Los Angeles, CA", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ariavalencia", cover: "https://picsum.photos/seed/ariacov/600/200", boost: "Inferno", color: "#f97316" },
-  { id: "promo-2", name: "Mia Rose",      username: "mia.rose",   location: "Miami, FL",       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=miarose",      cover: "https://picsum.photos/seed/miacov/600/200",  boost: "Legend",  color: "#f59e0b" },
-  { id: "promo-3", name: "Celeste Kim",   username: "celestek",   location: "New York, NY",    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=celestekim",   cover: "https://picsum.photos/seed/celestecov/600/200", boost: "Inferno", color: "#f97316" },
+// Boost badge styling cycled across the promoted/featured spots
+const PROMOTED_BADGES = [
+  { boost: "Inferno", color: "#f97316" },
+  { boost: "Legend",  color: "#f59e0b" },
+  { boost: "Inferno", color: "#f97316" },
 ];
 
 // Build sorted creator lists from mock data for demo sections
@@ -330,32 +330,39 @@ export default function Home() {
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {PROMOTED_CREATORS.map(p => (
-              <Link key={p.id} href={`/profile/${p.id}`}>
-                <div className="vl-card overflow-hidden cursor-pointer group relative">
-                  {/* Featured badge */}
-                  <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
-                    style={{ background: p.color, color: "#fff" }}>
-                    <Star className="w-3 h-3" />{p.boost}
-                  </div>
-                  <div className="relative h-32 overflow-hidden">
-                    <img src={p.cover} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
-                    <img src={p.avatar} alt={p.name}
-                      className="absolute bottom-0 translate-y-1/2 left-3 w-12 h-12 rounded-full border-2 object-cover z-10"
-                      style={{ borderColor: p.color }} />
-                  </div>
-                  <div className="p-3 pt-8">
-                    <h3 className="font-bold text-sm text-white">{p.name}</h3>
-                    {p.location && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {p.location}</p>}
-                    <div className="mt-2 rounded-lg py-1.5 text-center text-xs font-bold text-white"
-                      style={{ background: `linear-gradient(135deg, ${p.color}cc, ${p.color}88)` }}>
-                      View Profile
+            {featuredCreators.slice(0, 3).map((creator, i) => {
+              const badge = PROMOTED_BADGES[i % PROMOTED_BADGES.length];
+              const name = creator.user.profile?.displayName ?? creator.user.username;
+              const location = creator.user.profile?.location;
+              const cover = creator.user.profile?.coverUrl ?? `https://picsum.photos/seed/${creator.userId}-cov/600/200`;
+              const avatar = creator.user.profile?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.user.username}`;
+              return (
+                <Link key={creator.id} href={`/profile/${creator.userId}`}>
+                  <div className="vl-card overflow-hidden cursor-pointer group relative">
+                    {/* Featured badge */}
+                    <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
+                      style={{ background: badge.color, color: "#fff" }}>
+                      <Star className="w-3 h-3" />{badge.boost}
+                    </div>
+                    <div className="relative h-32 overflow-hidden">
+                      <img src={cover} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+                      <img src={avatar} alt={name}
+                        className="absolute bottom-0 translate-y-1/2 left-3 w-12 h-12 rounded-full border-2 object-cover z-10"
+                        style={{ borderColor: badge.color }} />
+                    </div>
+                    <div className="p-3 pt-8">
+                      <h3 className="font-bold text-sm text-white">{name}</h3>
+                      {location && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {location}</p>}
+                      <div className="mt-2 rounded-lg py-1.5 text-center text-xs font-bold text-white"
+                        style={{ background: `linear-gradient(135deg, ${badge.color}cc, ${badge.color}88)` }}>
+                        View Profile
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
           {!hasFeaturedSpot && (
             <p className="text-xs text-center mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
