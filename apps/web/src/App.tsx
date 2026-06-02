@@ -43,6 +43,7 @@ const AdminVerifyQueue   = lazy(() => import("./pages/AdminVerifyQueue"));
 const LegalPages         = lazy(() => import("./pages/LegalPages"));
 const ForgotPassword     = lazy(() => import("./pages/ForgotPassword"));
 const DevReset           = lazy(() => import("./pages/DevReset"));
+const CreatorVerify      = lazy(() => import("./pages/CreatorVerify"));
 
 // ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
@@ -76,6 +77,7 @@ function Router() {
         <Route path="/vip-lounge" component={() => <RequireAuth action="access the VIP lounge"><VipLounge /></RequireAuth>} />
         <Route path="/become-creator" component={BecomeCreator} />
         <Route path="/account" component={() => <RequireAuth action="manage your account"><Account /></RequireAuth>} />
+        <Route path="/verify-identity" component={() => <RequireAuth action="verify your identity"><CreatorVerify /></RequireAuth>} />
         <Route path="/creator/studio" component={() => <RequireAuth action="open the creator studio"><CreatorLiveStudio /></RequireAuth>} />
         <Route path="/creator" component={() => <RequireAuth action="view your creator dashboard"><CreatorDashboard /></RequireAuth>} />
         <Route path="/billing" component={() => <RequireAuth action="manage billing"><Billing /></RequireAuth>} />

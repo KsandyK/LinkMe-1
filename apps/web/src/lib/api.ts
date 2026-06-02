@@ -419,9 +419,23 @@ export const ageVerify = {
   submit: (data: { documentType: "passport" | "drivers_license" | "national_id"; dateOfBirth: string }) =>
     post<{ verificationId: string; status: string; message: string }>("/api/age-verify/submit", data),
 
-  /** POST /api/age-verify/upload-url — returns presigned S3 PUT URL for direct browser upload */
-  uploadUrl: (data: { type: "id" | "selfie"; contentType: string }) =>
-    post<{ uploadUrl: string; s3Key: string; expiresIn: number }>("/api/age-verify/upload-url", data),
+  /** POST /api/age-verify/upload-doc?type=id|selfie — raw image upload to private Bunny storage */
+  uploadDoc: async (type: "id" | "selfie", file: File) => {
+    const res = await fetch(`${BASE}/api/age-verify/upload-doc?type=${type}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+        ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
+      },
+      body: file,
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(b.error ?? `HTTP ${res.status}`);
+    }
+    return res.json() as Promise<{ ok: boolean; type: string }>;
+  },
 
   /** POST /api/age-verify/confirm — called after both uploads complete */
   confirm: () =>

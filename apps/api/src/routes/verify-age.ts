@@ -1,32 +1,33 @@
 /**
- * Age Verification Pipeline
+ * Identity / Age Verification Pipeline (Bunny private storage)
+ *
+ * Members  → age-verified via CCBill purchase (see credits webhook).
+ * Creators → full identity verification here: government ID + selfie.
  *
  * Flow:
- *   1. User submits DOB + document type            POST /api/age-verify/submit
- *   2. API issues a presigned S3 PUT URL           POST /api/age-verify/upload-url  (type: "id" | "selfie")
- *   3. Browser uploads file directly to S3        (no API server involvement)
- *   4. User confirms both uploads complete         POST /api/age-verify/confirm
- *   5. Status: PENDING → UNDER_REVIEW (admin queue)
- *   6. Admin views docs via signed GET URL         GET  /api/age-verify/:userId/view-url?type=id|selfie
- *   7. Admin approves or rejects                   PATCH /api/age-verify/:userId (requireAdmin)
+ *   1. POST /api/age-verify/submit          — DOB + document type
+ *   2. POST /api/age-verify/upload-doc      — raw image body (?type=id|selfie) → private Bunny path
+ *   3. POST /api/age-verify/confirm         — both uploaded → UNDER_REVIEW
+ *   4. GET  /api/age-verify/queue           — admin list (requireAdmin)
+ *   5. GET  /api/age-verify/:userId/view-url?type=id|selfie — admin: short-lived signed Bunny URL
+ *   6. PATCH /api/age-verify/:userId        — admin approve / reject
  *
- * Raw documents NEVER touch this API server — S3 ↔ browser direct.
- * Only encrypted S3 key references are stored in the DB.
- * Documents are deleted from S3 after verification (admin trigger or scheduled cleanup).
+ * Documents are stored at a PRIVATE Bunny path (id-verify/…) which must require
+ * token authentication on the pull zone. Only an AES-encrypted path reference is
+ * stored in the DB. Documents are deleted from Bunny on rejection.
  */
 
 import { Router } from "express";
 import { z } from "zod";
 import crypto from "crypto";
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import db from "../lib/db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { Emails } from "../lib/email.js";
+import { uploadFile, signCdnUrl, deleteFile } from "../lib/bunny.js";
 
 const router = Router();
 
-// ── Encryption helpers ────────────────────────────────────────────────────────
+// ── Encryption helpers (encrypt the stored storage path) ──────────────────────
 const ENC_KEY = Buffer.from(process.env.AGE_VERIFY_ENCRYPTION_KEY ?? "00".repeat(32), "hex");
 
 function encryptRef(plaintext: string): string {
@@ -44,55 +45,10 @@ function decryptRef(ciphertext: string): string {
   return Buffer.concat([decipher.update(enc), decipher.final()]).toString("utf8");
 }
 
-// ── S3 client ─────────────────────────────────────────────────────────────────
-const s3 = new S3Client({
-  region: process.env.AWS_REGION ?? "us-east-1",
-  ...(process.env.AWS_ACCESS_KEY_ID
-    ? {
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-        },
-      }
-    : {}),
-});
-
-const AGE_VERIFY_BUCKET = process.env.AGE_VERIFY_S3_BUCKET ?? "cravr-age-verify-dev";
-
-/** Generate a presigned PUT URL — browser uploads directly to S3 */
-async function presignedPutUrl(s3Key: string, contentType: string): Promise<string> {
-  try {
-    const cmd = new PutObjectCommand({
-      Bucket: AGE_VERIFY_BUCKET,
-      Key: s3Key,
-      ContentType: contentType,
-      ServerSideEncryption: "aws:kms",
-      SSEKMSKeyId: process.env.AGE_VERIFY_KMS_KEY_ID,
-    });
-    return await getSignedUrl(s3, cmd, { expiresIn: 300 });
-  } catch {
-    // No AWS credentials in dev — return a placeholder that the frontend handles gracefully
-    return `https://${AGE_VERIFY_BUCKET}.s3.amazonaws.com/${s3Key}?X-Amz-Signature=dev-placeholder`;
-  }
-}
-
-/** Generate a presigned GET URL — admin views a document temporarily */
-async function presignedGetUrl(s3Key: string): Promise<string> {
-  try {
-    const cmd = new GetObjectCommand({ Bucket: AGE_VERIFY_BUCKET, Key: s3Key });
-    return await getSignedUrl(s3, cmd, { expiresIn: 900 }); // 15 min view window
-  } catch {
-    return `https://${AGE_VERIFY_BUCKET}.s3.amazonaws.com/${s3Key}?X-Amz-Signature=dev-placeholder`;
-  }
-}
-
-/** Delete a document from S3 (called on rejection and post-approval cleanup) */
-async function deleteS3Object(s3Key: string): Promise<void> {
-  try {
-    await s3.send(new DeleteObjectCommand({ Bucket: AGE_VERIFY_BUCKET, Key: s3Key }));
-  } catch {
-    // Fire-and-forget — log in production; ignore in dev
-  }
+// ── Bunny private storage for ID documents ────────────────────────────────────
+// PRIVATE prefix — the Bunny pull zone MUST require token auth on /id-verify/*.
+function idDocPath(userId: string, type: "id" | "selfie", ext: string): string {
+  return `id-verify/${userId}/${type}-${crypto.randomBytes(8).toString("hex")}.${ext}`;
 }
 
 // ── POST /api/age-verify/request-manual ───────────────────────────────────────
@@ -192,40 +148,45 @@ router.post("/age-verify/submit", requireAuth, async (req, res) => {
   });
 });
 
-// ── POST /api/age-verify/upload-url ──────────────────────────────────────────
-// ?type=id (front of ID) | selfie (selfie holding ID)
-// Returns a presigned PUT URL so the browser can upload directly to S3.
-const UploadUrlSchema = z.object({
-  type: z.enum(["id", "selfie"]),
-  contentType: z.string().regex(/^image\/(jpeg|png|webp)|application\/pdf$/, "Only JPEG, PNG, WebP, or PDF").default("image/jpeg"),
-});
+// ── POST /api/age-verify/upload-doc?type=id|selfie ───────────────────────────
+// Raw image body (image/jpeg|png|webp). Server uploads to a PRIVATE Bunny path
+// and stores the AES-encrypted path. (image/* bypasses express.json, so the raw
+// stream is readable here.)
+router.post("/age-verify/upload-doc", requireAuth, async (req, res) => {
+  const type: "id" | "selfie" = String(req.query.type ?? "") === "selfie" ? "selfie" : "id";
+  const mimeType = String(req.headers["content-type"] ?? "");
+  if (!/^image\/(jpeg|png|webp)$/.test(mimeType)) {
+    res.status(400).json({ error: "Only JPEG, PNG, or WebP images accepted" });
+    return;
+  }
 
-router.post("/age-verify/upload-url", requireAuth, async (req, res) => {
   const record = await db.ageVerification.findUnique({ where: { userId: req.user!.sub } });
   if (!record || !["PENDING", "REJECTED"].includes(record.status)) {
     res.status(400).json({ error: "Submit verification details first" });
     return;
   }
 
-  const parsed = UploadUrlSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Validation failed", issues: parsed.error.flatten() });
-    return;
+  try {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) chunks.push(chunk as Buffer);
+    const buffer = Buffer.concat(chunks);
+    if (buffer.length === 0) { res.status(400).json({ error: "Empty file" }); return; }
+    if (buffer.length > 10 * 1024 * 1024) { res.status(413).json({ error: "File too large — maximum 10MB" }); return; }
+
+    const ext = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
+    const path = idDocPath(req.user!.sub, type, ext);
+    await uploadFile(path, buffer, mimeType);
+
+    const encryptedRef = encryptRef(path);
+    await db.ageVerification.update({
+      where: { userId: req.user!.sub },
+      data: type === "id" ? { documentRef: encryptedRef } : { selfieRef: encryptedRef },
+    });
+
+    res.status(201).json({ ok: true, type });
+  } catch {
+    res.status(500).json({ error: "Upload failed — storage unavailable" });
   }
-
-  const { type, contentType } = parsed.data;
-  const ext = contentType === "application/pdf" ? "pdf" : contentType.split("/")[1];
-  const s3Key = `age-verify/${req.user!.sub}/${type}/${crypto.randomBytes(16).toString("hex")}.${ext}`;
-  const encryptedRef = encryptRef(s3Key);
-
-  // Store the encrypted ref immediately so confirm() can verify both are present
-  await db.ageVerification.update({
-    where: { userId: req.user!.sub },
-    data: type === "id" ? { documentRef: encryptedRef } : { selfieRef: encryptedRef },
-  });
-
-  const uploadUrl = await presignedPutUrl(s3Key, contentType);
-  res.json({ uploadUrl, s3Key, expiresIn: 300 });
 });
 
 // ── POST /api/age-verify/confirm ──────────────────────────────────────────────
@@ -300,8 +261,8 @@ router.get("/age-verify/:userId/view-url", requireAdmin, async (req, res) => {
   }
 
   try {
-    const s3Key = decryptRef(encryptedRef);
-    const url = await presignedGetUrl(s3Key);
+    const path = decryptRef(encryptedRef);
+    const url = signCdnUrl(`/${path}`, 900); // 15-min signed Bunny URL
     res.json({ url, expiresIn: 900, type });
   } catch {
     res.status(500).json({ error: "Could not generate document view URL" });
@@ -354,8 +315,8 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
   // Delete documents from S3 on rejection (approved docs stay for audit trail, purged after 30 days by lifecycle rule)
   if (action === "reject" && existing.documentRef) {
     try {
-      deleteS3Object(decryptRef(existing.documentRef));
-      if (existing.selfieRef) deleteS3Object(decryptRef(existing.selfieRef));
+      deleteFile(decryptRef(existing.documentRef));
+      if (existing.selfieRef) deleteFile(decryptRef(existing.selfieRef));
     } catch {}
   }
 

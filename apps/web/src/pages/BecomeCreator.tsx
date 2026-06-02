@@ -340,7 +340,7 @@ export default function BecomeCreator() {
                           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
                           Back
                         </button>
-                        <Link href="/verify-age" className="flex-1">
+                        <Link href="/verify-identity" className="flex-1">
                           <button className="w-full vl-btn-primary py-3 text-sm flex items-center justify-center gap-2">
                             <Shield className="w-4 h-4" /> Verify My Identity
                           </button>
