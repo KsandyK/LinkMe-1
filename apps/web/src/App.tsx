@@ -74,7 +74,7 @@ function Router() {
         <Route path="/gifts" component={() => <RequireAuth action="send gifts"><GiftsStore /></RequireAuth>} />
         <Route path="/boosts" component={() => <RequireAuth action="boost your profile"><BoostsPage /></RequireAuth>} />
         <Route path="/vip-lounge" component={() => <RequireAuth action="access the VIP lounge"><VipLounge /></RequireAuth>} />
-        <Route path="/become-creator" component={() => <RequireAuth action="become a creator"><BecomeCreator /></RequireAuth>} />
+        <Route path="/become-creator" component={BecomeCreator} />
         <Route path="/account" component={() => <RequireAuth action="manage your account"><Account /></RequireAuth>} />
         <Route path="/creator/studio" component={() => <RequireAuth action="open the creator studio"><CreatorLiveStudio /></RequireAuth>} />
         <Route path="/creator" component={() => <RequireAuth action="view your creator dashboard"><CreatorDashboard /></RequireAuth>} />

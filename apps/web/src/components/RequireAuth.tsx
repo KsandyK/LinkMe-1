@@ -56,13 +56,6 @@ export function RequireAuth({ children, action }: RequireAuthProps) {
             </button>
           </Link>
         </div>
-
-        <Link href="/profiles">
-          <p className="text-xs mt-6 cursor-pointer transition-all hover:opacity-80"
-            style={{ color: "rgba(255,255,255,0.3)" }}>
-            Or keep browsing creators →
-          </p>
-        </Link>
       </div>
     </div>
   );
