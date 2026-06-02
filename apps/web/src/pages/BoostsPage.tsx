@@ -68,40 +68,48 @@ export default function BoostsPage() {
   const _doSubscribeBoost = async (pkg: typeof BOOST_PACKAGES[0]) => {
     setLoadingBoost(pkg.id);
     const priceStr = pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price.toFixed(2);
-    if (isLoggedIn) {
-      try {
-        await boostsApi.subscribe(pkg.id);
-        setActiveBoost(pkg.id);
-        const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
-        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
-        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${boostLabel} for 30 days` });
-      } catch {
-        const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
-        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
-        setActiveBoost(pkg.id);
-        showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${boostLabel} activated` });
-      }
-    } else {
-      const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
-      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+    const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
+    // Boosts are paid with CREDITS — boostsApi.subscribe deducts server-side.
+    try {
+      await boostsApi.subscribe(pkg.id);
       setActiveBoost(pkg.id);
+      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+      showToast({ title: `${pkg.emoji} ${pkg.name} Boost Active!`, description: `${boostLabel} for 30 days` });
+    } catch {
+      // Server rejected (insufficient credits / offline). NEVER grant for free in prod.
+      if (import.meta.env.DEV) {
+        setActiveBoost(pkg.id);
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+        showToast({ title: `[Demo] ${pkg.name} Boost`, description: `${boostLabel} activated locally` });
+      } else {
+        showToast({ title: "Couldn't activate boost", description: "Make sure you have enough credits, then try again.", variant: "destructive" });
+      }
     }
     setLoadingBoost(null);
   };
 
   const _doSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {
+    // Memberships are recurring real-money purchases. Until a payment processor
+    // is wired, never grant the membership or its bonus credits in production.
+    if (!import.meta.env.DEV) {
+      showToast({
+        title: "Memberships coming soon",
+        description: "Paid memberships aren't available just yet — please check back shortly.",
+        variant: "destructive",
+      });
+      return;
+    }
     setLoadingMembership(plan.id);
     setTimeout(() => {
       setLoadingMembership(null);
       setActiveMembership(plan.id);
       const price = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
       const priceStr = price % 1 === 0 ? price.toLocaleString() : price.toFixed(2);
-      recordPurchase(price, `${plan.emoji} ${plan.name} Membership — $${priceStr}/${billingCycle === "annual" ? "yr" : "mo"}`);
-      // Award monthly bonus credits included in the plan
+      recordPurchase(price, `[Demo] ${plan.emoji} ${plan.name} Membership — $${priceStr}/${billingCycle === "annual" ? "yr" : "mo"}`);
       if (plan.credits > 0) {
-        addCredits(plan.credits, `${plan.emoji} ${plan.name} monthly bonus credits`);
+        addCredits(plan.credits, `[Demo] ${plan.emoji} ${plan.name} monthly bonus credits`);
       }
-      showToast({ title: `${plan.emoji} ${plan.name} Activated!`, description: `Your membership benefits are now active.` });
+      showToast({ title: `[Demo] ${plan.emoji} ${plan.name} Activated`, description: `Local simulation only — no charge.` });
     }, 800);
   };
 

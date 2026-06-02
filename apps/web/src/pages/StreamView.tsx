@@ -1182,7 +1182,15 @@ export default function StreamView() {
                             setSubscribePending({
                               tier: tier.id, name: tier.name, priceStr: tier.priceStr, emoji: tier.emoji,
                               onConfirm: () => {
-                                recordPurchase(tier.price, `${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
+                                // Creator subscriptions are recurring real-money purchases.
+                                // Until a payment processor is wired, never grant access in production.
+                                if (!import.meta.env.DEV) {
+                                  setSubscribePending(null);
+                                  setShowSubscribeModal(false);
+                                  showToast({ title: "Subscriptions coming soon", description: "Creator subscriptions aren't available just yet — please check back shortly.", variant: "destructive" });
+                                  return;
+                                }
+                                recordPurchase(tier.price, `[Demo] ${tier.emoji} ${tier.name} subscription — ${hostName} — ${tier.priceStr}/mo`);
                                 try { localStorage.setItem(`vl_creator_sub_${id ?? ""}`, tier.id); } catch {}
                                 // Notify creator studio via localStorage (polled every 2s by CreatorLiveStudio)
                                 try {
