@@ -160,6 +160,25 @@ export const Emails = {
       `),
     }),
 
+  /** Manual age-verification request — sent to the support/admin inbox */
+  manualVerifyRequest: (to: string, username: string, userEmail: string, userId: string) =>
+    sendEmail({
+      to,
+      replyTo: userEmail || undefined,
+      subject: `Manual age verification request — @${username}`,
+      html: base(`
+        <h2 style="color:#fff;margin:0 0 16px;">Manual verification requested</h2>
+        <p>A member has requested manual age verification (CCBill purchase flow unavailable).</p>
+        <ul style="color:rgba(255,255,255,0.8);line-height:1.8;">
+          <li><strong>Username:</strong> @${username}</li>
+          <li><strong>Email:</strong> ${userEmail || "—"}</li>
+          <li><strong>User ID:</strong> ${userId}</li>
+        </ul>
+        <p>Review and approve in the admin queue:</p>
+        ${btn("Open Admin Queue", "https://cravr.fun/admin/verify-queue")}
+      `),
+    }),
+
   /** New subscriber notification to creator */
   newSubscriber: (to: string, creatorName: string, subscriberName: string, tier: string) =>
     sendEmail({

@@ -95,6 +95,39 @@ async function deleteS3Object(s3Key: string): Promise<void> {
   }
 }
 
+// ── POST /api/age-verify/request-manual ───────────────────────────────────────
+// Temporary path while CCBill (purchase-based verification) is not yet live.
+// Flags the user for admin review and emails the support inbox. An admin then
+// approves via the admin queue (PATCH /api/age-verify/:userId).
+router.post("/age-verify/request-manual", requireAuth, async (req, res) => {
+  const existing = await db.ageVerification.findUnique({ where: { userId: req.user!.sub } });
+  if (existing?.status === "VERIFIED") {
+    res.status(409).json({ error: "Already verified" });
+    return;
+  }
+
+  await db.ageVerification.upsert({
+    where: { userId: req.user!.sub },
+    update: { status: "UNDER_REVIEW", documentType: "manual_request" },
+    create: { userId: req.user!.sub, status: "UNDER_REVIEW", documentType: "manual_request" },
+  });
+
+  // Email the support/admin inbox (fire-and-forget)
+  const me = await db.user.findUnique({
+    where: { id: req.user!.sub },
+    select: { username: true, email: true },
+  });
+  const supportInbox = process.env.SUPPORT_EMAIL ?? "support@cravr.fun";
+  Emails.manualVerifyRequest(
+    supportInbox,
+    me?.username ?? req.user!.username,
+    me?.email ?? "",
+    req.user!.sub,
+  ).catch(() => null);
+
+  res.json({ status: "UNDER_REVIEW", message: "Verification request submitted. Our team will review it shortly." });
+});
+
 // ── GET /api/age-verify/status ────────────────────────────────────────────────
 router.get("/age-verify/status", requireAuth, async (req, res) => {
   const record = await db.ageVerification.findUnique({

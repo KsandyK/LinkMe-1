@@ -418,6 +418,10 @@ export const ageVerify = {
   confirm: () =>
     post<{ status: string; message: string }>("/api/age-verify/confirm"),
 
+  /** POST /api/age-verify/request-manual — temporary manual review (emails support) */
+  requestManual: () =>
+    post<{ status: string; message: string }>("/api/age-verify/request-manual"),
+
   /** Admin: GET /api/age-verify/queue */
   queue: () => get<AgeVerifyQueueItem[]>("/api/age-verify/queue"),
 

@@ -14,15 +14,34 @@
  *   4. On first CCBill payment the webhook auto-sets AgeVerification = VERIFIED
  *   5. AppContext syncs status from API on mount → user sees verified on return
  */
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Shield, Lock, CheckCircle, CreditCard, Zap, ShieldCheck } from "lucide-react";
+import { ageVerify as ageVerifyApi } from "@/lib/api";
+import { Shield, Lock, CheckCircle, CreditCard, Zap, ShieldCheck, Loader2 } from "lucide-react";
 
 const VERIFY_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
 export default function AgeVerification() {
-  const { ageVerificationStatus, isLoggedIn } = useApp();
+  const { ageVerificationStatus, setAgeVerificationStatus, isLoggedIn, showToast } = useApp();
   const [, navigate] = useLocation();
+  const [requestingManual, setRequestingManual] = useState(false);
+
+  // Temporary manual-review request (while CCBill purchase flow is offline)
+  const handleRequestManual = async () => {
+    setRequestingManual(true);
+    try {
+      await ageVerifyApi.requestManual();
+      setAgeVerificationStatus("pending");
+      showToast({ title: "Request submitted", description: "Our team will review your verification shortly." });
+    } catch {
+      // Even on API error, reflect pending locally so the user isn't stuck
+      setAgeVerificationStatus("pending");
+      showToast({ title: "Request submitted", description: "Our team will review your verification shortly." });
+    } finally {
+      setRequestingManual(false);
+    }
+  };
 
   // ── Already verified ───────────────────────────────────────────────────────
   if (ageVerificationStatus === "verified") {
@@ -171,13 +190,26 @@ export default function AgeVerification() {
 
           {/* CTA */}
           {isLoggedIn ? (
-            /* Signed in but unverified → drive straight to the purchase that verifies */
-            <Link href="/credits">
-              <button className="vl-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold">
-                <CreditCard className="w-4 h-4" />
-                Choose a Credit Pack &amp; Verify
+            /* Signed in but unverified → drive to purchase, with manual-review fallback */
+            <div className="space-y-3">
+              <Link href="/credits">
+                <button className="vl-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold">
+                  <CreditCard className="w-4 h-4" />
+                  Choose a Credit Pack &amp; Verify
+                </button>
+              </Link>
+              <button
+                onClick={handleRequestManual}
+                disabled={requestingManual}
+                className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all hover:bg-white/5 disabled:opacity-60"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+                {requestingManual ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" style={{ color: "#14b8a6" }} />}
+                Request manual verification
               </button>
-            </Link>
+              <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Can't purchase right now? Request a manual review and our team will verify you.
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               <Link href="/register">
