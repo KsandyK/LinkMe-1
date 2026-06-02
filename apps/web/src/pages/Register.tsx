@@ -50,9 +50,24 @@ export default function Register() {
     }));
   };
 
+  // Obvious fake / disposable domains blocked instantly client-side (offline-safe);
+  // the backend MX check is the authoritative backstop.
+  const BLOCKED_EMAIL_DOMAINS = new Set([
+    "test.com", "test.test", "example.com", "example.org", "example.net",
+    "domain.com", "email.com", "fake.com", "fakemail.com", "mailinator.com",
+    "guerrillamail.com", "10minutemail.com", "tempmail.com", "temp-mail.org",
+    "yopmail.com", "trashmail.com", "throwaway.email", "getnada.com",
+    "sharklasers.com", "maildrop.cc", "dispostable.com", "fakeinbox.com",
+  ]);
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
   const validateAccount = () => {
     const errs: Record<string, string> = {};
-    if (!form.email.includes("@")) errs.email = "Enter a valid email address";
+    if (!EMAIL_RE.test(form.email.trim())) {
+      errs.email = "Enter a valid email address";
+    } else if (BLOCKED_EMAIL_DOMAINS.has(form.email.trim().split("@")[1].toLowerCase())) {
+      errs.email = "Please use a real, non-disposable email address";
+    }
     if (form.username.length < 3) errs.username = "Username must be at least 3 characters";
     if (/\s/.test(form.username)) errs.username = "Username cannot contain spaces";
     if (form.password.length < 8) errs.password = "Password must be at least 8 characters";
@@ -74,6 +89,17 @@ export default function Register() {
     if (step === "account") {
       const errs = validateAccount();
       if (Object.keys(errs).length) { setErrors(errs); return; }
+      // Server-side domain check (MX records). Skipped silently if API offline.
+      setSubmitting(true);
+      let emailReason = "";
+      try {
+        const r = await authApi.checkEmail(form.email.trim());
+        if (!r.ok) emailReason = r.reason ?? "Please use a valid email address";
+      } catch {
+        // API unreachable — allow through; backend register still enforces on submit
+      }
+      setSubmitting(false);
+      if (emailReason) { setErrors({ email: emailReason }); return; }
       setErrors({});
       setStep("profile");
     } else if (step === "profile") {

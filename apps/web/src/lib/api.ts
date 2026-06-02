@@ -110,6 +110,10 @@ export const auth = {
     bio?: string;
   }) => post<{ accessToken: string; refreshToken: string; user: object }>("/api/auth/register", data, { skipAuth: true }),
 
+  /** POST /api/auth/check-email — returns { ok, reason? } (never throws for bad email) */
+  checkEmail: (email: string) =>
+    post<{ ok: boolean; reason?: string }>("/api/auth/check-email", { email }, { skipAuth: true }),
+
   login: (data: { username: string; password: string }) =>
     post<{ accessToken: string; user: object }>("/api/auth/login", data, { skipAuth: true }),
 

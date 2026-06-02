@@ -1,5 +1,6 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
+import dns from "node:dns/promises";
 import { z } from "zod";
 import db from "../lib/db.js";
 import {
@@ -29,7 +30,7 @@ const RegisterSchema = z.object({
     .min(3)
     .max(32)
     .regex(/^[a-z0-9_]+$/, "Username may only contain lowercase letters, numbers, and underscores"),
-  email: z.string().email().optional(),
+  email: z.string().email("Enter a valid email address"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -50,6 +51,42 @@ const LoginSchema = z.object({
 const RefreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
+
+// ── Email domain validation ────────────────────────────────────────────────
+// Reject disposable/test domains and any domain that can't receive mail.
+const BLOCKED_EMAIL_DOMAINS = new Set([
+  "test.com", "test.test", "example.com", "example.org", "example.net",
+  "domain.com", "email.com", "mail.com", "fake.com", "fakemail.com",
+  "mailinator.com", "guerrillamail.com", "guerrillamail.info", "10minutemail.com",
+  "tempmail.com", "temp-mail.org", "tempmailo.com", "throwaway.email",
+  "yopmail.com", "trashmail.com", "getnada.com", "sharklasers.com",
+  "dispostable.com", "fakeinbox.com", "maildrop.cc", "mintemail.com",
+  "mohmal.com", "spam4.me", "tempr.email", "mailnesia.com", "inboxbear.com",
+]);
+
+/** Validate that an email domain is non-disposable and can actually receive mail. */
+async function validateEmailDomain(email: string): Promise<{ ok: boolean; reason?: string }> {
+  const domain = email.split("@")[1]?.toLowerCase().trim();
+  if (!domain || !domain.includes(".")) {
+    return { ok: false, reason: "Enter a valid email address" };
+  }
+  if (BLOCKED_EMAIL_DOMAINS.has(domain)) {
+    return { ok: false, reason: "Please use a real, non-disposable email address" };
+  }
+  // The domain must have MX records (or fall back to an A record) to receive mail
+  try {
+    const mx = await dns.resolveMx(domain);
+    if (mx && mx.length > 0) return { ok: true };
+  } catch {
+    // No MX — try A record as a last resort (RFC 5321 fallback)
+  }
+  try {
+    await dns.resolve(domain);
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "Email domain not found — please check your address" };
+  }
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -93,6 +130,19 @@ async function storeRefreshToken(
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 
+/** POST /api/auth/check-email — pre-registration email domain validation.
+ *  Always returns 200 with { ok, reason? } so the client can show inline
+ *  feedback without exception handling. */
+router.post("/auth/check-email", async (req, res) => {
+  const email = String(req.body?.email ?? "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    res.json({ ok: false, reason: "Enter a valid email address" });
+    return;
+  }
+  const result = await validateEmailDomain(email);
+  res.json(result);
+});
+
 /** POST /api/auth/register */
 router.post("/auth/register", authLimiter, async (req, res) => {
   const parsed = RegisterSchema.safeParse(req.body);
@@ -102,9 +152,16 @@ router.post("/auth/register", authLimiter, async (req, res) => {
   }
   const { username, email, password, displayName, location, bio } = parsed.data;
 
+  // Reject disposable/test domains and addresses that can't receive mail
+  const emailCheck = await validateEmailDomain(email);
+  if (!emailCheck.ok) {
+    res.status(400).json({ error: emailCheck.reason });
+    return;
+  }
+
   // Check uniqueness
   const existing = await db.user.findFirst({
-    where: { OR: [{ username }, ...(email ? [{ email }] : [])] },
+    where: { OR: [{ username }, { email }] },
   });
   if (existing) {
     res.status(409).json({
