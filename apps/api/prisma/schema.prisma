@@ -201,7 +201,6 @@ model CreatorContent {
   updatedAt    DateTime @updatedAt
 
   creator  User            @relation("CreatorContents", fields: [creatorId], references: [id], onDelete: Cascade)
-  unlocks  ContentUnlock[]
 
   @@index([creatorId, sortOrder])
   @@index([creatorId, isPublished])
