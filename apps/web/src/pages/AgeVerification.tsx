@@ -123,7 +123,7 @@ export default function AgeVerification() {
               Purchasing credits automatically verifies your age
             </p>
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-              We use CCBill for all payments. CCBill independently confirms that every cardholder is 18+ before processing a transaction — no separate ID upload or waiting period required.
+              Our secure payment processor independently confirms that every cardholder is 18+ before processing a transaction — no separate ID upload or waiting period required.
             </p>
           </div>
 
@@ -137,8 +137,8 @@ export default function AgeVerification() {
               },
               {
                 step: "2",
-                title: "CCBill confirms you're 18+",
-                desc: "CCBill verifies your card and age as part of their standard payment processing. This is instant.",
+                title: "Your age is confirmed instantly",
+                desc: "Our payment processor verifies your card and age as part of standard, secure payment processing.",
               },
               {
                 step: "3",
@@ -165,7 +165,7 @@ export default function AgeVerification() {
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
             <Lock className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} />
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)", lineHeight: 1.5 }}>
-              CRAVR never sees or stores your card details. All payment data is handled exclusively by CCBill under PCI DSS Level 1 compliance. Only your verified age status is recorded on our platform.
+              CRAVR never sees or stores your card details. All payment data is handled exclusively by our PCI DSS Level 1 compliant payment processor. Only your verified age status is recorded on our platform.
             </p>
           </div>
 
