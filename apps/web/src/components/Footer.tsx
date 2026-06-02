@@ -46,10 +46,10 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Creators */}
+          {/* Creators & Support */}
           <div>
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Creators</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 mb-5">
               {[
                 { href: "/become-creator", label: "Become a Cravr" },
                 { href: "/creator",        label: "Creator Dashboard" },
@@ -62,12 +62,26 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+            <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Support</h4>
+            <ul className="space-y-2">
+              {[
+                { email: "support@cravr.fun" },
+                { email: "creators@cravr.fun" },
+                { email: "legal@cravr.fun" },
+              ].map(c => (
+                <li key={c.email}>
+                  <a href={`mailto:${c.email}`} className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    {c.email}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Legal & Support */}
+          {/* Legal */}
           <div>
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Legal</h4>
-            <ul className="space-y-2 mb-5">
+            <ul className="space-y-2">
               {[
                 { href: "/legal",          label: "Legal Centre" },
                 { href: "/legal/terms",    label: "Terms of Service" },
@@ -82,24 +96,6 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
-            </ul>
-            <h4 className="text-xs font-bold mb-2 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Support</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="mailto:support@cravr.fun" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  support@cravr.fun
-                </a>
-              </li>
-              <li>
-                <a href="mailto:creators@cravr.fun" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  creators@cravr.fun
-                </a>
-              </li>
-              <li>
-                <a href="mailto:legal@cravr.fun" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  legal@cravr.fun
-                </a>
-              </li>
             </ul>
           </div>
         </div>
