@@ -180,7 +180,7 @@ router.post("/auth/register", authLimiter, async (req, res) => {
       username,
       email,
       passwordHash,
-      credits: 250, // welcome credits — shown as bonus on register confirmation screen
+      credits: 0, // no free credits — credits are only obtained via a real purchase (anti-fraud)
       profile: {
         create: {
           displayName: displayName || username,

@@ -158,8 +158,8 @@ export default function Register() {
             Your account <span className="text-primary font-bold">@{form.username}</span> is ready.
           </p>
           <div className="my-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
-            <p className="text-primary font-bold text-lg">+250 Welcome Credits! 🎁</p>
-            <p className="text-muted-foreground text-sm mt-1">Added to your account as a new member bonus</p>
+            <p className="text-primary font-bold text-lg">You're all set! 🎉</p>
+            <p className="text-muted-foreground text-sm mt-1">Add credits to unlock content, message creators, and verify your age — all in one step.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {[

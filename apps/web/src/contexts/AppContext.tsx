@@ -123,7 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     safeGet(STORAGE_KEYS.AGE_VERIFY, "unverified")
   );
   const [credits, setCredits] = useState<number>(() =>
-    safeGet(STORAGE_KEYS.CREDITS, 250)
+    safeGet(STORAGE_KEYS.CREDITS, 0)   // real balance comes from the server after auth; never default to free credits
   );
   const [unlockedContent, setUnlockedContent] = useState<Set<string>>(() => {
     const arr = safeGet<string[]>(STORAGE_KEYS.UNLOCKED, []);
@@ -367,6 +367,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .catch(() => { clearTimeout(timer); /* API offline — keep local state */ });
   }, [token]);
 
+  // ── Unlocked-content sync ────────────────────────────────────────────────────
+  // The server is authoritative for which content this user has unlocked. Load
+  // it on auth so unlocks are per-user (we clear local state on login/logout).
+  useEffect(() => {
+    if (!token) return;
+    contentApi.unlocked()
+      .then(items => {
+        if (!Array.isArray(items)) return;
+        const ids = items.map(i => i.contentId);
+        setUnlockedContent(new Set(ids));
+        safeSet(STORAGE_KEYS.UNLOCKED, ids);
+      })
+      .catch(() => {/* API offline — keep local state */});
+  }, [token]);
+
   const login = useCallback(async (username: string, password: string) => {
     // Track whether the API was reachable but rejected the credentials.
     // On API rejection (401) we re-throw so callers can show an error.
@@ -393,6 +408,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         throw new Error(err.error ?? "Invalid credentials");
       }
       const data = await res.json();
+      // Wipe any prior account's local state so this session starts from the
+      // server's truth (no inherited credits/transactions/unlocks).
+      clearLocalAccountState();
       // Persist both tokens — the refresh token enables silent re-auth
       setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken ?? null);
@@ -422,13 +440,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Clears all per-account financial/session state so a different account in the
+  // same browser never inherits the previous user's credits, transactions, or unlocks.
+  const clearLocalAccountState = () => {
+    [
+      STORAGE_KEYS.CREDITS, STORAGE_KEYS.TRANSACTIONS, STORAGE_KEYS.UNLOCKED,
+      STORAGE_KEYS.MEMBERSHIP, STORAGE_KEYS.BOOST, STORAGE_KEYS.AGE_VERIFY,
+      "vl_favorites_v1", "vl_local_convs_v1",
+    ].forEach(k => { try { localStorage.removeItem(k); } catch {} });
+    setCredits(0);
+    setTransactions([]);
+    setUnlockedContent(new Set());
+    setUnlockedMediaUrls({});
+    setActiveMembershipState("free");
+    setActiveBoostState(null);
+    setAgeVerificationStatusState("unverified");
+  };
+
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("cravr_token");
     localStorage.removeItem("cravr_user");
+    clearLocalAccountState();
     syncedRef.current = false;
     fetch(`${API_BASE}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const recordPurchase = (dollarAmount: number, description: string) => {
