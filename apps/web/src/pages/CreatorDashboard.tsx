@@ -1955,6 +1955,8 @@ export default function CreatorDashboard() {
                 ];
                 const current = REVENUE_TIERS.find(t => monthly >= t.min && monthly <= t.max) ?? REVENUE_TIERS[0];
                 const nextTier = REVENUE_TIERS[REVENUE_TIERS.indexOf(current) + 1];
+                // The next bracket that actually raises the payout % (some adjacent tiers share a rate)
+                const nextRaise = REVENUE_TIERS.find(t => t.min > monthly && t.creatorPct > current.creatorPct);
                 return (
                   <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
                     <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
@@ -1965,16 +1967,22 @@ export default function CreatorDashboard() {
                       <span className="text-xs font-black" style={{ color: current.color }}>You keep {current.creatorPct}%</span>
                     </div>
                     {nextTier && (
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        Earn ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month to reach {nextTier.label} (keep {nextTier.creatorPct}%)
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month → <span className="font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>{nextTier.label}</span> bracket
+                        {nextTier.creatorPct > current.creatorPct ? ` · keep ${nextTier.creatorPct}%` : ""}
                       </p>
                     )}
-                    <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                       <div className="h-full rounded-full transition-all" style={{
-                        width: nextTier ? `${Math.min(100, ((monthly - current.min) / (nextTier.min - current.min)) * 100)}%` : "100%",
+                        width: nextTier ? `${Math.min(100, Math.max(3, ((monthly - current.min) / (nextTier.min - current.min)) * 100))}%` : "100%",
                         background: current.color,
                       }} />
                     </div>
+                    {nextRaise && nextRaise !== nextTier && (
+                      <p className="text-xs mt-2" style={{ color: "#14b8a6" }}>
+                        ↑ Next rate bump: {nextRaise.label} at ${nextRaise.min.toLocaleString()}/mo → keep {nextRaise.creatorPct}%
+                      </p>
+                    )}
                     <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
                       Higher monthly earnings → bigger share. Paid every Friday · $50 minimum.
                     </p>
