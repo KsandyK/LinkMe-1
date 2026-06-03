@@ -245,13 +245,24 @@ export default function CreatorDashboard() {
   };
   const scheduledCount = Object.values(schedule).filter(Boolean).length;
 
-  // Demo referral progress — in production these come from the API
+  // Referral milestone progress — from the API (real code + real revenue counts)
   const REFERRAL_TARGET_COUNT = 25;
-  const REFERRAL_TARGET_EARNINGS = 10000;
-  const referralCount = 7;   // mock: 7 of 25 referrals so far
-  const referralEarnings = 2840; // mock: $2,840 of $10,000/mo earned by referrals
-  const referralCode = makeReferralCode(user?.username ?? "creator");
-  const referralMet = referralCount >= REFERRAL_TARGET_COUNT && referralEarnings >= REFERRAL_TARGET_EARNINGS;
+  const REFERRAL_TARGET_EARNINGS = 10000; // USD
+  const [referralData, setReferralData] = useState<{
+    code: string | null; boostClaimed: boolean; qualifyingCount: number;
+    collectiveMonthlyCredits: number; eligible: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    creatorApi.referrals()
+      .then(d => { setReferralData(d); setBoostClaimed(d.boostClaimed); })
+      .catch(() => {/* not a creator yet / offline — fall back to placeholder code */});
+  }, []);
+
+  const referralCount = referralData?.qualifyingCount ?? 0;
+  const referralEarnings = Math.floor((referralData?.collectiveMonthlyCredits ?? 0) / 10); // credits → USD
+  const referralCode = referralData?.code ?? makeReferralCode(user?.username ?? "creator");
+  const referralMet = referralData?.eligible ?? false;
 
   // ── Stream key helpers ────────────────────────────────────────────────────────
   const fetchStreamKey = async () => {
@@ -1631,11 +1642,15 @@ export default function CreatorDashboard() {
                     ) : (
                       <button
                         disabled={!referralMet}
-                        onClick={() => {
+                        onClick={async () => {
                           if (!referralMet) return;
-                          setBoostClaimed(true);
-                          try { localStorage.setItem("CRAVR_referral_claimed", "1"); } catch {}
-                          showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket (e.g. 80% → 83%). Check your Creator Agreement §2.9 for details." });
+                          try {
+                            await creatorApi.claimReferralBoost();
+                            setBoostClaimed(true);
+                            showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket. See Creator Agreement §2.9." });
+                          } catch {
+                            showToast({ title: "Couldn't claim yet", description: "Milestones must be met and verified. Please try again shortly.", variant: "destructive" });
+                          }
                         }}
                         className="w-full py-3 rounded-xl text-sm font-bold transition-all"
                         style={referralMet

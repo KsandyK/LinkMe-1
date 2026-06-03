@@ -170,6 +170,10 @@ model CreatorProfile {
   // AI companion — when true this profile is an AI persona, not a human creator
   isAiPersona        Boolean   @default(false)
   aiPersonaPrompt    String?   @db.Text   // Claude system prompt defining the character
+  // Referrals — creator's own shareable code + who referred them (immutable once set)
+  referralCode        String?   @unique     // e.g. USERNAME-A1B2
+  referredById        String?               // userId of the referring creator
+  referralBoostClaimed Boolean  @default(false) // one-time tier boost claimed
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

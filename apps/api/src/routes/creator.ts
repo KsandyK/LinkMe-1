@@ -1,10 +1,41 @@
 import { Router } from "express";
 import { z } from "zod";
+import crypto from "crypto";
 import db from "../lib/db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { getRevenueSharePct, revenueTierLabel, nextRevenueTier, CREDITS_PER_USD, GRACE_PERIOD_DAYS } from "../lib/revenue.js";
 
 const router = Router();
+
+// ── Referrals (milestone tier-boost model — matches Creator Agreement §2.9) ──
+// A referrer earns a one-time permanent revenue-share rate boost once they have
+// REFERRAL_TARGET_COUNT qualifying referrals (approved creators active 30+ days)
+// whose COLLECTIVE rolling-30-day earnings reach REFERRAL_TARGET_CREDITS.
+// Fraud-resistant: the $10k/mo collective bar requires real paying customers —
+// farmed/zero-earning accounts never move the earnings milestone.
+const REFERRAL_TARGET_COUNT = 25;
+const REFERRAL_TARGET_CREDITS = 100_000;          // $10,000 (1 credit = $0.10)
+const REFERRAL_MIN_ACTIVE_MS = 30 * 24 * 60 * 60 * 1000; // referee must be 30+ days active
+const REFERRAL_BOOST_INCREMENT = 0.03;            // +3 percentage points
+const REFERRAL_BOOST_CAP = 0.90;                  // capped at 90%
+
+/** Generate a shareable referral code from a username, e.g. LUNA_ROSE-A1B2. */
+function genReferralCode(username: string): string {
+  const base = username.toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 14) || "CRAVR";
+  const suffix = crypto.randomBytes(2).toString("hex").toUpperCase(); // 4 hex chars
+  return `${base}-${suffix}`;
+}
+
+/** Generate a referral code that doesn't collide with an existing one. */
+async function uniqueReferralCode(username: string): Promise<string> {
+  for (let i = 0; i < 6; i++) {
+    const code = genReferralCode(username);
+    const clash = await db.creatorProfile.findUnique({ where: { referralCode: code }, select: { id: true } });
+    if (!clash) return code;
+  }
+  // Extremely unlikely fallback
+  return genReferralCode(username + crypto.randomBytes(2).toString("hex"));
+}
 
 // ── GET /api/creator/dashboard ────────────────────────────────────────────────
 router.get("/creator/dashboard", requireAuth, async (req, res) => {
@@ -123,6 +154,25 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
     return;
   }
 
+  // ── Referral capture (anti-fraud) ──────────────────────────────────────────
+  // Set ONCE here and never updated again. The referrer must be an existing,
+  // approved creator and cannot be the applicant (no self-referral).
+  let referredById: string | null = null;
+  if (parsed.data.referralCode) {
+    const code = parsed.data.referralCode.trim().toUpperCase();
+    const referrer = await db.creatorProfile.findUnique({
+      where: { referralCode: code },
+      select: { userId: true, isApproved: true },
+    });
+    if (referrer && referrer.isApproved && referrer.userId !== req.user!.sub) {
+      referredById = referrer.userId;
+    }
+    // Invalid/own codes are silently ignored so a typo never blocks an application.
+  }
+
+  const me = await db.user.findUnique({ where: { id: req.user!.sub }, select: { username: true } });
+  const myReferralCode = await uniqueReferralCode(me?.username ?? "cravr");
+
   const [creatorProfile] = await db.$transaction([
     db.creatorProfile.create({
       data: {
@@ -130,6 +180,8 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
         subscriptionPrice: parsed.data.subscriptionPrice,
         tipMenuItems: parsed.data.tipMenuItems ?? [],
         isApproved: false, // pending admin review
+        referralCode: myReferralCode,
+        referredById,
       },
     }),
     db.user.update({ where: { id: req.user!.sub }, data: { role: "CREATOR" } }),
@@ -146,6 +198,97 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
     creatorProfile,
     message: "Application submitted — pending review by our team.",
   });
+});
+
+// ── GET /api/creator/referral/check?code= — validate a referral code ─────────
+router.get("/creator/referral/check", requireAuth, async (req, res) => {
+  const code = String(req.query.code ?? "").trim().toUpperCase();
+  if (!code) { res.json({ valid: false }); return; }
+  const referrer = await db.creatorProfile.findUnique({
+    where: { referralCode: code },
+    select: {
+      isApproved: true, userId: true,
+      user: { select: { username: true, profile: { select: { displayName: true } } } },
+    },
+  });
+  // Valid only if it belongs to an approved creator who isn't the requester
+  const valid = !!referrer && referrer.isApproved && referrer.userId !== req.user!.sub;
+  res.json({ valid, referrerName: valid ? (referrer!.user.profile?.displayName ?? referrer!.user.username) : null });
+});
+
+// ── GET /api/creator/referrals — signed-in creator's code + milestone stats ──
+router.get("/creator/referrals", requireAuth, async (req, res) => {
+  const me = await db.creatorProfile.findUnique({
+    where: { userId: req.user!.sub },
+    select: { referralCode: true, referralBoostClaimed: true, revenueSharePct: true },
+  });
+  if (!me) { res.status(404).json({ error: "Not a creator" }); return; }
+
+  const referred = await db.creatorProfile.findMany({
+    where: { referredById: req.user!.sub },
+    select: {
+      isApproved: true, createdAt: true, monthlyEarnings: true,
+      user: { select: { username: true, profile: { select: { displayName: true } } } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Qualifying = approved + active 30+ days. Collective earnings = sum of their
+  // rolling-30-day monthlyEarnings (real revenue only).
+  const cutoff = Date.now() - REFERRAL_MIN_ACTIVE_MS;
+  const qualifying = referred.filter(r => r.isApproved && r.createdAt.getTime() <= cutoff);
+  const collectiveMonthlyCredits = qualifying.reduce((sum, r) => sum + (r.monthlyEarnings ?? 0), 0);
+
+  const eligible =
+    qualifying.length >= REFERRAL_TARGET_COUNT &&
+    collectiveMonthlyCredits >= REFERRAL_TARGET_CREDITS;
+
+  res.json({
+    code: me.referralCode,
+    boostClaimed: me.referralBoostClaimed,
+    currentRevenueSharePct: me.revenueSharePct,
+    qualifyingCount: qualifying.length,
+    targetCount: REFERRAL_TARGET_COUNT,
+    collectiveMonthlyCredits,
+    targetCredits: REFERRAL_TARGET_CREDITS,
+    eligible,
+    referrals: referred.map(r => ({
+      name: r.user.profile?.displayName ?? r.user.username,
+      username: r.user.username,
+      joinedAt: r.createdAt,
+      approved: r.isApproved,
+    })),
+  });
+});
+
+// ── POST /api/creator/referral/claim-boost — claim the one-time tier boost ───
+router.post("/creator/referral/claim-boost", requireAuth, async (req, res) => {
+  const me = await db.creatorProfile.findUnique({
+    where: { userId: req.user!.sub },
+    select: { id: true, referralBoostClaimed: true, revenueSharePct: true },
+  });
+  if (!me) { res.status(404).json({ error: "Not a creator" }); return; }
+  if (me.referralBoostClaimed) { res.status(409).json({ error: "Boost already claimed" }); return; }
+
+  // Re-verify eligibility server-side (never trust the client)
+  const cutoff = Date.now() - REFERRAL_MIN_ACTIVE_MS;
+  const referred = await db.creatorProfile.findMany({
+    where: { referredById: req.user!.sub, isApproved: true },
+    select: { createdAt: true, monthlyEarnings: true },
+  });
+  const qualifying = referred.filter(r => r.createdAt.getTime() <= cutoff);
+  const collective = qualifying.reduce((s, r) => s + (r.monthlyEarnings ?? 0), 0);
+  if (qualifying.length < REFERRAL_TARGET_COUNT || collective < REFERRAL_TARGET_CREDITS) {
+    res.status(403).json({ error: "Referral milestones not yet met" });
+    return;
+  }
+
+  const newPct = Math.min(REFERRAL_BOOST_CAP, me.revenueSharePct + REFERRAL_BOOST_INCREMENT);
+  await db.creatorProfile.update({
+    where: { id: me.id },
+    data: { revenueSharePct: newPct, referralBoostClaimed: true },
+  });
+  res.json({ ok: true, revenueSharePct: newPct });
 });
 
 // ── POST /api/creator/approve/:userId — admin only ───────────────────────────

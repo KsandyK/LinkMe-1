@@ -394,6 +394,25 @@ export const creator = {
     patch<object>("/api/creator/settings", data),
   earnings: (period?: "7d" | "30d" | "90d") =>
     get<{ transactions: unknown[]; period: string; since: string }>(`/api/creator/earnings${period ? `?period=${period}` : ""}`),
+  /** GET /api/creator/referral/check?code= — validate a referral code */
+  referralCheck: (code: string) =>
+    get<{ valid: boolean; referrerName: string | null }>(`/api/creator/referral/check?code=${encodeURIComponent(code)}`),
+  /** GET /api/creator/referrals — the signed-in creator's code + milestone stats */
+  referrals: () =>
+    get<{
+      code: string | null;
+      boostClaimed: boolean;
+      currentRevenueSharePct: number;
+      qualifyingCount: number;
+      targetCount: number;
+      collectiveMonthlyCredits: number;
+      targetCredits: number;
+      eligible: boolean;
+      referrals: { name: string; username: string; joinedAt: string; approved: boolean }[];
+    }>("/api/creator/referrals"),
+  /** POST /api/creator/referral/claim-boost — claim the one-time tier boost */
+  claimReferralBoost: () =>
+    post<{ ok: boolean; revenueSharePct: number }>("/api/creator/referral/claim-boost"),
 };
 
 // ── Age Verification ──────────────────────────────────────────────────────────
