@@ -1056,7 +1056,7 @@ If a verifiable technical error on our platform caused:
 You must report the error within **7 days** of the transaction to support@cravr.fun with your transaction ID and a description of the issue.
 
 ### 2.2 Unauthorized Transactions
-If your account was accessed without your authorization and charges were made, contact us immediately at support@cravr.fun and support@cravr.fun. We will investigate and, where confirmed, refund unauthorized charges. You must also:
+If your account was accessed without your authorization and charges were made, contact us immediately at support@cravr.fun (and legal@cravr.fun for billing disputes). We will investigate and, where confirmed, refund unauthorized charges. You must also:
 - Change your password immediately
 - Enable two-factor authentication
 - File a report with your bank or card issuer if appropriate
