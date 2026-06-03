@@ -4,7 +4,7 @@
  * All routes, providers, age gate, and navigation.
  * Heavy pages are lazy-loaded to keep the initial bundle lean.
  */
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
@@ -16,6 +16,27 @@ import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
 import { RequireAuth } from "./components/RequireAuth";
 
+/**
+ * lazy() with stale-chunk recovery. After a deploy, chunk filenames get new
+ * hashes; a browser holding the old page fails to import the old-hash chunk.
+ * On that failure we do a one-time full reload (guarded to avoid loops) so the
+ * fresh index + chunks load, instead of showing the ErrorBoundary.
+ */
+function lazyWithReload<T extends ComponentType<any>>(importFn: () => Promise<{ default: T }>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      const last = Number(sessionStorage.getItem("vl_chunk_reload_ts") ?? 0);
+      // Only auto-reload if we haven't reloaded in the last 10s (prevents loops)
+      if (Date.now() - last > 10_000) {
+        sessionStorage.setItem("vl_chunk_reload_ts", String(Date.now()));
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {}); // hang while the page reloads
+      }
+      throw new Error("Failed to load application module");
+    }),
+  );
+}
+
 // ── Eager pages (lightweight — always needed on first visit) ──────────────────
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -24,26 +45,26 @@ import NotFound from "./pages/NotFound";
 import LegalHub from "./pages/LegalHub";
 
 // ── Lazy pages (heavy — split into async chunks to reduce initial load) ───────
-const Profiles         = lazy(() => import("./pages/Profiles"));
-const ProfileDetail    = lazy(() => import("./pages/ProfileDetail"));
-const LiveFeeds        = lazy(() => import("./pages/LiveFeeds"));
-const StreamView       = lazy(() => import("./pages/StreamView"));
-const Messages         = lazy(() => import("./pages/Messages"));
-const CreditsStore     = lazy(() => import("./pages/CreditsStore"));
-const GiftsStore       = lazy(() => import("./pages/GiftsStore"));
-const BoostsPage       = lazy(() => import("./pages/BoostsPage"));
-const VipLounge        = lazy(() => import("./pages/VipLounge"));
-const BecomeCreator    = lazy(() => import("./pages/BecomeCreator"));
-const Account          = lazy(() => import("./pages/Account"));
-const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
-const CreatorLiveStudio = lazy(() => import("./pages/CreatorLiveStudio"));
-const Billing          = lazy(() => import("./pages/Billing"));
-const AgeVerification    = lazy(() => import("./pages/AgeVerification"));
-const AdminVerifyQueue   = lazy(() => import("./pages/AdminVerifyQueue"));
-const LegalPages         = lazy(() => import("./pages/LegalPages"));
-const ForgotPassword     = lazy(() => import("./pages/ForgotPassword"));
-const DevReset           = lazy(() => import("./pages/DevReset"));
-const CreatorVerify      = lazy(() => import("./pages/CreatorVerify"));
+const Profiles         = lazyWithReload(() => import("./pages/Profiles"));
+const ProfileDetail    = lazyWithReload(() => import("./pages/ProfileDetail"));
+const LiveFeeds        = lazyWithReload(() => import("./pages/LiveFeeds"));
+const StreamView       = lazyWithReload(() => import("./pages/StreamView"));
+const Messages         = lazyWithReload(() => import("./pages/Messages"));
+const CreditsStore     = lazyWithReload(() => import("./pages/CreditsStore"));
+const GiftsStore       = lazyWithReload(() => import("./pages/GiftsStore"));
+const BoostsPage       = lazyWithReload(() => import("./pages/BoostsPage"));
+const VipLounge        = lazyWithReload(() => import("./pages/VipLounge"));
+const BecomeCreator    = lazyWithReload(() => import("./pages/BecomeCreator"));
+const Account          = lazyWithReload(() => import("./pages/Account"));
+const CreatorDashboard = lazyWithReload(() => import("./pages/CreatorDashboard"));
+const CreatorLiveStudio = lazyWithReload(() => import("./pages/CreatorLiveStudio"));
+const Billing          = lazyWithReload(() => import("./pages/Billing"));
+const AgeVerification    = lazyWithReload(() => import("./pages/AgeVerification"));
+const AdminVerifyQueue   = lazyWithReload(() => import("./pages/AdminVerifyQueue"));
+const LegalPages         = lazyWithReload(() => import("./pages/LegalPages"));
+const ForgotPassword     = lazyWithReload(() => import("./pages/ForgotPassword"));
+const DevReset           = lazyWithReload(() => import("./pages/DevReset"));
+const CreatorVerify      = lazyWithReload(() => import("./pages/CreatorVerify"));
 
 // ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
