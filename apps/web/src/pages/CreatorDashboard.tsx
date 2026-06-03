@@ -175,7 +175,9 @@ function centsToDisplay(cents: number) {
 
 export default function CreatorDashboard() {
   const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user } = useApp();
-  const analyticsTier = getAnalyticsTier(activeBoost, activeMembership);
+  // Admins (platform owner/staff) get everything unlocked regardless of boost/membership.
+  const isAdmin = user?.role === "ADMIN";
+  const analyticsTier = isAdmin ? "revenue" : getAnalyticsTier(activeBoost, activeMembership);
   const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">("overview");
 
   // ── Stream key state ──────────────────────────────────────────────────────────
