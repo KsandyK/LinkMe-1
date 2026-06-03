@@ -3,8 +3,8 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X } from "lucide-react";
-import { BOOST_TIERS, MEMBER_BY_ID } from "@/lib/membership-tiers";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X, Crown } from "lucide-react";
+import { BOOST_TIERS, MEMBER_BY_ID, MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
 import { VipStaffCard } from "@/components/VipStaffCard";
 import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
 
@@ -93,6 +93,14 @@ const BOOST_RANK: Record<string, number> = Object.fromEntries(
 
 // Membership plans that unlock analytics (higher memberships grant higher tiers)
 // This lets ultra-premium members get analytics without a separate boost purchase.
+// $749+ tier holders unlock a preview of the upcoming real-time view-tracking
+// analytics suite (profile views, watch time, traffic, funnel, geo).
+const ULTIMATE_BOOSTS = new Set(["overlord", "conqueror", "emperor", "sovereign"]);
+const ULTIMATE_MEMBERSHIPS = new Set(["gold", "imperial", "apex", "platinum_m"]);
+function isUltimateTier(activeBoost: string | null, activeMembership: string): boolean {
+  return ULTIMATE_BOOSTS.has(activeBoost ?? "") || ULTIMATE_MEMBERSHIPS.has(activeMembership);
+}
+
 const MEMBERSHIP_ANALYTICS: Record<string, number> = {
   // free / fan / supporter / superfan → 0 (no analytics, boost required)
   devotee:     1, // basic
@@ -183,6 +191,8 @@ export default function CreatorDashboard() {
   // Admins (platform owner/staff) get everything unlocked regardless of boost/membership.
   const isAdmin = user?.role === "ADMIN";
   const analyticsTier = isAdmin ? "enterprise" : getAnalyticsTier(activeBoost, activeMembership);
+  // $749+ tier holders (and admins) get a preview of upcoming real-time analytics
+  const showUltimatePreview = isAdmin || isUltimateTier(activeBoost, activeMembership);
   const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">("overview");
 
   // ── Stream key state ──────────────────────────────────────────────────────────
@@ -984,6 +994,58 @@ export default function CreatorDashboard() {
                   </div>
                 ) : (
                   <>
+                    {/* ── $749+ tier: Coming Soon preview of real-time view analytics ── */}
+                    {showUltimatePreview && (
+                      <div className="rounded-2xl p-5 relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(232,168,124,0.06) 50%, rgba(20,184,166,0.05) 100%)",
+                          border: "1px solid rgba(212,175,55,0.35)",
+                        }}>
+                        <div className="flex items-start justify-between mb-4 gap-3">
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-5 h-5" style={{ color: "#d4af37" }} />
+                            <h3 className="text-base font-bold text-white">Real-Time Audience Analytics</h3>
+                          </div>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                            style={{ background: "rgba(212,175,55,0.18)", color: "#d4af37", border: "1px solid rgba(212,175,55,0.4)", letterSpacing: "0.05em" }}>
+                            COMING SOON
+                          </span>
+                        </div>
+                        <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
+                          Unlocked at your <strong style={{ color: "#d4af37" }}>{
+                            isAdmin ? "admin" :
+                            ULTIMATE_MEMBERSHIPS.has(activeMembership) ? `${MEMBERSHIP_INFO[activeMembership]?.name ?? "elite"} membership` :
+                            `${BOOST_INFO[activeBoost ?? ""]?.name ?? "elite"}`} tier</strong>.
+                          Live viewer events, traffic attribution and watch-time tracking are rolling out — your tier will get early access at launch.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {[
+                            { icon: Eye,        title: "Real-time profile views",      desc: "Live counts of who's looking at your profile right now" },
+                            { icon: Clock,      title: "Stream watch-time",            desc: "Median & p95 watch duration per stream, fan-level breakdowns" },
+                            { icon: TrendingUp, title: "Traffic source attribution",   desc: "Real numbers: Search / Featured / Social / Direct / External" },
+                            { icon: BarChart2,  title: "Conversion funnel",            desc: "Impression → View → Follow → Subscribe, measured live" },
+                            { icon: Home,       title: "Geographic distribution",      desc: "Top markets, regional revenue, timezone-aware schedule" },
+                            { icon: Users,      title: "Audience demographics",        desc: "Age bands & inferred interests, privacy-respecting aggregates" },
+                          ].map(f => (
+                            <div key={f.title} className="flex items-start gap-2.5 p-3 rounded-xl"
+                              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ background: "rgba(212,175,55,0.15)" }}>
+                                <f.icon className="w-3.5 h-3.5" style={{ color: "#d4af37" }} />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-white">{f.title}</p>
+                                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>{f.desc}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-center mt-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          Numbers in your current analytics below are aggregated estimates — these features add live, attributable data.
+                        </p>
+                      </div>
+                    )}
+
                     {/* ── Basic stats (all tiers) ── */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[
