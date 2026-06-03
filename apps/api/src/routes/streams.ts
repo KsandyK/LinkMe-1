@@ -30,14 +30,16 @@ function generateStreamKey(): string {
 }
 
 function buildUrls(streamKey: string) {
-  const domain   = process.env.DOMAIN ?? "yourdomain.com";
-  const cdnUrl   = (process.env.BUNNY_CDN_URL ?? "").replace(/\/$/, "");
+  // RTMP_HOST = the host where SRS accepts OBS connections (usually a stream.<domain>
+  // subdomain pointing to your VPS, port 1935).
+  const rtmpHost = process.env.RTMP_HOST ?? process.env.DOMAIN ?? "stream.cravr.fun";
+  // CDN_BASE = where viewers fetch HLS from. We push SRS output through Bunny CDN so
+  // your VPS bandwidth doesn't take the viewer load.
+  const cdnBase = (process.env.BUNNY_CDN_URL ?? `https://${process.env.BUNNY_CDN_HOSTNAME ?? "cdn.cravr.fun"}`).replace(/\/$/, "");
   return {
-    rtmpServer:  `rtmp://${domain}:1935/live`,
+    rtmpServer: `rtmp://${rtmpHost}:1935/live`,
     streamKey,
-    hlsUrl:      cdnUrl
-      ? `${cdnUrl}/live/${streamKey}/index.m3u8`
-      : `http://${domain}:8080/live/${streamKey}/index.m3u8`,  // direct SRS fallback
+    hlsUrl:     `${cdnBase}/live/${streamKey}/index.m3u8`,
   };
 }
 

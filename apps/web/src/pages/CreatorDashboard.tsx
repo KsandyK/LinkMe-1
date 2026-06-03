@@ -295,19 +295,13 @@ export default function CreatorDashboard() {
         const d = await res.json();
         setStreamKeyData(d);
       } else {
-        // Demo fallback — show placeholder values in dev/offline mode
-        setStreamKeyData({
-          rtmpServer: "rtmp://stream.yourdomain.com:1935/live",
-          streamKey:  "demo-stream-key-not-active",
-          hlsUrl:     "https://cdn.yourdomain.com/live/demo-stream-key-not-active/index.m3u8",
-        });
+        // 403 = not an approved creator. Keep streamKeyData null so the UI
+        // shows the "Approved creators only" message instead of fake credentials.
+        setStreamKeyData(null);
       }
     } catch {
-      setStreamKeyData({
-        rtmpServer: "rtmp://stream.yourdomain.com:1935/live",
-        streamKey:  "demo-stream-key-not-active",
-        hlsUrl:     "https://cdn.yourdomain.com/live/demo-stream-key-not-active/index.m3u8",
-      });
+      // Network/offline → null so the UI shows the unavailable state, not fakes.
+      setStreamKeyData(null);
     } finally {
       setStreamKeyLoading(false);
     }
@@ -2051,7 +2045,19 @@ export default function CreatorDashboard() {
                       </Link>
                     </div>
                   </>
-                ) : null}
+                ) : (
+                  /* No stream key — non-creator account, or API offline */
+                  <div className="vl-card p-8 text-center">
+                    <Radio className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <h3 className="text-base font-bold text-white mb-2">Streaming unavailable for this account</h3>
+                    <p className="text-sm max-w-sm mx-auto mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      Live streaming requires an approved creator account. Apply to become a Cravr and your stream credentials will appear here once approved.
+                    </p>
+                    <Link href="/become-creator">
+                      <button className="vl-btn-primary px-5 py-2.5 text-sm">Apply as a Cravr</button>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
