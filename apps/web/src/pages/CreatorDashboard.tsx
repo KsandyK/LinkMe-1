@@ -161,9 +161,9 @@ const MOCK_DASHBOARD = {
   ],
 } as unknown as CreatorDashboardData;
 
-const QUICK_ACTIONS: { label: string; icon: React.ElementType; color: string; href: string | null }[] = [
-  { label: "Go Live", icon: Radio, color: "#ef4444", href: "/creator/studio" },
-  { label: "Upload Content", icon: Upload, color: "#14b8a6", href: null },
+const QUICK_ACTIONS: { label: string; icon: React.ElementType; color: string; href: string | null; tab?: string }[] = [
+  { label: "Go Live", icon: Radio, color: "#ef4444", href: null, tab: "stream" },
+  { label: "Upload Content", icon: Upload, color: "#14b8a6", href: null, tab: "content" },
   { label: "Manage Tiers", icon: Zap, color: "#e8a87c", href: "/boosts" },
   { label: "Account Settings", icon: Settings, color: "#a78bfa", href: "/account" },
 ];
@@ -668,7 +668,7 @@ export default function CreatorDashboard() {
                         <button
                           key={action.label}
                           className="w-full vl-card p-3 text-center hover:border-white/20 transition-all group"
-                          onClick={action.href === null ? () => setActiveTab("content") : undefined}
+                          onClick={action.href === null ? () => setActiveTab((action.tab ?? "content") as typeof activeTab) : undefined}
                         >
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
                             style={{ background: `${action.color}15`, border: `1px solid ${action.color}25` }}>
@@ -1903,13 +1903,16 @@ export default function CreatorDashboard() {
                 const nextTier = REVENUE_TIERS[REVENUE_TIERS.indexOf(current) + 1];
                 return (
                   <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Your payout rate
+                    </p>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold" style={{ color: current.color }}>{current.label} Tier</span>
-                      <span className="text-xs font-black" style={{ color: current.color }}>{current.creatorPct}% yours</span>
+                      <span className="text-xs font-bold" style={{ color: current.color }}>{current.label} bracket</span>
+                      <span className="text-xs font-black" style={{ color: current.color }}>You keep {current.creatorPct}%</span>
                     </div>
                     {nextTier && (
                       <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                        Earn ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month to reach {nextTier.label} ({nextTier.creatorPct}%)
+                        Earn ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month to reach {nextTier.label} (keep {nextTier.creatorPct}%)
                       </p>
                     )}
                     <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
@@ -1919,7 +1922,7 @@ export default function CreatorDashboard() {
                       }} />
                     </div>
                     <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      Paid every Friday · $50 minimum
+                      Higher monthly earnings → bigger share. Paid every Friday · $50 minimum.
                     </p>
                   </div>
                 );

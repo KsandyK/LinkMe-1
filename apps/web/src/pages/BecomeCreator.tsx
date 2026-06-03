@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi } from "@/lib/api";
-import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check, CheckCircle, AlertTriangle } from "lucide-react";
+import { DollarSign, Radio, Shield, Zap, Crown, TrendingUp, ChevronRight, Check, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -39,6 +39,25 @@ export default function BecomeCreator() {
   const [applyStep, setApplyStep]   = useState<ApplyStep>("prompt");
   const [applyForm, setApplyForm]   = useState({ displayName: "", bio: "", referralCode: "", subscriptionPrice: "" });
   const [applyError, setApplyError] = useState<string | null>(null);
+
+  // Live referral-code validation (debounced)
+  const [referralStatus, setReferralStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const code = applyForm.referralCode.trim();
+    if (!code) { setReferralStatus("idle"); setReferrerName(null); return; }
+    setReferralStatus("checking");
+    const t = setTimeout(() => {
+      creatorApi.referralCheck(code)
+        .then(r => {
+          setReferralStatus(r.valid ? "valid" : "invalid");
+          setReferrerName(r.referrerName);
+        })
+        .catch(() => { setReferralStatus("idle"); setReferrerName(null); }); // offline — don't block
+    }, 450);
+    return () => clearTimeout(t);
+  }, [applyForm.referralCode]);
 
   const handleApply = async () => {
     if (!applyForm.displayName.trim() || applyForm.bio.length < 20) return;
@@ -414,6 +433,22 @@ export default function BecomeCreator() {
                         className="vl-input w-full font-mono tracking-widest"
                         maxLength={20}
                       />
+                      {/* Live validation indicator */}
+                      {referralStatus === "checking" && (
+                        <p className="text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                          <Loader2 className="w-3 h-3 animate-spin" /> Checking code…
+                        </p>
+                      )}
+                      {referralStatus === "valid" && (
+                        <p className="text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "#14b8a6" }}>
+                          <CheckCircle className="w-3 h-3" /> Valid — referred by {referrerName}
+                        </p>
+                      )}
+                      {referralStatus === "invalid" && (
+                        <p className="text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "#f87171" }}>
+                          <AlertTriangle className="w-3 h-3" /> Code not found — it won't be applied
+                        </p>
+                      )}
                       <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
                         Were you referred by a creator? Enter their code to credit them toward the Referral Tier Boost.
                       </p>
