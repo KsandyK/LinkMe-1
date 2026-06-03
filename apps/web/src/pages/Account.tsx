@@ -4,6 +4,7 @@ import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, subscriptions as subsApi, credits as creditsApi, auth as authApi } from "@/lib/api";
 import type { LocalTransaction } from "@/contexts/AppContext";
 import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
+import { VipStaffCard } from "@/components/VipStaffCard";
 import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users, Camera, Loader2 } from "lucide-react";
 
 // ── Favorites storage ─────────────────────────────────────────────────────────
@@ -456,6 +457,9 @@ export default function Account() {
           Manage your profile, security, and preferences
           {deactivated && <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold" style={{ background: "rgba(234,179,8,0.1)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.2)" }}>Deactivated</span>}
         </p>
+
+        {/* Direct VIP staff access — only for Platinum membership / Sovereign boost */}
+        <div className="mb-7"><VipStaffCard /></div>
 
         {/* Credits + Verification bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">

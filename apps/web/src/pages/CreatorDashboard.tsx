@@ -4,7 +4,8 @@ import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X } from "lucide-react";
-import { BOOST_TIERS } from "@/lib/membership-tiers";
+import { BOOST_TIERS, MEMBER_BY_ID } from "@/lib/membership-tiers";
+import { VipStaffCard } from "@/components/VipStaffCard";
 import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
 
 // ── Analytics mock data ───────────────────────────────────────────────────────
@@ -880,7 +881,18 @@ export default function CreatorDashboard() {
                               )
                             }
                             <div>
-                              <p className="text-sm font-semibold text-white">{name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-white">{name}</p>
+                                {(() => {
+                                  const t = MEMBER_BY_ID[sub.tier];
+                                  return (
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1"
+                                      style={{ background: `${t?.color ?? "#14b8a6"}1f`, border: `1px solid ${t?.color ?? "#14b8a6"}40`, color: t?.color ?? "#14b8a6" }}>
+                                      {t ? `${t.emoji} ${t.name}` : "Subscriber"}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                               <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
                                 @{sub.subscriber.username} · {new Date(sub.createdAt).toLocaleDateString()}
                               </p>
@@ -1082,6 +1094,20 @@ export default function CreatorDashboard() {
                             ))}
                           </div>
                         </div>
+                        {/* Best times to go live */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-1">Best Times to Go Live</p>
+                          <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>Your audience's peak activity windows (last 30 days)</p>
+                          <div className="space-y-3">
+                            {[
+                              { window: "Fri–Sat · 9pm–12am", score: 96 },
+                              { window: "Wed–Thu · 8pm–11pm", score: 81 },
+                              { window: "Sun · 7pm–10pm",      score: 68 },
+                              { window: "Weekday lunch · 12–1pm", score: 41 },
+                            ].map(w => <BarRow key={w.window} label={w.window} value={w.score} max={100} color="#8b5cf6" />)}
+                          </div>
+                          <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>Schedule boosts and streams in your top windows for maximum reach.</p>
+                        </div>
                       </>
                     )}
 
@@ -1120,6 +1146,29 @@ export default function CreatorDashboard() {
                           <p className="text-sm font-bold text-white mb-1">MRR Trend</p>
                           <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>Monthly recurring revenue over 7 weeks</p>
                           <SparkLine data={[820, 890, 940, 1050, 1100, 1210, 1243]} color="#f59e0b" maxVal={1400} />
+                        </div>
+                        {/* Top spending fans */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-1">Top Spending Fans</p>
+                          <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>Your highest-value supporters · last 90 days</p>
+                          <div className="space-y-3">
+                            {[
+                              { name: "bigspender_42",  spend: 1240, badge: "🐋" },
+                              { name: "vip_marcus",      spend: 880,  badge: "💎" },
+                              { name: "luna_devotee",    spend: 645,  badge: "💖" },
+                              { name: "night_owl_88",    spend: 510,  badge: "🔥" },
+                            ].map((f, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 text-xs text-right" style={{ color: "rgba(255,255,255,0.35)" }}>{i + 1}</span>
+                                  <span className="text-sm">{f.badge}</span>
+                                  <span className="text-sm text-white">@{f.name}</span>
+                                </div>
+                                <span className="text-sm font-black" style={{ color: "#14b8a6" }}>${f.spend.toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>Reward your whales with shout-outs and exclusive perks to retain them.</p>
                         </div>
                       </>
                     )}
@@ -1838,6 +1887,9 @@ export default function CreatorDashboard() {
 
           {/* Sidebar */}
           <div className="space-y-5">
+            {/* Direct VIP staff access — only for Platinum membership / Sovereign boost */}
+            <VipStaffCard />
+
             {/* Credits balance */}
             <div className="vl-card p-4">
               <div className="flex items-center gap-2 mb-1">
