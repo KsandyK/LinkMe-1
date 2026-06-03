@@ -13,12 +13,13 @@ import { Crown, Mail } from "lucide-react";
 const VIP_EMAIL = "vip@cravr.fun";
 
 export function VipStaffCard() {
-  const { activeBoost, activeMembership, user } = useApp();
-  const isAdmin = user?.role === "ADMIN";
-  const eligible = isAdmin || activeBoost === "sovereign" || activeMembership === "platinum_m";
+  const { activeBoost, activeMembership } = useApp();
+  // Paid 5k tiers only — Platinum membership or Sovereign boost. (Admins are
+  // the staff; they don't get a "contact VIP staff" card.)
+  const eligible = activeBoost === "sovereign" || activeMembership === "platinum_m";
   if (!eligible) return null;
 
-  const tierLabel = isAdmin ? "platform admin" : activeMembership === "platinum_m" ? "Platinum member" : "Sovereign tier";
+  const tierLabel = activeMembership === "platinum_m" ? "Platinum member" : "Sovereign tier";
 
   return (
     <div className="vl-card p-5"
