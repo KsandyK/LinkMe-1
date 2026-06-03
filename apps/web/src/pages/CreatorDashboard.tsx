@@ -102,22 +102,27 @@ const MEMBERSHIP_ANALYTICS: Record<string, number> = {
   blackcard:   3, // premium
   diamond:     4, // revenue
   obsidian:    4, // revenue
-  platinum_m:  4, // revenue — $4,999/mo absolutely includes revenue analytics
+  titanium:    4, // revenue
+  gold:        4, // revenue
+  imperial:    5, // enterprise
+  apex:        5, // enterprise
+  platinum_m:  5, // enterprise — $4,999/mo gets the full enterprise suite
 };
 
-const TIER_LEVELS = ["none", "basic", "full", "premium", "revenue"] as const;
+const TIER_LEVELS = ["none", "basic", "full", "premium", "revenue", "enterprise"] as const;
 type AnalyticsTier = typeof TIER_LEVELS[number];
 
 function getAnalyticsTier(activeBoost: string | null, activeMembership: string): AnalyticsTier {
   // Boost-based level
   const r = activeBoost ? (BOOST_RANK[activeBoost] ?? 0) : 0;
   let boostLevel = 0;
-  if (r > 0)  boostLevel = 1; // basic
-  if (r > 2)  boostLevel = 2; // full  (flame, blaze)
-  if (r > 4)  boostLevel = 3; // premium (inferno)
-  if (r > 5)  boostLevel = 4; // revenue (legend+)
+  if (r > 0)  boostLevel = 1; // basic     (starter, spark)
+  if (r > 2)  boostLevel = 2; // full      (flame, blaze)
+  if (r > 4)  boostLevel = 3; // premium   (inferno)
+  if (r > 5)  boostLevel = 4; // revenue   (legend)
+  if (r > 6)  boostLevel = 5; // enterprise (titan, supernova, colossus, dynasty+)
 
-  // Membership-based level (caps at 4 = revenue)
+  // Membership-based level (caps at 5 = enterprise)
   const membershipLevel = MEMBERSHIP_ANALYTICS[activeMembership] ?? 0;
 
   // Take the higher of the two — membership OR boost unlocks analytics
@@ -177,7 +182,7 @@ export default function CreatorDashboard() {
   const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user } = useApp();
   // Admins (platform owner/staff) get everything unlocked regardless of boost/membership.
   const isAdmin = user?.role === "ADMIN";
-  const analyticsTier = isAdmin ? "revenue" : getAnalyticsTier(activeBoost, activeMembership);
+  const analyticsTier = isAdmin ? "enterprise" : getAnalyticsTier(activeBoost, activeMembership);
   const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">("overview");
 
   // ── Stream key state ──────────────────────────────────────────────────────────
@@ -926,11 +931,12 @@ export default function CreatorDashboard() {
                   <div className="flex items-center gap-2">
                     <BarChart2 className="w-4 h-4" style={{ color: analyticsTier === "none" ? "rgba(255,255,255,0.25)" : "#14b8a6" }} />
                     <span className="text-sm font-bold" style={{ color: analyticsTier === "none" ? "rgba(255,255,255,0.4)" : "white" }}>
-                      {analyticsTier === "none"    ? "Analytics locked"        :
-                       analyticsTier === "basic"   ? "Basic Analytics — Spark" :
-                       analyticsTier === "full"    ? "Full Analytics — Flame"  :
-                       analyticsTier === "premium" ? "Premium Analytics — Inferno" :
-                                                     "Revenue Analytics — Legend"}
+                      {analyticsTier === "none"       ? "Analytics locked"           :
+                       analyticsTier === "basic"      ? "Basic Analytics — Spark"    :
+                       analyticsTier === "full"       ? "Full Analytics — Flame"     :
+                       analyticsTier === "premium"    ? "Premium Analytics — Inferno":
+                       analyticsTier === "revenue"    ? "Revenue Analytics — Legend" :
+                                                        "Enterprise Analytics — Titan+"}
                     </span>
                   </div>
                   {analyticsTier === "none" && (
@@ -1175,15 +1181,116 @@ export default function CreatorDashboard() {
                       </>
                     )}
 
+                    {/* ── Enterprise analytics (Titan+ / Imperial+) ── */}
+                    {analyticsTier === "enterprise" && (
+                      <>
+                        <div className="rounded-xl p-3 flex items-center gap-2"
+                          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.25)" }}>
+                          <span className="text-sm">⚡</span>
+                          <span className="text-xs font-bold" style={{ color: "#d4af37" }}>Real-time data · Analytics API access included</span>
+                        </div>
+
+                        {/* Subscriber cohort retention */}
+                        <div className="vl-card p-5">
+                          <p className="text-sm font-bold text-white mb-1">Subscriber Cohort Retention</p>
+                          <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>% of each signup cohort still subscribed, by month</p>
+                          <div className="space-y-2">
+                            {[
+                              { cohort: "Jan", vals: [100, 82, 71, 64, 58, 55] },
+                              { cohort: "Feb", vals: [100, 85, 74, 66, 61] },
+                              { cohort: "Mar", vals: [100, 88, 79, 72] },
+                              { cohort: "Apr", vals: [100, 90, 83] },
+                              { cohort: "May", vals: [100, 92] },
+                            ].map(row => (
+                              <div key={row.cohort} className="flex items-center gap-1.5">
+                                <span className="w-8 text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }}>{row.cohort}</span>
+                                {row.vals.map((v, i) => (
+                                  <div key={i} className="flex-1 h-6 rounded flex items-center justify-center text-[10px] font-bold"
+                                    style={{ background: `rgba(20,184,166,${(v / 100) * 0.5 + 0.05})`, color: v > 40 ? "#0a0a14" : "rgba(255,255,255,0.6)" }}>
+                                    {v}%
+                                  </div>
+                                ))}
+                                {Array.from({ length: 6 - row.vals.length }).map((_, i) => <div key={`e${i}`} className="flex-1" />)}
+                              </div>
+                            ))}
+                            <div className="flex items-center gap-1.5 pt-1">
+                              <span className="w-8 flex-shrink-0" />
+                              {["M0", "M1", "M2", "M3", "M4", "M5"].map(m => (
+                                <span key={m} className="flex-1 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* Churn & at-risk */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Churn & Retention Risk</p>
+                            <div className="space-y-3">
+                              {[
+                                { label: "30-day churn", value: "4.2%", color: "#f59e0b" },
+                                { label: "At-risk subscribers", value: "23", color: "#ef4444" },
+                                { label: "Predicted next-mo churn", value: "5.1%", color: "#f97316" },
+                                { label: "Win-back rate", value: "12%", color: "#14b8a6" },
+                              ].map(k => (
+                                <div key={k.label} className="flex items-center justify-between">
+                                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{k.label}</span>
+                                  <span className="text-sm font-black" style={{ color: k.color }}>{k.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Content performance by type */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Content Performance by Type</p>
+                            <div className="space-y-3">
+                              {[
+                                { label: "Videos · 38% unlock", value: 62, color: "#8b5cf6" },
+                                { label: "Photos · 51% unlock", value: 44, color: "#14b8a6" },
+                                { label: "Live streams",         value: 80, color: "#ef4444" },
+                                { label: "PPV messages",         value: 29, color: "#e8a87c" },
+                              ].map(s => <BarRow key={s.label} label={s.label} value={s.value} max={80} color={s.color} />)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* 90-day forecast */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-1">90-Day Revenue Forecast</p>
+                            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>Projected · 87% confidence</p>
+                            <SparkLine data={[1243, 1310, 1380, 1455, 1530, 1610, 1690]} color="#d4af37" maxVal={1800} />
+                            <div className="flex items-center justify-between mt-3">
+                              <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Projected total</span>
+                              <span className="text-sm font-black" style={{ color: "#d4af37" }}>~$4,680</span>
+                            </div>
+                          </div>
+                          {/* Top geographic markets */}
+                          <div className="vl-card p-5">
+                            <p className="text-sm font-bold text-white mb-4">Top Markets by Revenue</p>
+                            <div className="space-y-3">
+                              {[
+                                { label: "🇺🇸 United States", value: 54, color: "#14b8a6" },
+                                { label: "🇬🇧 United Kingdom", value: 18, color: "#8b5cf6" },
+                                { label: "🇨🇦 Canada",         value: 13, color: "#e8a87c" },
+                                { label: "🇦🇺 Australia",       value: 9,  color: "#f59e0b" },
+                              ].map(s => <BarRow key={s.label} label={s.label} value={s.value} max={54} color={s.color} />)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                     {/* Upgrade nudge for lower tiers */}
-                    {analyticsTier !== "revenue" && (
+                    {analyticsTier !== "enterprise" && (
                       <div className="rounded-xl p-4 flex items-center justify-between gap-3"
                         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
                         <div>
                           <p className="text-sm font-semibold text-white">
                             {analyticsTier === "basic"   ? "Upgrade to Flame boost or Elite+ membership for charts & engagement" :
                              analyticsTier === "full"    ? "Upgrade to Inferno boost or Black Card+ membership for demographics & funnel" :
-                                                          "Upgrade to Legend boost or Diamond+ membership for revenue forecasting & LTV"}
+                             analyticsTier === "premium" ? "Upgrade to Legend boost or Diamond+ membership for revenue forecasting & LTV" :
+                                                          "Upgrade to Titan+ boost or Imperial+ membership for cohort retention, churn & analytics API"}
                           </p>
                           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
                             Unlock deeper insights to grow your creator business
