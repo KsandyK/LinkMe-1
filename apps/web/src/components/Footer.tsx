@@ -75,6 +75,12 @@ export function Footer() {
                   </a>
                 </li>
               ))}
+              <li>
+                <a href="https://support.ccbill.com" target="_blank" rel="noopener noreferrer"
+                  className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Billing &amp; cancellations ↗
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -86,6 +92,7 @@ export function Footer() {
                 { href: "/legal",          label: "Legal Centre" },
                 { href: "/legal/terms",    label: "Terms of Service" },
                 { href: "/legal/privacy",  label: "Privacy Policy" },
+                { href: "/legal/refund",   label: "Refund & Cancellation" },
                 { href: "/legal/creator",  label: "Creator Agreement" },
                 { href: "/legal/dmca",     label: "DMCA Policy" },
                 { href: "/legal/cookies",  label: "Cookie Policy" },

@@ -137,7 +137,8 @@ export default function CreditsStore() {
           )}
         </div>
         <p className="text-muted-foreground text-sm mb-6">
-          🔒 All purchases are processed securely. No explicit descriptors on your statement.
+          🔒 Secure, <strong>one-time</strong> charge in USD — credits never auto-renew. Charges appear on your
+          statement as a neutral descriptor (e.g. <span className="font-mono">CCBILL*CRAVR</span>); no explicit wording is used.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PACKAGES.map(pkg => {
@@ -186,9 +187,15 @@ export default function CreditsStore() {
 
         <div className="mt-8 p-4 rounded-xl border border-border bg-card text-center">
           <p className="text-muted-foreground text-sm">
-            🔒 Secure payment — industry-standard encryption on every transaction.
-            All transactions are discreet and statement-friendly.
+            🔒 Secure payment — industry-standard encryption on every transaction. Credit purchases are
+            one-time and non-recurring. All charges are discreet and statement-friendly.
             {isStripeEnabled && " · Powered by Stripe"}
+          </p>
+          <p className="text-muted-foreground text-xs mt-2">
+            By purchasing you agree to our{" "}
+            <a href="/legal/terms" className="text-primary hover:underline">Terms</a> and{" "}
+            <a href="/legal/refund" className="text-primary hover:underline">Refund &amp; Cancellation Policy</a>.
+            {" "}Billing inquiries: <a href="https://support.ccbill.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">support.ccbill.com</a>.
           </p>
         </div>
       </div>
