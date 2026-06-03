@@ -166,7 +166,9 @@ export default function ProfileDetail() {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
+    // Share a clean username URL, not the internal id
+    const handle = creator?.user?.username;
+    const url = handle ? `${window.location.origin}/profile/${handle}` : window.location.href;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => {
         showToast({ title: "Link copied!", description: "Profile link copied to clipboard." });

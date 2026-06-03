@@ -87,8 +87,10 @@ router.get("/profiles", optionalAuth, async (req, res) => {
 
 // ── GET /api/profiles/:id ─────────────────────────────────────────────────────
 router.get("/profiles/:id", optionalAuth, async (req, res) => {
+  const idOrUsername = String(req.params.id);
   const creator = await db.creatorProfile.findFirst({
-    where: { userId: String(req.params.id), isApproved: true },
+    // Resolve by userId (internal cuid) OR username (clean shareable URLs)
+    where: { isApproved: true, OR: [{ userId: idOrUsername }, { user: { username: idOrUsername } }] },
     include: {
       user: {
         select: {
