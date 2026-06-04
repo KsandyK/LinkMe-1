@@ -542,12 +542,20 @@ export default function CreatorDashboard() {
         <div className="text-center">
           <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: "#f87171" }} />
           <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>{error}</p>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            You may need to apply as a creator first.
-          </p>
-          <Link href="/become-creator">
-            <button className="vl-btn-primary px-6 py-2.5 text-sm mt-4">Apply as a Cravr</button>
-          </Link>
+          {isAdmin ? (
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Admin accounts don't have a public creator dashboard. Use the admin tools instead.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                You may need to apply as a creator first.
+              </p>
+              <Link href="/become-creator">
+                <button className="vl-btn-primary px-6 py-2.5 text-sm mt-4">Apply as a Cravr</button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );
@@ -2047,16 +2055,27 @@ export default function CreatorDashboard() {
                   </>
                 ) : (
                   /* No stream key — non-creator account, or API offline */
-                  <div className="vl-card p-8 text-center">
-                    <Radio className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
-                    <h3 className="text-base font-bold text-white mb-2">Streaming unavailable for this account</h3>
-                    <p className="text-sm max-w-sm mx-auto mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      Live streaming requires an approved creator account. Apply to become a Cravr and your stream credentials will appear here once approved.
-                    </p>
-                    <Link href="/become-creator">
-                      <button className="vl-btn-primary px-5 py-2.5 text-sm">Apply as a Cravr</button>
-                    </Link>
-                  </div>
+                  isAdmin ? (
+                    /* Staff account — show admin-appropriate messaging, no apply CTA */
+                    <div className="vl-card p-8 text-center">
+                      <Radio className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <h3 className="text-base font-bold text-white mb-2">Admin account — no stream key</h3>
+                      <p className="text-sm max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        Staff accounts manage the platform and don't broadcast. Stream credentials are only issued to approved creator accounts.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="vl-card p-8 text-center">
+                      <Radio className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <h3 className="text-base font-bold text-white mb-2">Streaming unavailable for this account</h3>
+                      <p className="text-sm max-w-sm mx-auto mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        Live streaming requires an approved creator account. Apply to become a Cravr and your stream credentials will appear here once approved.
+                      </p>
+                      <Link href="/become-creator">
+                        <button className="vl-btn-primary px-5 py-2.5 text-sm">Apply as a Cravr</button>
+                      </Link>
+                    </div>
+                  )
                 )}
               </div>
             )}
