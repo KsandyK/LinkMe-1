@@ -32,8 +32,44 @@ const APPLY_STEPS: { key: ApplyStep; label: string }[] = [
 ];
 
 export default function BecomeCreator() {
-  const { isLoggedIn, ageVerificationStatus, showToast } = useApp();
+  const { isLoggedIn, ageVerificationStatus, showToast, user } = useApp();
   const [, navigate] = useLocation();
+
+  // Admins / moderators are staff — they should never apply as creators (it
+  // would expose them in public listings and the backend rejects it anyway).
+  // Show a clear message + route them to the admin hub instead.
+  if (user?.role === "ADMIN" || user?.role === "MODERATOR") {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-6">
+        <div className="w-full max-w-md text-center vl-card p-8">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: "rgba(212,175,55,0.10)", border: "2px solid rgba(212,175,55,0.35)" }}>
+            <Shield className="w-7 h-7" style={{ color: "#d4af37" }} />
+          </div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.6rem", fontWeight: 700, color: "white", marginBottom: "0.5rem" }}>
+            Staff account — no application needed
+          </h2>
+          <p className="text-sm mb-7" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+            You're signed in as <strong style={{ color: "rgba(255,255,255,0.75)" }}>@{user.username}</strong> ({user.role.toLowerCase()}).
+            Staff accounts manage the platform and don't have public creator profiles. Use the admin tools below.
+          </p>
+          <div className="space-y-3">
+            <Link href="/admin">
+              <button className="vl-btn-primary w-full py-3 flex items-center justify-center gap-2 text-sm font-bold">
+                <Shield className="w-4 h-4" /> Go to Admin Hub
+              </button>
+            </Link>
+            <Link href="/">
+              <button className="w-full py-3 rounded-xl flex items-center justify-center text-sm font-semibold transition-all hover:bg-white/5"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                Return Home
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const [applying, setApplying]     = useState(false);
   const [applied, setApplied]       = useState(false);
   const [applyStep, setApplyStep]   = useState<ApplyStep>("prompt");
