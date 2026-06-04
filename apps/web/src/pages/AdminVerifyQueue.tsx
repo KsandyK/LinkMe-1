@@ -13,7 +13,8 @@
  *   - Real-time queue refresh
  */
 import { useEffect, useState, useCallback } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { ageVerify as ageVerifyApi, AgeVerifyQueueItem } from "@/lib/api";
 import {
@@ -134,6 +135,12 @@ export default function AdminVerifyQueue() {
   return (
     <div className="min-h-screen">
       <div className="container py-8 max-w-5xl mx-auto">
+        {/* Back to Admin */}
+        <Link href="/admin">
+          <button className="text-xs flex items-center gap-1.5 mb-3 hover:opacity-80" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <ArrowLeft className="w-3 h-3" /> Back to Admin
+          </button>
+        </Link>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">

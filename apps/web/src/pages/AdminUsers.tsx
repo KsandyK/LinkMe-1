@@ -21,9 +21,14 @@ const ROLE_STYLE: Record<string, { bg: string; fg: string; label: string }> = {
   ADMIN:     { bg: "rgba(212,175,55,0.15)",  fg: "#d4af37", label: "Admin" },
 };
 
+type RoleFilter = "ALL" | "MEMBER" | "CREATOR" | "MODERATOR" | "ADMIN";
+type StatusFilter = "ALL" | "ACTIVE" | "SUSPENDED" | "UNVERIFIED" | "PENDING_CREATOR";
+
 export default function AdminUsers() {
   const { showToast } = useApp();
   const [q, setQ] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -31,7 +36,8 @@ export default function AdminUsers() {
 
   const search = (query: string) => {
     setLoading(true);
-    adminApi.users({ q: query, limit: 50 })
+    // Pull a wider page when filtering client-side; backend doesn't filter on role yet
+    adminApi.users({ q: query, limit: 200 })
       .then(d => { setUsers(d.users); setTotal(d.total); })
       .catch(() => { setUsers([]); setTotal(0); })
       .finally(() => setLoading(false));
@@ -42,6 +48,31 @@ export default function AdminUsers() {
     const t = setTimeout(() => search(q), q ? 350 : 0);
     return () => clearTimeout(t);
   }, [q]);
+
+  // ── Client-side role/status filtering + grouping ──────────────────────────
+  const matchesRole = (u: AdminUserRow) => roleFilter === "ALL" || u.role === roleFilter;
+  const matchesStatus = (u: AdminUserRow) => {
+    switch (statusFilter) {
+      case "ACTIVE":           return u.isActive;
+      case "SUSPENDED":        return !u.isActive;
+      case "UNVERIFIED":       return u.ageVerification?.status !== "VERIFIED";
+      case "PENDING_CREATOR":  return u.creatorProfile != null && !u.creatorProfile.isApproved;
+      default:                 return true;
+    }
+  };
+  const filtered = users.filter(u => matchesRole(u) && matchesStatus(u));
+
+  // Live counts for filter chips (computed from current result set)
+  const counts = {
+    total:           users.length,
+    members:         users.filter(u => u.role === "MEMBER").length,
+    creators:        users.filter(u => u.role === "CREATOR").length,
+    mods:            users.filter(u => u.role === "MODERATOR").length,
+    admins:          users.filter(u => u.role === "ADMIN").length,
+    suspended:       users.filter(u => !u.isActive).length,
+    unverified:      users.filter(u => u.ageVerification?.status !== "VERIFIED").length,
+    pendingCreator:  users.filter(u => u.creatorProfile != null && !u.creatorProfile.isApproved).length,
+  };
 
   const toggleActive = async (u: AdminUserRow) => {
     setActing(u.id);
@@ -75,7 +106,7 @@ export default function AdminUsers() {
         </p>
 
         {/* Search */}
-        <div className="vl-card p-3 mb-5">
+        <div className="vl-card p-3 mb-4">
           <div className="flex items-center gap-2">
             <Search className="w-4 h-4 ml-1" style={{ color: "rgba(255,255,255,0.4)" }} />
             <input
@@ -89,21 +120,43 @@ export default function AdminUsers() {
           </div>
         </div>
 
+        {/* Filter chips — role */}
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider mr-1" style={{ color: "rgba(255,255,255,0.35)" }}>Role</span>
+          <FilterChip label="All"        count={counts.total}    active={roleFilter === "ALL"}       onClick={() => setRoleFilter("ALL")} />
+          <FilterChip label="Members"    count={counts.members}  active={roleFilter === "MEMBER"}    onClick={() => setRoleFilter("MEMBER")} color="#94a3b8" />
+          <FilterChip label="Creators"   count={counts.creators} active={roleFilter === "CREATOR"}   onClick={() => setRoleFilter("CREATOR")} color="#14b8a6" />
+          {counts.mods    > 0 && <FilterChip label="Moderators" count={counts.mods}    active={roleFilter === "MODERATOR"} onClick={() => setRoleFilter("MODERATOR")} color="#f59e0b" />}
+          {counts.admins  > 0 && <FilterChip label="Admins"     count={counts.admins}  active={roleFilter === "ADMIN"}     onClick={() => setRoleFilter("ADMIN")}     color="#d4af37" />}
+        </div>
+
+        {/* Filter chips — status */}
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <span className="text-[10px] font-bold uppercase tracking-wider mr-1" style={{ color: "rgba(255,255,255,0.35)" }}>Status</span>
+          <FilterChip label="All"               active={statusFilter === "ALL"}              onClick={() => setStatusFilter("ALL")} />
+          <FilterChip label="Active"            active={statusFilter === "ACTIVE"}           onClick={() => setStatusFilter("ACTIVE")} />
+          {counts.suspended      > 0 && <FilterChip label="Suspended"        count={counts.suspended}      active={statusFilter === "SUSPENDED"}        onClick={() => setStatusFilter("SUSPENDED")}        color="#f87171" />}
+          {counts.unverified     > 0 && <FilterChip label="Not verified"     count={counts.unverified}     active={statusFilter === "UNVERIFIED"}       onClick={() => setStatusFilter("UNVERIFIED")}       color="#fbbf24" />}
+          {counts.pendingCreator > 0 && <FilterChip label="Pending creator" count={counts.pendingCreator} active={statusFilter === "PENDING_CREATOR"} onClick={() => setStatusFilter("PENDING_CREATOR")} color="#a78bfa" />}
+        </div>
+
         {/* Results */}
-        {users.length === 0 && !loading ? (
+        {filtered.length === 0 && !loading ? (
           <div className="vl-card p-10 text-center">
             <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {q ? `No users match "${q}"` : "Loading users…"}
+              {q              ? `No users match "${q}" with these filters`
+              : users.length === 0 ? "Loading users…"
+              :                      "No users match the selected filters"}
             </p>
           </div>
         ) : (
           <>
             <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {total} {total === 1 ? "user" : "users"}{q && ` matching "${q}"`}
+              Showing {filtered.length} of {users.length}{total > users.length && ` (loaded; ${total} total)`}{q && ` · matching "${q}"`}
             </p>
             <div className="space-y-2">
-              {users.map(u => {
+              {filtered.map(u => {
                 const roleStyle = ROLE_STYLE[u.role] ?? ROLE_STYLE.MEMBER;
                 const verified  = u.ageVerification?.status === "VERIFIED";
                 const isCreator = !!u.creatorProfile;
@@ -184,5 +237,29 @@ export default function AdminUsers() {
         )}
       </div>
     </div>
+  );
+}
+
+function FilterChip({ label, count, active, onClick, color }: {
+  label: string; count?: number; active: boolean; onClick: () => void; color?: string;
+}) {
+  const c = color ?? "#06b6d4";
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+      style={
+        active
+          ? { background: `${c}1f`, color: c, border: `1px solid ${c}55` }
+          : { background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.08)" }
+      }>
+      {label}
+      {typeof count === "number" && (
+        <span className="text-[10px] font-black px-1.5 rounded-full"
+          style={{ background: active ? `${c}33` : "rgba(255,255,255,0.06)", color: active ? c : "rgba(255,255,255,0.5)" }}>
+          {count}
+        </span>
+      )}
+    </button>
   );
 }

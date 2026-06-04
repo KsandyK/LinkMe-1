@@ -181,43 +181,9 @@ export default function AdminHub() {
 
             {/* ── Two-column bottom: activity + quick stats ─────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              {/* Recent activity feed (2/3) */}
-              <div className="lg:col-span-2 vl-card p-5">
-                <h3 className="text-base font-bold text-white mb-4">Recent Activity</h3>
-                {data.activity.length === 0 ? (
-                  <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    No recent activity yet
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {data.activity.map((a, i) => (
-                      <div key={i} className="flex items-start gap-3 py-2"
-                        style={{ borderBottom: i < data.activity.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                        <ActivityIcon kind={a.kind} priority={"priority" in a ? a.priority : undefined} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white">
-                            {a.kind === "registration" && (
-                              <>New <span style={{ color: "#14b8a6" }}>{a.role.toLowerCase()}</span> registered: <strong>@{a.username}</strong></>
-                            )}
-                            {a.kind === "creator_apply" && (
-                              <><strong>@{a.username}</strong> applied to become a creator</>
-                            )}
-                            {a.kind === "report" && (
-                              <>
-                                <strong>@{a.reporter}</strong> reported{" "}
-                                {a.reportedUser ? <><strong>@{a.reportedUser}</strong></> : "content"}
-                                {" — "}<span style={{ color: "rgba(255,255,255,0.6)" }}>{a.reason}</span>
-                              </>
-                            )}
-                          </p>
-                          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            {ago(a.at)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Recent activity feed (2/3) — scales for high-volume sites */}
+              <div className="lg:col-span-2">
+                <ActivityPanel activity={data.activity} />
               </div>
 
               {/* Quick stats (1/3) */}
@@ -338,6 +304,117 @@ function ActivityIcon({ kind, priority }: { kind: string; priority?: number }) {
     <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
       style={{ background: `${cfg.color}15`, border: `1px solid ${cfg.color}25` }}>
       <I className="w-3.5 h-3.5" style={{ color: cfg.color }} />
+    </div>
+  );
+}
+
+// Activity panel — grouped by category with counts so a flood of one kind
+// (e.g. signups) doesn't drown out the others. Each tab caps at 8 items.
+type ActivityItem = AdminOverview["activity"][number];
+
+function ActivityPanel({ activity }: { activity: ActivityItem[] }) {
+  const reports     = activity.filter((a): a is Extract<ActivityItem, { kind: "report" }> => a.kind === "report");
+  const apps        = activity.filter((a): a is Extract<ActivityItem, { kind: "creator_apply" }> => a.kind === "creator_apply");
+  const regs        = activity.filter((a): a is Extract<ActivityItem, { kind: "registration" }> => a.kind === "registration");
+  // Actionable = reports + apps (the things that need admin action)
+  const actionable  = [...reports, ...apps].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+
+  type Tab = "actionable" | "reports" | "apps" | "regs";
+  const [tab, setTab] = useState<Tab>(actionable.length > 0 ? "actionable" : "regs");
+
+  const tabs: { key: Tab; label: string; count: number; color: string }[] = [
+    { key: "actionable", label: "Needs attention", count: actionable.length, color: "#f97316" },
+    { key: "reports",    label: "Reports",         count: reports.length,    color: "#ef4444" },
+    { key: "apps",       label: "Applications",    count: apps.length,       color: "#a78bfa" },
+    { key: "regs",       label: "Signups",         count: regs.length,       color: "#14b8a6" },
+  ];
+
+  const visible: ActivityItem[] =
+    tab === "actionable" ? actionable.slice(0, 8)
+  : tab === "reports"    ? reports.slice(0, 8)
+  : tab === "apps"       ? apps.slice(0, 8)
+  :                        regs.slice(0, 8);
+
+  return (
+    <div className="vl-card p-5">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 className="text-base font-bold text-white">Recent Activity</h3>
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+          {activity.length} total in window
+        </p>
+      </div>
+
+      {/* Category tabs */}
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+            style={tab === t.key
+              ? { background: `${t.color}1f`, color: t.color, border: `1px solid ${t.color}55` }
+              : { background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.08)" }
+            }>
+            {t.label}
+            <span className="text-[10px] font-black px-1.5 rounded-full"
+              style={{ background: tab === t.key ? `${t.color}33` : "rgba(255,255,255,0.06)", color: tab === t.key ? t.color : "rgba(255,255,255,0.5)" }}>
+              {t.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      {visible.length === 0 ? (
+        <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {tab === "actionable" ? "🎉  All caught up — nothing needs attention right now." : "Nothing in this category yet."}
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {visible.map((a, i) => (
+            <div key={i} className="flex items-start gap-3 py-2"
+              style={{ borderBottom: i < visible.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+              <ActivityIcon kind={a.kind} priority={"priority" in a ? a.priority : undefined} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white">
+                  {a.kind === "registration" && (
+                    <>New <span style={{ color: "#14b8a6" }}>{a.role.toLowerCase()}</span>: <strong>@{a.username}</strong></>
+                  )}
+                  {a.kind === "creator_apply" && (
+                    <><strong>@{a.username}</strong> applied to become a creator</>
+                  )}
+                  {a.kind === "report" && (
+                    <>
+                      <strong>@{a.reporter}</strong> reported{" "}
+                      {a.reportedUser ? <><strong>@{a.reportedUser}</strong></> : "content"}
+                      {" — "}<span style={{ color: "rgba(255,255,255,0.6)" }}>{a.reason}</span>
+                    </>
+                  )}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  {ago(a.at)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Footer link for deeper investigation */}
+      {(tab === "reports" || tab === "actionable") && reports.length > 0 && (
+        <Link href="/admin/moderation">
+          <button className="w-full mt-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
+            style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", color: "#f97316" }}>
+            Open Moderation Queue →
+          </button>
+        </Link>
+      )}
+      {tab === "regs" && (
+        <Link href="/admin/users">
+          <button className="w-full mt-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
+            style={{ background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.2)", color: "#06b6d4" }}>
+            Open User Management →
+          </button>
+        </Link>
+      )}
     </div>
   );
 }
