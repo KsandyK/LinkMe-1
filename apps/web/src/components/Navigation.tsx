@@ -142,10 +142,9 @@ export function Navigation() {
                     {[
                       { href: "/account", label: "My Account", icon: User },
                       { href: "/creator", label: "Creator Dashboard", icon: LayoutDashboard },
-                      // Hide 'Become a Cravr' for staff — applying would expose them in
-                      // public listings AND historically downgraded their role.
+                      // Staff-only: link to the admin hub (queues + tools).
                       ...(user?.role === "ADMIN" || user?.role === "MODERATOR"
-                        ? []
+                        ? [{ href: "/admin", label: "Admin", icon: Shield }]
                         : [{ href: "/become-creator", label: "Become a Cravr", icon: Crown }]),
                     ].map(item => (
                       <Link key={item.href} href={item.href}>

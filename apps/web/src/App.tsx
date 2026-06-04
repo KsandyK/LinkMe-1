@@ -61,6 +61,7 @@ const CreatorLiveStudio = lazyWithReload(() => import("./pages/CreatorLiveStudio
 const Billing          = lazyWithReload(() => import("./pages/Billing"));
 const AgeVerification    = lazyWithReload(() => import("./pages/AgeVerification"));
 const AdminVerifyQueue   = lazyWithReload(() => import("./pages/AdminVerifyQueue"));
+const AdminHub           = lazyWithReload(() => import("./pages/AdminHub"));
 const LegalPages         = lazyWithReload(() => import("./pages/LegalPages"));
 const ForgotPassword     = lazyWithReload(() => import("./pages/ForgotPassword"));
 const DevReset           = lazyWithReload(() => import("./pages/DevReset"));
@@ -103,6 +104,7 @@ function Router() {
         <Route path="/creator" component={() => <RequireAuth action="view your creator dashboard"><CreatorDashboard /></RequireAuth>} />
         <Route path="/billing" component={() => <RequireAuth action="manage billing"><Billing /></RequireAuth>} />
         <Route path="/verify-age" component={AgeVerification} />
+        <Route path="/admin" component={() => <RequireAuth admin><AdminHub /></RequireAuth>} />
         <Route path="/admin/verify-queue" component={() => <RequireAuth admin><AdminVerifyQueue /></RequireAuth>} />
         <Route path="/legal" component={LegalHub} />
         <Route path="/legal/:page" component={LegalPages} />
