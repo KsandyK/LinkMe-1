@@ -141,6 +141,19 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
     return;
   }
 
+  // ── Role guard ─────────────────────────────────────────────────────────────
+  // ADMIN/MODERATOR accounts cannot apply as creators. They run the platform —
+  // a creator profile would expose them in public listings (breaking 'silent
+  // admin') AND the role write below would downgrade them out of staff access.
+  const me = await db.user.findUnique({
+    where: { id: req.user!.sub },
+    select: { username: true, role: true },
+  });
+  if (me?.role === "ADMIN" || me?.role === "MODERATOR") {
+    res.status(403).json({ error: "Staff accounts cannot apply as creators. Use a separate member account." });
+    return;
+  }
+
   const existing = await db.creatorProfile.findUnique({ where: { userId: req.user!.sub } });
   if (existing) {
     res.status(409).json({ error: "Creator application already submitted" });
@@ -170,10 +183,12 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
     // Invalid/own codes are silently ignored so a typo never blocks an application.
   }
 
-  const me = await db.user.findUnique({ where: { id: req.user!.sub }, select: { username: true } });
   const myReferralCode = await uniqueReferralCode(me?.username ?? "cravr");
 
-  const [creatorProfile] = await db.$transaction([
+  // Only escalate role MEMBER → CREATOR. Never overwrite an elevated role
+  // (the role guard above already blocks ADMIN/MODERATOR, but this is a
+  // belt-and-braces safety net if the guard is ever weakened).
+  const ops: any[] = [
     db.creatorProfile.create({
       data: {
         userId: req.user!.sub,
@@ -184,7 +199,6 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
         referredById,
       },
     }),
-    db.user.update({ where: { id: req.user!.sub }, data: { role: "CREATOR" } }),
     db.profile.update({
       where: { userId: req.user!.sub },
       data: {
@@ -192,7 +206,11 @@ router.post("/creator/apply", requireAuth, async (req, res) => {
         bio: parsed.data.bio,
       },
     }),
-  ]);
+  ];
+  if (me?.role === "MEMBER") {
+    ops.push(db.user.update({ where: { id: req.user!.sub }, data: { role: "CREATOR" } }));
+  }
+  const [creatorProfile] = await db.$transaction(ops);
 
   res.status(201).json({
     creatorProfile,
