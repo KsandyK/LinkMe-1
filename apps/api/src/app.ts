@@ -19,6 +19,7 @@ import moderationRouter from "./routes/moderation.js";
 import streamsRouter   from "./routes/streams.js";
 import contentRouter       from "./routes/content.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
+import adminRouter     from "./routes/admin.js";
 import healthRouter    from "./routes/health.js";
 
 const app = express();
@@ -108,6 +109,7 @@ api.use(moderationRouter);
 api.use(streamsRouter);
 api.use(contentRouter);
 api.use(subscriptionsRouter);
+api.use(adminRouter);
 
 app.use("/api", api);
 

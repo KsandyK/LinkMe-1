@@ -136,6 +136,64 @@ export const stats = {
   get: () => get<{ creators: number; members: number; liveNow: number }>("/api/stats"),
 };
 
+// ── Admin (staff-only) ────────────────────────────────────────────────────────
+export interface AdminOverview {
+  users:    { total: number; active: number; newToday: number; new30d: number };
+  creators: { total: number; pending: number; liveNow: number; newToday: number };
+  revenue:  { today: number; last30d: number; lifetime: number; transactionsToday: number };
+  queues: {
+    verificationPending: number;
+    moderationOpen: number;
+    moderationCritical: number;
+    moderationResolvedToday: number;
+    contentFlagsPending: number;
+    pendingPayouts: number;
+  };
+  activity: Array<
+    | { kind: "registration"; at: string; username: string; role: string }
+    | { kind: "creator_apply"; at: string; username: string }
+    | { kind: "report"; at: string; reporter: string; reportedUser: string | null; reason: string; priority: number }
+  >;
+  serverTime: string;
+}
+export interface AdminUserRow {
+  id: string; username: string; email: string | null; role: string;
+  credits: number; isActive: boolean; createdAt: string;
+  creatorProfile: { isApproved: boolean; isLive: boolean; totalEarnings: number } | null;
+  ageVerification: { status: string } | null;
+}
+export const admin = {
+  overview: () => get<AdminOverview>("/api/admin/overview"),
+  users: (params?: { q?: string; page?: number; limit?: number }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(
+          Object.entries(params).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)])
+        ).toString()
+      : "";
+    return get<{ users: AdminUserRow[]; total: number; page: number; limit: number }>(`/api/admin/users${qs}`);
+  },
+  setUserActive: (id: string, action: "deactivate" | "reactivate", reason?: string) =>
+    patch<{ id: string; username: string; isActive: boolean; role: string }>(`/api/admin/users/${id}`, { action, reason }),
+};
+
+export interface ModerationReport {
+  id: string;
+  reporterId: string;
+  reportedUserId: string | null;
+  contentType: string | null;
+  contentId: string | null;
+  reason: string;
+  details: string | null;
+  status: string;
+  priority: number;
+  createdAt: string;
+  resolvedAt: string | null;
+  reporter:     { id: string; username: string };
+  reportedUser: { id: string; username: string; role: string } | null;
+}
+// (admin moderation methods reports() / resolve() live in the moderation export
+// near the bottom of this file, combined with the user-facing report() method)
+
 export const profiles = {
   /** GET /api/profiles — returns { profiles, total, page, limit } */
   list: (params?: { search?: string; live?: string; sort?: "newest" | "top" | "popular"; page?: number; limit?: number }) => {
@@ -581,10 +639,22 @@ export const subscriptions = {
 // ── Moderation ────────────────────────────────────────────────────────────────
 
 export const moderation = {
+  /** POST /api/moderation/report — user submits a report */
   report: (data: {
     targetId: string;
     targetType: string;
     reason: string;
     details?: string;
   }) => post("/api/moderation/report", data),
+
+  /** GET /api/moderation/reports — admin/moderator list */
+  reports: (status: string = "PENDING", page = 1, limit = 25) =>
+    get<{ reports: ModerationReport[]; total: number }>(`/api/moderation/reports?status=${status}&page=${page}&limit=${limit}`),
+
+  /** PATCH /api/moderation/reports/:id — admin/moderator resolve */
+  resolve: (id: string, data: {
+    action: "RESOLVED_ACTION" | "RESOLVED_NO_ACTION" | "DISMISSED" | "UNDER_REVIEW";
+    resolution?: string;
+    enforce?: { banUser?: boolean; deactivateUser?: boolean; removeContent?: boolean; warnUser?: boolean };
+  }) => patch<object>(`/api/moderation/reports/${id}`, data),
 };
