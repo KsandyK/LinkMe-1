@@ -442,6 +442,25 @@ model ModerationReport {
   @@index([reportedUserId])
 }
 
+// Audit log — every administrative action is recorded here for compliance.
+// Critical for adult platforms (2257, regulator audits, internal investigations).
+model AdminAction {
+  id          String   @id @default(cuid())
+  adminId     String   // userId of the staff member who took the action
+  adminUsername String // denormalised — keeps history readable if account is later deleted
+  actionType  String   // verify_approve | verify_reject | user_deactivate | user_reactivate |
+                       // report_resolve | report_dismiss | creator_approve | content_flag_review
+  targetType  String   // user | report | content | verification | flag | creator_profile
+  targetId    String   // the affected row's id (User.id, ModerationReport.id, etc.)
+  targetLabel String?  // human-readable identifier (e.g. "@username" or report reason)
+  metadata    Json?    // free-form context (reason, enforcement flags, etc.)
+  createdAt   DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
 // Automated content flags (from hash-matching, keyword filters, etc.)
 model ContentFlag {
   id          String   @id @default(cuid())

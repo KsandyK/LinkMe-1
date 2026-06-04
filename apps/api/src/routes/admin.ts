@@ -14,6 +14,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { recordAdminAction } from "../lib/audit.js";
 
 const router = Router();
 
@@ -225,7 +226,41 @@ router.patch("/admin/users/:id", requireAdmin, async (req, res) => {
   if (!isActive) {
     await db.session.deleteMany({ where: { userId: target.id } }).catch(() => null);
   }
+
+  // Audit
+  await recordAdminAction({
+    adminId:       req.user!.sub,
+    adminUsername: req.user!.username,
+    actionType:    isActive ? "user_reactivate" : "user_deactivate",
+    targetType:    "user",
+    targetId:      target.id,
+    targetLabel:   `@${target.username}`,
+    metadata:      parsed.data.reason ? { reason: parsed.data.reason } : undefined,
+  });
+
   res.json(updated);
+});
+
+// ── GET /api/admin/audit-log — recent admin actions (paginated) ──────────────
+router.get("/admin/audit-log", requireAdmin, async (req, res) => {
+  const limit       = Math.min(100, Math.max(1, Number(req.query.limit ?? 50)));
+  const page        = Math.max(1, Number(req.query.page ?? 1));
+  const actionType  = String(req.query.actionType ?? "").trim();
+  const adminId     = String(req.query.adminId ?? "").trim();
+
+  const where: Record<string, unknown> = {};
+  if (actionType) where.actionType = actionType;
+  if (adminId)    where.adminId    = adminId;
+
+  const [entries, total] = await Promise.all([
+    db.adminAction.findMany({
+      where, skip: (page - 1) * limit, take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    db.adminAction.count({ where }),
+  ]);
+
+  res.json({ entries, total, page, limit });
 });
 
 export default router;

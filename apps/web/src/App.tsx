@@ -64,6 +64,9 @@ const AdminVerifyQueue   = lazyWithReload(() => import("./pages/AdminVerifyQueue
 const AdminHub           = lazyWithReload(() => import("./pages/AdminHub"));
 const AdminModeration    = lazyWithReload(() => import("./pages/AdminModeration"));
 const AdminUsers         = lazyWithReload(() => import("./pages/AdminUsers"));
+const AdminAuditLog      = lazyWithReload(() => import("./pages/AdminAuditLog"));
+const AdminFlags         = lazyWithReload(() => import("./pages/AdminFlags"));
+const AdminPayouts       = lazyWithReload(() => import("./pages/AdminPayouts"));
 const LegalPages         = lazyWithReload(() => import("./pages/LegalPages"));
 const ForgotPassword     = lazyWithReload(() => import("./pages/ForgotPassword"));
 const DevReset           = lazyWithReload(() => import("./pages/DevReset"));
@@ -110,6 +113,9 @@ function Router() {
         <Route path="/admin/verify-queue" component={() => <RequireAuth admin><AdminVerifyQueue /></RequireAuth>} />
         <Route path="/admin/moderation" component={() => <RequireAuth admin><AdminModeration /></RequireAuth>} />
         <Route path="/admin/users" component={() => <RequireAuth admin><AdminUsers /></RequireAuth>} />
+        <Route path="/admin/audit-log" component={() => <RequireAuth admin><AdminAuditLog /></RequireAuth>} />
+        <Route path="/admin/flags" component={() => <RequireAuth admin><AdminFlags /></RequireAuth>} />
+        <Route path="/admin/payouts" component={() => <RequireAuth admin><AdminPayouts /></RequireAuth>} />
         <Route path="/legal" component={LegalHub} />
         <Route path="/legal/:page" component={LegalPages} />
         <Route path="/dev/reset" component={DevReset} />

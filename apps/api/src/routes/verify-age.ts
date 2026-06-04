@@ -24,6 +24,7 @@ import db from "../lib/db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { Emails } from "../lib/email.js";
 import { uploadFile, signCdnUrl, deleteFile } from "../lib/bunny.js";
+import { recordAdminAction } from "../lib/audit.js";
 
 const router = Router();
 
@@ -324,6 +325,17 @@ router.patch("/age-verify/:userId", requireAdmin, async (req, res) => {
   const notifiedUser = await db.user.findUnique({
     where: { id: userId },
     select: { email: true, username: true },
+  });
+
+  // Audit
+  await recordAdminAction({
+    adminId:       req.user!.sub,
+    adminUsername: req.user!.username,
+    actionType:    action === "approve" ? "verify_approve" : "verify_reject",
+    targetType:    "verification",
+    targetId:      record.id,
+    targetLabel:   notifiedUser ? `@${notifiedUser.username}` : userId,
+    metadata:      { documentType: existing.documentType, ...(reason ? { reason } : {}) },
   });
 
   if (action === "approve") {

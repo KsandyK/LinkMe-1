@@ -4,6 +4,7 @@ import { profiles as profilesApi, messages as messagesApi, content as contentApi
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { useApp } from "@/contexts/AppContext";
 import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2, Bot } from "lucide-react";
+import { ReportButton } from "@/components/ReportButton";
 
 interface ContentItem {
   id: string;
@@ -282,6 +283,12 @@ export default function ProfileDetail() {
               style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
               <Share2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.5)" }} />
             </button>
+            <ReportButton
+              reportedUserId={creator.userId}
+              contentType="profile"
+              variant="icon"
+              className="p-2 rounded-lg transition-all hover:bg-white/5"
+            />
             {creator.isLive ? (
               <Link href={`/live/${creator.id}`}>
                 <button className="px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2" style={{ background: "#ef4444", color: "white" }}>

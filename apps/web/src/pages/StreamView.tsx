@@ -17,6 +17,8 @@ import {
   Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
   Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
+import { ReportButton } from "@/components/ReportButton";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ChatMsg {
@@ -674,6 +676,16 @@ export default function StreamView() {
               : <><Bell className="w-3 h-3" /> Subscribe</>
             }
           </button>
+          {/* Report stream */}
+          {feed?.creator?.userId && (
+            <ReportButton
+              reportedUserId={feed.creator.userId}
+              contentType="stream"
+              contentId={feed.id}
+              variant="icon"
+              className="p-1.5 rounded-lg transition-all hover:bg-white/5"
+            />
+          )}
         </div>
 
         {/* Right: gift dropdown + credits */}

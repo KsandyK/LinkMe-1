@@ -174,6 +174,28 @@ export const admin = {
   },
   setUserActive: (id: string, action: "deactivate" | "reactivate", reason?: string) =>
     patch<{ id: string; username: string; isActive: boolean; role: string }>(`/api/admin/users/${id}`, { action, reason }),
+  auditLog: (params?: { page?: number; limit?: number; actionType?: string; adminId?: string }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(
+          Object.entries(params).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)])
+        ).toString()
+      : "";
+    return get<{
+      entries: Array<{
+        id: string; adminId: string; adminUsername: string;
+        actionType: string; targetType: string; targetId: string;
+        targetLabel: string | null; metadata: Record<string, unknown> | null;
+        createdAt: string;
+      }>;
+      total: number; page: number; limit: number;
+    }>(`/api/admin/audit-log${qs}`);
+  },
+  flags: () => get<Array<{
+    id: string; contentType: string; contentId: string;
+    flagType: string; confidence: number; metadata: Record<string, unknown> | null;
+    reviewed: boolean; createdAt: string;
+  }>>("/api/moderation/flags"),
+  reviewFlag: (id: string) => patch<object>(`/api/moderation/flags/${id}`, {}),
 };
 
 export interface ModerationReport {
@@ -639,13 +661,15 @@ export const subscriptions = {
 // ── Moderation ────────────────────────────────────────────────────────────────
 
 export const moderation = {
-  /** POST /api/moderation/report — user submits a report */
+  /** POST /api/moderation/report — user submits a report against a user or content */
   report: (data: {
-    targetId: string;
-    targetType: string;
-    reason: string;
+    reportedUserId?: string;
+    contentType?:    "user" | "profile" | "stream" | "message" | "content";
+    contentId?:      string;
+    reason: "harassment" | "illegal_content" | "underage_suspicion" | "spam"
+          | "impersonation" | "non_consensual" | "other";
     details?: string;
-  }) => post("/api/moderation/report", data),
+  }) => post<{ reportId: string; message: string }>("/api/moderation/report", data),
 
   /** GET /api/moderation/reports — admin/moderator list */
   reports: (status: string = "PENDING", page = 1, limit = 25) =>

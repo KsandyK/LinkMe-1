@@ -5,6 +5,7 @@ import { useApp } from "@/contexts/AppContext";
 import { messages as msgApi, ConversationItem, MessageItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { createMsgSocket, CravrSocket } from "@/lib/socket";
+import { ReportButton } from "@/components/ReportButton";
 
 const QUICK_REPLIES = ["Hey! 👋", "You're amazing!", "When are you live next?", "❤️"];
 
@@ -582,6 +583,14 @@ export default function Messages() {
                             {isLive ? "● Live now" : `@${other?.username ?? ""}`}
                           </p>
                         </div>
+                        {other?.id && (
+                          <ReportButton
+                            reportedUserId={other.id}
+                            contentType="message"
+                            variant="icon"
+                            className="p-2 rounded-lg transition-all hover:bg-white/5"
+                          />
+                        )}
                         {isLocalId(selectedConv.id) && (
                           <span className="text-xs px-2 py-0.5 rounded-full"
                             style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}>

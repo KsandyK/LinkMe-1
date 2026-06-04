@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import db from "../lib/db.js";
 import { requireAuth, requireModerator, requireAdmin } from "../middleware/auth.js";
+import { recordAdminAction } from "../lib/audit.js";
 
 const router = Router();
 
@@ -154,6 +155,21 @@ router.patch("/moderation/reports/:id", requireModerator, async (req, res) => {
       });
     }
   }
+
+  // Audit
+  await recordAdminAction({
+    adminId:       req.user!.sub,
+    adminUsername: req.user!.username,
+    actionType:    parsed.data.action === "DISMISSED" ? "report_dismiss" : "report_resolve",
+    targetType:    "report",
+    targetId:      report.id,
+    targetLabel:   report.reason,
+    metadata:      {
+      action: parsed.data.action,
+      enforce: parsed.data.enforce,
+      reportedUserId: report.reportedUserId,
+    },
+  });
 
   res.json(updated);
 });

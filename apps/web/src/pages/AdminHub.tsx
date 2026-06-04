@@ -14,7 +14,7 @@ import { useApp } from "@/contexts/AppContext";
 import { admin as adminApi, type AdminOverview } from "@/lib/api";
 import {
   Shield, ShieldCheck, Flag, Users, Radio, DollarSign, ChevronRight,
-  AlertTriangle, Loader2, UserPlus, Sparkles, Banknote, FileWarning, RefreshCw, Search,
+  AlertTriangle, Loader2, UserPlus, Sparkles, Banknote, FileWarning, RefreshCw, Search, ScrollText,
 } from "lucide-react";
 
 function pct(n: number, of: number) { return of === 0 ? 0 : Math.round((n / of) * 100); }
@@ -143,13 +143,12 @@ export default function AdminHub() {
                 footer={`${data.queues.moderationResolvedToday} resolved today`}
               />
               <QueueTile
-                href="/admin/moderation?tab=flags"
+                href="/admin/flags"
                 icon={FileWarning}
                 title="Content Flags"
-                desc="Automated detections — hash match, ML score, keywords"
+                desc="Priority-2 report mirrors + auto-detections (when wired)"
                 count={data.queues.contentFlagsPending}
                 color="#8b5cf6"
-                disabled
               />
               <QueueTile
                 href="/admin/users"
@@ -163,11 +162,18 @@ export default function AdminHub() {
                 href="/admin/payouts"
                 icon={Banknote}
                 title="Pending Payouts"
-                desc="Weekly creator payout runs awaiting processing"
+                desc="Weekly creator payout dashboard · design + state machine"
                 count={data.queues.pendingPayouts}
                 color="#10b981"
-                disabled
-                footer="Coming soon · CCBill required"
+                footer="Operational once CCBill is live"
+              />
+              <QueueTile
+                href="/admin/audit-log"
+                icon={ScrollText}
+                title="Audit Log"
+                desc="Every admin action recorded — tamper-evident · 2257-grade"
+                color="#a78bfa"
+                isNavigation
               />
               <QueueTile
                 href="https://support.ccbill.com"
