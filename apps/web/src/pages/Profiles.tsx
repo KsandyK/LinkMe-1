@@ -70,15 +70,19 @@ const MOCK_CREATORS: (CreatorProfileItem & { _joinedDate: string; _totalEarnings
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Category   = "all" | "dating" | "entertainment" | "chat";
+type Category   = "all" | "dating" | "entertainment" | "chat" | "gaming" | "fitness" | "music" | "lifestyle";
 type SortOption = "popular" | "newest" | "top-rated";
 type LiveFilter = boolean;
 
-const CATEGORIES: { id: Category; label: string }[] = [
-  { id: "all",           label: "All" },
-  { id: "dating",        label: "Dating" },
-  { id: "entertainment", label: "Entertainment" },
-  { id: "chat",          label: "Chat" },
+const CATEGORIES: { id: Category; label: string; emoji: string }[] = [
+  { id: "all",           label: "All",           emoji: "✦" },
+  { id: "dating",        label: "Dating",        emoji: "💋" },
+  { id: "entertainment", label: "Entertainment", emoji: "🎭" },
+  { id: "chat",          label: "Chat",          emoji: "💬" },
+  { id: "gaming",        label: "Gaming",        emoji: "🎮" },
+  { id: "fitness",       label: "Fitness",       emoji: "💪" },
+  { id: "music",         label: "Music",         emoji: "🎵" },
+  { id: "lifestyle",     label: "Lifestyle",     emoji: "✨" },
 ];
 
 const SORT_OPTIONS: { id: SortOption; label: string }[] = [
@@ -86,6 +90,8 @@ const SORT_OPTIONS: { id: SortOption; label: string }[] = [
   { id: "newest",    label: "New Arrivals" },
   { id: "top-rated", label: "Top Earning" },
 ];
+
+const PAGE_SIZE = 24;
 
 // ── ProfileCard ───────────────────────────────────────────────────────────────
 
@@ -152,6 +158,9 @@ export default function Profiles() {
 
   const [creators,      setCreators]      = useState<CreatorProfileItem[]>([]);
   const [total,         setTotal]         = useState(0);
+  const [page,          setPage]          = useState(1);
+  const [hasMore,       setHasMore]       = useState(false);
+  const [loadingMore,   setLoadingMore]   = useState(false);
   const [loading,       setLoading]       = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
 
@@ -175,16 +184,22 @@ export default function Profiles() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (pageNum = 1, append = false) => {
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
     try {
       const data = await profilesApi.list({
         search:   debouncedSearch || undefined,
+        category: category !== "all" ? category : undefined,
         live:     liveOnly ? "true" : undefined,
-        limit:    40,
+        sort:     sort === "top-rated" ? "top" : sort === "newest" ? "newest" : undefined,
+        limit:    PAGE_SIZE,
+        offset:   (pageNum - 1) * PAGE_SIZE,
       });
-      setCreators(data.profiles);
+      const profiles = data.profiles ?? [];
+      setCreators(prev => append ? [...prev, ...profiles] : profiles);
       setTotal(data.total);
+      setHasMore((pageNum * PAGE_SIZE) < data.total);
       setUsingFallback(false);
     } catch {
       // API unavailable — filter & sort mock data client-side
@@ -201,20 +216,31 @@ export default function Profiles() {
       if (category !== "all") results = results.filter(c => c._category === category);
       if (liveOnly)           results = results.filter(c => c.isLive);
 
-      // Sort
       if (sort === "popular")   results = [...results].sort((a, b) => b.subscriberCount - a.subscriberCount);
       if (sort === "newest")    results = [...results].sort((a, b) => b._joinedDate.localeCompare(a._joinedDate));
       if (sort === "top-rated") results = [...results].sort((a, b) => b._totalEarnings - a._totalEarnings);
 
       setCreators(results);
       setTotal(results.length);
+      setHasMore(false);
       setUsingFallback(true);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [debouncedSearch, category, sort, liveOnly]);
 
-  useEffect(() => { load(); }, [load]);
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setPage(1);
+    load(1, false);
+  }, [load]);
+
+  const handleLoadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    load(next, true);
+  };
 
   const currentSortLabel = SORT_OPTIONS.find(s => s.id === sort)?.label ?? "Sort";
 
@@ -250,24 +276,25 @@ export default function Profiles() {
 
         {/* Filters row */}
         <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
-          {/* Left: category + live chips */}
+          {/* Left: category + live chips — scrollable on mobile */}
           <div className="flex items-center gap-2 flex-wrap">
             {CATEGORIES.map(c => (
               <button
                 key={c.id}
                 onClick={() => setCategory(c.id)}
-                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5"
                 style={category === c.id
                   ? { background: "#14b8a6", color: "white" }
                   : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }
                 }
               >
+                <span className="text-xs">{c.emoji}</span>
                 {c.label}
               </button>
             ))}
             <button
               onClick={() => setLiveOnly(!liveOnly)}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all"
               style={liveOnly
                 ? { background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }
                 : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }
@@ -318,16 +345,17 @@ export default function Profiles() {
               Showing {creators.length} creator{creators.length !== 1 ? "s" : ""}
               {category !== "all" && <span> in <span style={{ color: "#14b8a6" }}>{CATEGORIES.find(c => c.id === category)?.label}</span></span>}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {creators.map(creator => (
                 <ProfileCard key={creator.id} creator={creator} />
               ))}
             </div>
+
             {creators.length === 0 && (
               <div className="text-center py-20" style={{ color: "rgba(255,255,255,0.3)" }}>
                 <p className="text-lg font-medium mb-2">No creators found</p>
                 <p className="text-sm">Try adjusting your search or filters</p>
-                {(category !== "all" || liveOnly) && (
+                {(category !== "all" || liveOnly || search) && (
                   <button
                     onClick={() => { setCategory("all"); setLiveOnly(false); setSearch(""); }}
                     className="mt-4 vl-btn-primary px-5 py-2 text-sm">
@@ -335,6 +363,26 @@ export default function Profiles() {
                   </button>
                 )}
               </div>
+            )}
+
+            {/* Load More */}
+            {hasMore && (
+              <div className="flex justify-center mt-10">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)", color: "#14b8a6" }}>
+                  {loadingMore
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Loading…</>
+                    : <>Load More Creators <ChevronDown className="w-4 h-4" /></>}
+                </button>
+              </div>
+            )}
+            {!hasMore && creators.length > 0 && !usingFallback && (
+              <p className="text-center mt-8 text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
+                Showing all {total} creator{total !== 1 ? "s" : ""}
+              </p>
             )}
           </>
         )}

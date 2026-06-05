@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, livefeeds as liveApi, stats as statsApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
-import { Radio, Zap, Shield, Crown, ChevronRight, Eye, Star, Search, Gift, Sparkles } from "lucide-react";
+import { Radio, Zap, Shield, Crown, ChevronRight, ChevronLeft, Eye, Star, Search, Gift, Sparkles } from "lucide-react";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -87,10 +87,11 @@ export default function Home() {
   const [siteStats, setSiteStats] = useState<{ creators: number; members: number; liveNow: number } | null>(null);
   const [heroSearch, setHeroSearch] = useState("");
   const heroSearchRef = useRef<HTMLInputElement>(null);
+  const liveScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load live feeds and featured creators in parallel
-    liveApi.list({ limit: 4 })
+    // Load live feeds — no cap so all live creators show in the scroll row
+    liveApi.list({ limit: 50 })
       .then(data => {
         const feeds = Array.isArray(data) ? data : [];
         setLiveFeeds(feeds);
@@ -98,7 +99,7 @@ export default function Home() {
       })
       .catch(() => {
         // Mock fallback
-        const mockFeeds: LiveFeedItem[] = MOCK_LIVE_FEEDS.slice(0, 4).map(f => ({
+        const mockFeeds: LiveFeedItem[] = MOCK_LIVE_FEEDS.slice(0, 8).map(f => ({
           id: f.id,
           creatorId: f.hostId ?? f.id,
           title: f.title,
@@ -276,35 +277,65 @@ export default function Home() {
         </div>
       )}
 
-      {/* Live Now */}
+      {/* Live Now — horizontal scroll row, no cap */}
       {liveFeeds.length > 0 && (
         <section className="py-10">
           <div className="container">
             <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="vl-section-title">Live Now</h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                  style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+                  {liveFeeds.length} streaming
+                </span>
               </div>
-              <Link href="/live">
-                <span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>View All <ChevronRight className="w-3.5 h-3.5 inline" /></span>
-              </Link>
+              <div className="flex items-center gap-2">
+                {/* Scroll arrows */}
+                <button
+                  onClick={() => liveScrollRef.current?.scrollBy({ left: -320, behavior: "smooth" })}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+                  style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <ChevronLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
+                </button>
+                <button
+                  onClick={() => liveScrollRef.current?.scrollBy({ left: 320, behavior: "smooth" })}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+                  style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <ChevronRight className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
+                </button>
+                <Link href="/live">
+                  <span className="text-sm font-semibold cursor-pointer ml-1" style={{ color: "#14b8a6" }}>
+                    View All <ChevronRight className="w-3.5 h-3.5 inline" />
+                  </span>
+                </Link>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            {/* Horizontally scrollable row */}
+            <div
+              ref={liveScrollRef}
+              className="flex gap-4 overflow-x-auto pb-3"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {liveFeeds.map(feed => {
                 const hostProfile = feed.creator?.user?.profile;
                 const hostName = hostProfile?.displayName ?? feed.creator?.user?.username ?? "Creator";
                 const thumbnail = feed.thumbnailUrl ?? `https://picsum.photos/seed/${feed.id}-thumb/400/300`;
                 return (
                   <Link key={feed.id} href={`/live/${feed.id}`}>
-                    <div className="vl-card overflow-hidden cursor-pointer group">
+                    <div className="vl-card overflow-hidden cursor-pointer group flex-shrink-0"
+                      style={{ width: "280px" }}>
                       <div className="relative">
-                        <img src={thumbnail} alt={feed.title} className="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105" />
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.8) 0%, transparent 60%)" }} />
+                        <img src={thumbnail} alt={feed.title}
+                          className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          style={{ height: "158px" }} />
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 55%)" }} />
                         <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white inline-block animate-pulse" />
                           LIVE
                         </div>
-                        <div className="absolute top-2 right-2 flex items-center gap-1 rounded px-2 py-0.5 text-xs" style={{ background: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.8)" }}>
+                        <div className="absolute top-2 right-2 flex items-center gap-1 rounded px-2 py-0.5 text-xs"
+                          style={{ background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.85)" }}>
                           <Eye className="w-3 h-3" /> {feed.viewerCount.toLocaleString()}
                         </div>
                         <div className="absolute bottom-2 left-2 right-2">
@@ -312,12 +343,15 @@ export default function Home() {
                           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{hostName}</p>
                         </div>
                       </div>
-                      <div className="px-3 py-2">
-                        {feed.category && (
-                          <span className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
-                            {feed.category}
-                          </span>
-                        )}
+                      <div className="px-3 py-2 flex items-center justify-between">
+                        {feed.category
+                          ? <span className="text-xs px-2 py-0.5 rounded-full capitalize"
+                              style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                              {feed.category}
+                            </span>
+                          : <span />}
+                        <span className="text-xs font-semibold"
+                          style={{ color: "#ef4444" }}>● Join</span>
                       </div>
                     </div>
                   </Link>

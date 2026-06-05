@@ -233,7 +233,7 @@ export interface ModerationReport {
 
 export const profiles = {
   /** GET /api/profiles — returns { profiles, total, page, limit } */
-  list: (params?: { search?: string; live?: string; sort?: "newest" | "top" | "popular"; page?: number; limit?: number }) => {
+  list: (params?: { search?: string; live?: string; sort?: "newest" | "top" | "popular"; category?: string; page?: number; limit?: number; offset?: number }) => {
     const qs = params ? "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
     ).toString() : "";
