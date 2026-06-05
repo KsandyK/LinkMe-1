@@ -115,7 +115,14 @@ export const auth = {
     post<{ ok: boolean; reason?: string }>("/api/auth/check-email", { email }, { skipAuth: true }),
 
   login: (data: { username: string; password: string }) =>
-    post<{ accessToken: string; user: object }>("/api/auth/login", data, { skipAuth: true }),
+    post<{ accessToken?: string; refreshToken?: string; user?: object; totpRequired?: boolean; challengeToken?: string }>(
+      "/api/auth/login", data, { skipAuth: true },
+    ),
+
+  loginTotp: (data: { challengeToken: string; token: string }) =>
+    post<{ accessToken: string; refreshToken: string; user: object }>(
+      "/api/auth/login/totp", data, { skipAuth: true },
+    ),
 
   refresh: () =>
     post<{ accessToken: string }>("/api/auth/refresh", undefined, { skipAuth: true }),
@@ -127,6 +134,14 @@ export const auth = {
     id: string; username: string; role: string; credits: number; email?: string;
     profile: { displayName: string | null; bio: string | null; avatarUrl: string | null; location: string | null; } | null;
   }>("/api/auth/me"),
+};
+
+// ── TOTP (Authenticator App 2FA) ─────────────────────────────────────────────
+export const totp = {
+  status: () => get<{ enabled: boolean }>("/api/totp/status"),
+  setup:  () => post<{ secret: string; qrDataUrl: string; otpauthUri: string }>("/api/totp/setup"),
+  verify: (token: string) => post<{ ok: boolean }>("/api/totp/verify", { token }),
+  disable: (password: string) => post<{ ok: boolean }>("/api/totp/disable", { password }),
 };
 
 // ── Profiles ─────────────────────────────────────────────────────────────────

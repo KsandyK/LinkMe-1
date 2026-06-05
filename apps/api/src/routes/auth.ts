@@ -10,6 +10,7 @@ import {
   refreshExpiresAt,
   verifyAccessToken,
 } from "../lib/jwt.js";
+import { decryptSecret, verifyToken as verifyTotpToken } from "../lib/totp.js";
 import { requireAuth } from "../middleware/auth.js";
 import rateLimit from "express-rate-limit";
 import { Emails } from "../lib/email.js";
@@ -222,7 +223,7 @@ router.post("/auth/login", authLimiter, async (req, res) => {
       OR: [{ username: identifier }, { email: identifier }],
       isActive: true,
     },
-    select: { id: true, username: true, role: true, credits: true, passwordHash: true },
+    select: { id: true, username: true, role: true, credits: true, passwordHash: true, totpEnabled: true },
   });
 
   const validPassword = user ? await bcrypt.compare(password, user.passwordHash) : false;
@@ -233,10 +234,61 @@ router.post("/auth/login", authLimiter, async (req, res) => {
     return;
   }
 
+  // If TOTP is enabled, return a challenge instead of tokens
+  if (user.totpEnabled) {
+    const challengeToken = signAccessToken({ sub: user.id, username: user.username, role: "TOTP_CHALLENGE" });
+    res.json({ totpRequired: true, challengeToken });
+    return;
+  }
+
   const { accessToken, rawRefresh } = issueTokens(user.id, user.username, user.role);
   await storeRefreshToken(user.id, rawRefresh, req as any);
 
-  const { passwordHash: _, ...safeUser } = user;
+  const { passwordHash: _, totpEnabled: _t, ...safeUser } = user;
+  res.json({ user: safeUser, accessToken, refreshToken: rawRefresh });
+});
+
+/** POST /api/auth/login/totp — complete login with TOTP code */
+const TotpLoginSchema = z.object({
+  challengeToken: z.string().min(1),
+  token: z.string().length(6),
+});
+
+router.post("/auth/login/totp", authLimiter, async (req, res) => {
+  const parsed = TotpLoginSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "challengeToken and 6-digit token required" }); return; }
+
+  let payload: { sub: string; username: string; role: string };
+  try {
+    payload = verifyAccessToken(parsed.data.challengeToken);
+  } catch {
+    res.status(401).json({ error: "Challenge expired — please log in again" });
+    return;
+  }
+  if (payload.role !== "TOTP_CHALLENGE") {
+    res.status(401).json({ error: "Invalid challenge token" });
+    return;
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: payload.sub },
+    select: { id: true, username: true, role: true, credits: true, totpSecret: true, totpEnabled: true, isActive: true },
+  });
+  if (!user || !user.isActive || !user.totpEnabled || !user.totpSecret) {
+    res.status(401).json({ error: "Invalid credentials" });
+    return;
+  }
+
+  const secret = decryptSecret(user.totpSecret);
+  if (!verifyTotpToken(secret, parsed.data.token)) {
+    res.status(401).json({ error: "Invalid authenticator code" });
+    return;
+  }
+
+  const { accessToken, rawRefresh } = issueTokens(user.id, user.username, user.role);
+  await storeRefreshToken(user.id, rawRefresh, req as any);
+
+  const { totpSecret: _s, totpEnabled: _t, isActive: _a, ...safeUser } = user;
   res.json({ user: safeUser, accessToken, refreshToken: rawRefresh });
 });
 

@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Eye, EyeOff } from "lucide-react";
+import { auth as authApi } from "@/lib/api";
+import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function Login() {
-  const { login, isLoggedIn } = useApp();
+  const { login, loginWithTokenData, isLoggedIn } = useApp();
   const [, navigate] = useLocation();
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Already logged in — redirect home
+  // TOTP challenge state
+  const [totpStep, setTotpStep] = useState(false);
+  const [challengeToken, setChallengeToken] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+  const [totpLoading, setTotpLoading] = useState(false);
+  const [totpError, setTotpError] = useState<string | null>(null);
+
   if (isLoggedIn) {
     navigate("/");
     return null;
@@ -25,19 +32,97 @@ export default function Login() {
     try {
       await login(form.username.trim(), form.password);
       navigate("/");
-    } catch {
-      // login() re-throws when the API was reachable but rejected credentials (401).
-      // It falls through to demo mode on network/timeout errors (and then navigates fine).
-      setLoginError("Incorrect username or password. Please try again.");
+    } catch (err: any) {
+      if (err?.totpRequired) {
+        setChallengeToken(err.challengeToken);
+        setTotpStep(true);
+        setTotpError(null);
+        setTotpCode("");
+      } else {
+        setLoginError("Incorrect username or password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleTotpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (totpCode.length !== 6) return;
+    setTotpLoading(true);
+    setTotpError(null);
+    try {
+      const data = await authApi.loginTotp({ challengeToken, token: totpCode });
+      loginWithTokenData(data as any);
+      navigate("/");
+    } catch {
+      setTotpError("Invalid code. Check your authenticator app and try again.");
+    } finally {
+      setTotpLoading(false);
+    }
+  };
+
+  if (totpStep) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.25)" }}>
+              <ShieldCheck className="w-8 h-8" style={{ color: "#14b8a6" }} />
+            </div>
+            <h2 className="text-xl font-bold text-foreground">Two-Factor Authentication</h2>
+            <p className="text-muted-foreground text-sm mt-1">Enter the 6-digit code from your authenticator app</p>
+          </div>
+
+          <form onSubmit={handleTotpSubmit} className="p-6 rounded-2xl border border-border bg-card space-y-4">
+            {totpError && (
+              <div className="p-3 rounded-lg text-sm text-center"
+                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+                {totpError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Authenticator Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={totpCode}
+                onChange={e => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                autoFocus
+                required
+                className="w-full px-4 py-3 rounded-lg bg-background border border-border text-foreground text-center text-lg font-mono tracking-[0.3em] focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={totpLoading || totpCode.length !== 6}
+              className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{ background: "#14B8A6" }}>
+              {totpLoading ? "Verifying…" : "Verify & Sign In"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setTotpStep(false); setTotpCode(""); setTotpError(null); }}
+              className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Back to login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
           <img src="/Cravr.jpg" alt="CRAVR" className="h-28 w-auto mx-auto mb-2" />
           <p className="text-muted-foreground text-sm mt-1">Sign in to your account</p>

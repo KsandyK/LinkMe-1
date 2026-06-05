@@ -85,6 +85,8 @@ model User {
   role         UserRole @default(MEMBER)
   credits      Int      @default(0)
   isActive     Boolean  @default(true)
+  totpSecret   String?
+  totpEnabled  Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

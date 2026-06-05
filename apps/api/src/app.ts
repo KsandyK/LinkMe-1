@@ -20,6 +20,7 @@ import streamsRouter   from "./routes/streams.js";
 import contentRouter       from "./routes/content.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import adminRouter     from "./routes/admin.js";
+import totpRouter      from "./routes/totp.js";
 import healthRouter    from "./routes/health.js";
 
 const app = express();
@@ -110,6 +111,7 @@ api.use(streamsRouter);
 api.use(contentRouter);
 api.use(subscriptionsRouter);
 api.use(adminRouter);
+api.use(totpRouter);
 
 app.use("/api", api);
 

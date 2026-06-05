@@ -69,6 +69,7 @@ interface AppContextType {
   token: string | null;
   isLoggedIn: boolean;
   login: (username: string, password: string) => Promise<void>;
+  loginWithTokenData: (data: { accessToken: string; refreshToken: string; user: any }) => void;
   logout: () => void;
 }
 
@@ -408,6 +409,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         throw new Error(err.error ?? "Invalid credentials");
       }
       const data = await res.json();
+
+      // TOTP challenge — throw with challengeToken so Login page can prompt for code
+      if (data.totpRequired) {
+        const err: any = new Error("TOTP_REQUIRED");
+        err.totpRequired = true;
+        err.challengeToken = data.challengeToken;
+        throw err;
+      }
+
       // Wipe any prior account's local state so this session starts from the
       // server's truth (no inherited credits/transactions/unlocks).
       clearLocalAccountState();
@@ -423,9 +433,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("cravr_token", data.accessToken);
       localStorage.setItem("cravr_user", JSON.stringify(data.user));
       syncedRef.current = true;
-    } catch {
+    } catch (err: any) {
+      if (err?.totpRequired) throw err;
       if (apiRejected) {
-        // API was reachable but rejected — re-throw so Login/Register can show the error
         throw new Error("Invalid credentials");
       }
       // Network error or timeout → API offline → demo mode
@@ -438,6 +448,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       syncedRef.current = true;
       toast.info("Demo mode active", { description: "API server offline — browsing locally. Start the backend for full functionality." });
     }
+  }, []);
+
+  const loginWithTokenData = useCallback((data: { accessToken: string; refreshToken: string; user: any }) => {
+    clearLocalAccountState();
+    setAccessToken(data.accessToken);
+    setRefreshToken(data.refreshToken ?? null);
+    setToken(data.accessToken);
+    setUser(data.user);
+    if (typeof data.user?.credits === "number") {
+      setCredits(data.user.credits);
+      safeSet(STORAGE_KEYS.CREDITS, data.user.credits);
+    }
+    localStorage.setItem("cravr_token", data.accessToken);
+    localStorage.setItem("cravr_user", JSON.stringify(data.user));
+    syncedRef.current = true;
   }, []);
 
   // Clears all per-account financial/session state so a different account in the
@@ -491,7 +516,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeMembership, setActiveMembership, membershipDiscount,
       activeBoost, setActiveBoost,
       transactions, recordPurchase,
-      user, token, isLoggedIn: !!token && !!user, login, logout,
+      user, token, isLoggedIn: !!token && !!user, login, loginWithTokenData, logout,
     }}>
       {children}
     </AppContext.Provider>
