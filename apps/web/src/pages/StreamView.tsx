@@ -13,7 +13,7 @@ import { livefeeds as liveApi, gifts as giftsApi, LiveFeedItem, GiftItem } from 
 import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
 import { createLiveSocket, CravrSocket } from "@/lib/socket";
 import {
-  ChevronLeft, Eye, Gift, Zap, Send, Users,
+  ChevronLeft, Eye, Gift, Zap, Send, Users, MessageCircle,
   Volume2, VolumeX, Maximize2, Minimize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
   Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
@@ -249,6 +249,8 @@ export default function StreamView() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fsChatOpen, setFsChatOpen] = useState(true);
+  const fsChatEndRef = useRef<HTMLDivElement>(null);
   const giftDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close gift dropdown on outside click; reset expanded state when closed
@@ -325,9 +327,10 @@ export default function StreamView() {
       });
   }, []);
 
-  // Scroll chat to bottom on new messages
+  // Scroll chat to bottom on new messages (both normal + fullscreen chat)
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    fsChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
   // Poll localStorage for active creator drop (every 2 s)
@@ -994,6 +997,88 @@ export default function StreamView() {
             )}
 
             <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 45%, rgba(9,9,26,0.3) 100%)" }} />
+
+            {/* ── Fullscreen chat overlay ──────────────────────────────────── */}
+            {isFullscreen && (
+              <>
+                {/* Toggle button */}
+                <button
+                  onClick={() => setFsChatOpen(o => !o)}
+                  className="absolute top-4 right-4 z-30 p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90"
+                  style={{ background: "rgba(0,0,0,0.65)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}>
+                  <MessageCircle className="w-4 h-4" />
+                  {fsChatOpen ? "Hide Chat" : "Show Chat"}
+                </button>
+
+                {/* Chat panel */}
+                {fsChatOpen && (
+                  <div className="absolute top-0 right-0 bottom-0 z-20 flex flex-col"
+                    style={{ width: "320px", background: "rgba(9,9,26,0.82)", backdropFilter: "blur(12px)", borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+
+                    {/* Header */}
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-xs font-bold text-white">Live Chat</span>
+                      <span className="text-xs ml-auto" style={{ color: "rgba(255,255,255,0.35)" }}>{msgs.length} messages</span>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3" style={{ scrollbarWidth: "none" }}>
+                      {msgs.length === 0 && (
+                        <p className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>Chat is live — say something!</p>
+                      )}
+                      {msgs.map(msg => (
+                        <div key={msg.id} className="flex gap-2">
+                          <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                            style={{ background: "linear-gradient(135deg,#14b8a6,#0d9488)", color: "white" }}>
+                            {msg.username[0]?.toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-baseline gap-1 flex-wrap">
+                              {msg.badge && <span className="text-xs leading-none">{msg.badge}</span>}
+                              <span className="text-xs font-bold" style={{ color: msg.creditTip > 0 ? "#e8a87c" : "#14b8a6" }}>
+                                {msg.username}
+                              </span>
+                              {msg.creditTip > 0 && (
+                                <span className="text-xs px-1.5 rounded font-bold"
+                                  style={{ background: "rgba(232,168,124,0.15)", color: "#e8a87c" }}>
+                                  +{msg.creditTip} tip
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs leading-relaxed break-words" style={{ color: "rgba(255,255,255,0.75)" }}>{msg.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={fsChatEndRef} />
+                    </div>
+
+                    {/* Input */}
+                    <div className="px-3 py-3 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                      <div className="flex gap-2">
+                        <input
+                          value={draft}
+                          onChange={e => setDraft(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                          placeholder={isLoggedIn ? "Say something…" : "Sign in to chat"}
+                          disabled={!isLoggedIn}
+                          className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
+                          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
+                        />
+                        <button
+                          onClick={sendMessage}
+                          disabled={!draft.trim() || !isLoggedIn}
+                          className="p-2 rounded-xl transition-all disabled:opacity-40"
+                          style={{ background: "#14b8a6" }}>
+                          <Send className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                      <p className="text-xs mt-1.5 text-center" style={{ color: "rgba(255,255,255,0.25)" }}>5 credits per message</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Stream info overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4">
