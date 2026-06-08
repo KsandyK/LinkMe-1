@@ -26,7 +26,6 @@ const MEMBERSHIP_PLANS = [
 ];
 
 const ULTRA_MEMBERSHIP_IDS = new Set(["diamond", "obsidian", "platinum_m"]);
-const ULTRA_BOOST_IDS      = new Set(["supernova", "colossus", "sovereign"]);
 
 export default function BoostsPage() {
   const { spendCredits, addCredits, recordPurchase, isLoggedIn, showToast, activeMembership, setActiveMembership, activeBoost, setActiveBoost } = useApp();
@@ -34,13 +33,9 @@ export default function BoostsPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [loadingMembership, setLoadingMembership] = useState<string | null>(null);
   const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
-  // Tier visibility toggles — default to showing only core tiers
+  // Membership tier visibility toggle
   const [showAllMemberships, setShowAllMemberships] = useState(false);
-  const [showAllBoosts, setShowAllBoosts] = useState(false);
-
-  // IDs shown by default (most approachable price points)
   const CORE_MEMBERSHIP_IDS = new Set(["free", "fan", "superfan", "devotee", "allaccess", "elite"]);
-  const CORE_BOOST_IDS      = new Set(["spark", "flame", "inferno", "legend"]);
 
   // ── Payment method guard ──────────────────────────────────────────────────
   type SavedCardSnippet = { id: string; last4: string; brand: string; isDefault: boolean };
@@ -426,39 +421,27 @@ export default function BoostsPage() {
 
             {/* Boost cards grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              {BOOST_PACKAGES.filter(p => showAllBoosts || CORE_BOOST_IDS.has(p.id)).map((pkg, i, arr) => {
-                const isUltraBoost = ULTRA_BOOST_IDS.has(pkg.id);
-                const isFirstUltraBoost = isUltraBoost && !ULTRA_BOOST_IDS.has(arr[i - 1]?.id ?? "");
+              {BOOST_PACKAGES.map((pkg) => {
+                const isPinnacle = pkg.id === "pinnacle";
                 return (
-                <Fragment key={pkg.id}>
-                  {isFirstUltraBoost && (
-                    <div className="col-span-2 sm:col-span-3 lg:col-span-4 flex items-center gap-4 pt-6 pb-3">
-                      <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.25))" }} />
-                      <span className="text-xs font-bold px-4 py-1.5 rounded-full tracking-widest"
-                        style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.18)", color: "rgba(249,115,22,0.7)", letterSpacing: "0.12em" }}>
-                        ✦ ULTRA-PREMIUM
-                      </span>
-                      <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(249,115,22,0.25), transparent)" }} />
-                    </div>
-                  )}
-                <div
+                <div key={pkg.id}
                   className="relative flex flex-col p-4 rounded-xl border transition-all duration-200"
                   style={{
-                    borderColor: isUltraBoost ? `${pkg.color}55` : pkg.popular ? pkg.color : "rgba(255,255,255,0.08)",
-                    background: isUltraBoost
-                      ? `linear-gradient(135deg, rgba(6,6,18,0.98) 0%, ${pkg.color}18 100%)`
+                    borderColor: isPinnacle ? `${pkg.color}88` : pkg.popular ? pkg.color : "rgba(255,255,255,0.08)",
+                    background: isPinnacle
+                      ? `linear-gradient(135deg, rgba(6,6,20,0.98) 0%, ${pkg.color}22 100%)`
                       : pkg.popular
                         ? `linear-gradient(135deg, ${pkg.color}18, ${pkg.color}07)`
                         : "rgba(255,255,255,0.02)",
                   }}>
-                  {pkg.popular && !isUltraBoost && (
+                  {pkg.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold whitespace-nowrap"
                       style={{ background: pkg.color }}>MOST POPULAR</div>
                   )}
-                  {isUltraBoost && (
+                  {isPinnacle && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
-                      style={{ background: `linear-gradient(90deg, ${pkg.color}, ${pkg.color}bb)`, color: btnTextColor(pkg.color) }}>
-                      ✦ ULTRA
+                      style={{ background: `linear-gradient(90deg, #00d4ff, #0099bb)`, color: "#000" }}>
+                      ✦ TOP TIER
                     </div>
                   )}
                   <div className="text-3xl mb-1.5">{pkg.emoji}</div>
@@ -492,19 +475,8 @@ export default function BoostsPage() {
                         : `$${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}/mo`}
                   </button>
                 </div>
-                </Fragment>
                 );
               })}
-            </div>
-
-            {/* Show all / collapse toggle */}
-            <div className="text-center mb-6">
-              <button
-                onClick={() => setShowAllBoosts(!showAllBoosts)}
-                className="px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
-                style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
-                {showAllBoosts ? "▲ Show fewer boost tiers" : `▼ Show all ${BOOST_PACKAGES.length} boost tiers (enterprise)`}
-              </button>
             </div>
 
             {/* How Boosts Work */}

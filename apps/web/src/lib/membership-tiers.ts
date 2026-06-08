@@ -216,33 +216,18 @@ export const BOOST_TIERS: BoostTier[] = [
     features: ["50 boosts/month — peak + selected off-peak slots", "Top of every feed", "Custom profile frame", "Full revenue & analytics suite"],
   },
   {
-    id: "supernova", name: "Supernova", emoji: "🌟", price: 149.99, color: "#00d4ff", boosts: 70, popular: false,
-    features: ["70 boosts/month — peak + daily evening slots", "Guaranteed homepage placement", "Real-time analytics suite", "Custom branded content slots", "Dedicated support line"],
-  },
-  {
-    id: "colossus", name: "Colossus", emoji: "💫", price: 199.99, color: "#7c3aed", boosts: 95, popular: false,
-    features: ["95 boosts/month — every slot except overnight", "Colossus partner badge", "Cross-platform promotion", "Custom boost campaigns", "Revenue & conversion analytics"],
-  },
-  // ── Ultra-Premium boost ladder ($399.99 → $4,999.99) ─────────────────────
-  {
-    id: "dynasty", name: "Dynasty", emoji: "👑", price: 399.99, color: "#f59e0b", boosts: 150, popular: false,
-    features: ["150 boosts/month — maximum daily coverage", "Top placement across all categories", "Full analytics suite", "Custom boost campaigns", "Dynasty crown badge"],
-  },
-  {
-    id: "overlord", name: "Overlord", emoji: "🛡️", price: 749.99, color: "#ef4444", boosts: 230, popular: false,
-    features: ["230 boosts/month — every peak + evening slot", "Homepage featured placement guaranteed", "Real-time boost analytics dashboard", "Cross-platform social promotion"],
-  },
-  {
-    id: "conqueror", name: "Conqueror", emoji: "⚔️", price: 1499.99, color: "#06b6d4", boosts: 380, popular: false,
-    features: ["380 boosts/month — comprehensive 24/7 coverage", "Priority placement across every feed", "Full revenue & analytics API access", "Custom branded boost campaigns"],
-  },
-  {
-    id: "emperor", name: "Emperor", emoji: "🏯", price: 2999.99, color: "#10b981", boosts: 550, popular: false,
-    features: ["550 boosts/month — saturated coverage all timezones", "Guaranteed homepage feature daily", "Quarterly performance strategy review"],
-  },
-  {
-    id: "sovereign", name: "Sovereign", emoji: "🔱", price: 4999.99, color: "#e2e8f0", boosts: 9999, popular: false,
-    features: ["Unlimited boosts — every available slot, every day", "Sovereign crown profile frame", "Newsletter & campaign features", "Premium analytics API access", "Quarterly strategy review", "VIP support SLA < 1hr", "Direct access to VIP staff"],
+    id: "pinnacle", name: "Pinnacle", emoji: "🌠", price: 249, color: "#00d4ff", boosts: 120, popular: false,
+    features: [
+      "120 boosts/month — maximum daily coverage, all timezones",
+      "Guaranteed homepage placement daily",
+      "Cross-platform social promotion",
+      "Custom branded boost campaigns",
+      "Full revenue & analytics API access",
+      "Dedicated VIP support line (< 1hr SLA)",
+      "Pinnacle crown profile frame",
+      "Newsletter & campaign features",
+      "Quarterly performance strategy review",
+    ],
   },
 ];
 
