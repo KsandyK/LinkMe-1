@@ -23,25 +23,40 @@ type BadgeDef = {
   emoji: string;
   name: string;
   desc: string;
-  type: "membership" | "credits";
-  /** membership IDs that unlock this */
+  type: "membership" | "credits" | "boost";
+  /** membership IDs that unlock this badge (any match = unlocked) */
   levels?: string[];
+  /** boost IDs that unlock this badge (any match = unlocked) */
+  boostLevels?: string[];
   /** credit balance threshold to unlock */
   threshold?: number;
 };
 
 const ACCOUNT_BADGES: BadgeDef[] = [
-  // Membership badges (unlock at given level or above)
-  { id: "fan",         emoji: "⭐", name: "Fan",          desc: "Fan membership",         type: "membership", levels: ["fan","supporter","superfan","allaccess","creatorpass"] },
-  { id: "supporter",   emoji: "🌟", name: "Supporter",    desc: "Supporter membership",   type: "membership", levels: ["supporter","superfan","allaccess","creatorpass"] },
-  { id: "superfan",    emoji: "💫", name: "Super Fan",    desc: "Super Fan membership",   type: "membership", levels: ["superfan","allaccess","creatorpass"] },
-  { id: "allaccess",   emoji: "👑", name: "VIP Member",   desc: "All-Access membership",  type: "membership", levels: ["allaccess","creatorpass"] },
-  { id: "creatorpass", emoji: "💎", name: "Creator Elite","desc": "Creator Pass holder",  type: "membership", levels: ["creatorpass"] },
-  // Credit balance badges
-  { id: "credits_100",  emoji: "💰", name: "Tipped",       desc: "100+ credits",   type: "credits", threshold: 100 },
-  { id: "credits_500",  emoji: "💸", name: "Big Spender",  desc: "500+ credits",   type: "credits", threshold: 500 },
-  { id: "credits_2000", emoji: "🐋", name: "Whale",        desc: "2,000+ credits", type: "credits", threshold: 2000 },
-] as const;
+  // ── Membership badges — one per paid tier, unlocked at that tier or above ──
+  { id: "fan",          emoji: "❤️",  name: "Fan",             desc: "Fan membership",                    type: "membership", levels: ["fan","supporter","superfan","devotee","allaccess","elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "supporter",    emoji: "🔥",  name: "Supporter",       desc: "Supporter membership",              type: "membership", levels: ["supporter","superfan","devotee","allaccess","elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "superfan",     emoji: "💎",  name: "Super Fan",       desc: "Super Fan membership",              type: "membership", levels: ["superfan","devotee","allaccess","elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "devotee",      emoji: "💖",  name: "Devotee",         desc: "Devotee membership",                type: "membership", levels: ["devotee","allaccess","elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "allaccess",    emoji: "🏆",  name: "All-Access",      desc: "All-Access membership",             type: "membership", levels: ["allaccess","elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "elite",        emoji: "⭐",  name: "Elite",           desc: "Elite membership",                  type: "membership", levels: ["elite","creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "creatorpass",  emoji: "👑",  name: "Creator Crown",   desc: "Creator Pass — profile crown frame",type: "membership", levels: ["creatorpass","blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "blackcard",    emoji: "🖤",  name: "Black Card",      desc: "Black Card exclusive badge",        type: "membership", levels: ["blackcard","diamond","obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "obsidian",     emoji: "🔮",  name: "Obsidian Elite",  desc: "Obsidian membership",               type: "membership", levels: ["obsidian","titanium","gold","imperial","apex","platinum_m"] },
+  { id: "titanium",     emoji: "🔷",  name: "Titanium",        desc: "Titanium membership",               type: "membership", levels: ["titanium","gold","imperial","apex","platinum_m"] },
+  { id: "gold_m",       emoji: "🥇",  name: "Gold",            desc: "Gold membership",                   type: "membership", levels: ["gold","imperial","apex","platinum_m"] },
+  { id: "imperial",     emoji: "⚜️",  name: "Imperial",        desc: "Imperial membership",               type: "membership", levels: ["imperial","apex","platinum_m"] },
+  { id: "apex",         emoji: "🏔️",  name: "Apex Elite",      desc: "Apex membership — crown frame",     type: "membership", levels: ["apex","platinum_m"] },
+  { id: "platinum_m",   emoji: "🪙",  name: "Platinum Crown",  desc: "Platinum membership — crown frame", type: "membership", levels: ["platinum_m"] },
+  // ── Boost badges — unlocked by active boost tier or higher ──────────────
+  { id: "legend_boost",   emoji: "👑", name: "VIP Creator",     desc: "Legend boost — VIP badge on profile",   type: "boost", boostLevels: ["legend","titan","pinnacle"] },
+  { id: "titan_boost",    emoji: "🏆", name: "Titan Frame",     desc: "Titan boost — custom profile frame",    type: "boost", boostLevels: ["titan","pinnacle"] },
+  { id: "pinnacle_boost", emoji: "🌠", name: "Pinnacle Crown",  desc: "Pinnacle boost — crown profile frame",  type: "boost", boostLevels: ["pinnacle"] },
+  // ── Credit balance badges ────────────────────────────────────────────────
+  { id: "credits_100",  emoji: "💰", name: "Tipped",      desc: "100+ credits",   type: "credits", threshold: 100   },
+  { id: "credits_500",  emoji: "💸", name: "Big Spender", desc: "500+ credits",   type: "credits", threshold: 500   },
+  { id: "credits_2000", emoji: "🐋", name: "Whale",       desc: "2,000+ credits", type: "credits", threshold: 2000  },
+];
 
 // ── Card helpers (mirrors Billing.tsx) ───────────────────────────────────────
 interface SavedCard { id: string; last4: string; brand: string; expiry: string; name: string; isDefault: boolean }
@@ -290,6 +305,7 @@ export default function Account() {
   const isBadgeUnlocked = (b: BadgeDef): boolean => {
     if (b.type === "membership") return (b.levels ?? []).includes(activeMembership);
     if (b.type === "credits")    return credits >= (b.threshold ?? 0);
+    if (b.type === "boost")      return (b.boostLevels ?? []).includes(activeBoost ?? "");
     return false;
   };
 
@@ -690,7 +706,7 @@ export default function Account() {
                   </div>
 
                   <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.25)" }}>
-                    Earn badges through memberships &amp; credits. Tap to equip.
+                    Earn badges through memberships, profile boosts &amp; credits. Tap to equip.
                   </p>
                 </div>
               </div>
