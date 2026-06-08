@@ -250,6 +250,8 @@ export default function StreamView() {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fsChatOpen, setFsChatOpen] = useState(true);
+  const [fsTipOpen, setFsTipOpen] = useState(false);
+  const [fsTipTab, setFsTipTab] = useState<"gifts" | "menu">("gifts");
   const fsChatEndRef = useRef<HTMLDivElement>(null);
   const giftDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1051,6 +1053,87 @@ export default function StreamView() {
                         </div>
                       ))}
                       <div ref={fsChatEndRef} />
+                    </div>
+
+                    {/* ── Tip widget ─────────────────────────────────────── */}
+                    <div className="border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                      {/* Toggle bar */}
+                      <button
+                        onClick={() => setFsTipOpen(o => !o)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 transition-all hover:bg-white/5"
+                        style={{ color: fsTipOpen ? "#e8a87c" : "rgba(255,255,255,0.5)" }}>
+                        <div className="flex items-center gap-2 text-xs font-bold">
+                          <Gift className="w-3.5 h-3.5" />
+                          Send a Tip
+                        </div>
+                        <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: fsTipOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+                      </button>
+
+                      {/* Expanded tip panel */}
+                      {fsTipOpen && (
+                        <div style={{ background: "rgba(0,0,0,0.35)" }}>
+                          {/* Tab switcher */}
+                          <div className="flex border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                            <button
+                              onClick={() => setFsTipTab("gifts")}
+                              className="flex-1 py-2 text-xs font-semibold transition-colors"
+                              style={{ color: fsTipTab === "gifts" ? "#14b8a6" : "rgba(255,255,255,0.35)", borderBottom: fsTipTab === "gifts" ? "2px solid #14b8a6" : "2px solid transparent" }}>
+                              🎁 Gifts
+                            </button>
+                            <button
+                              onClick={() => setFsTipTab("menu")}
+                              className="flex-1 py-2 text-xs font-semibold transition-colors"
+                              style={{ color: fsTipTab === "menu" ? "#e8a87c" : "rgba(255,255,255,0.35)", borderBottom: fsTipTab === "menu" ? "2px solid #e8a87c" : "2px solid transparent" }}>
+                              💸 Tip Menu
+                            </button>
+                          </div>
+
+                          {/* Gifts tab */}
+                          {fsTipTab === "gifts" && (
+                            <div className="flex gap-2 px-3 py-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                              {quickGifts.map(gift => (
+                                <button
+                                  key={gift.id}
+                                  onClick={() => { sendGift(gift); setFsTipOpen(false); }}
+                                  disabled={credits < gift.creditCost}
+                                  className="flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  style={{
+                                    background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                                    border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.1)",
+                                    minWidth: "60px",
+                                  }}>
+                                  <span className="text-xl leading-none">{gift.emoji}</span>
+                                  <span className="text-xs text-white font-semibold mt-1 truncate max-w-[56px]">{gift.name}</span>
+                                  <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Tip menu tab */}
+                          {fsTipTab === "menu" && (
+                            <div className="grid grid-cols-2 gap-2 px-3 py-2.5">
+                              {DEMO_TIP_MENU.map(item => (
+                                <button
+                                  key={item.name}
+                                  onClick={() => { sendTipItem(item); setFsTipOpen(false); }}
+                                  disabled={credits < item.credits}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  style={{
+                                    background: sentGift === `tip-${item.name}` ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+                                    border: sentGift === `tip-${item.name}` ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.08)",
+                                  }}>
+                                  <span className="text-lg">{item.emoji}</span>
+                                  <div className="text-left min-w-0">
+                                    <p className="text-xs font-semibold text-white truncate">{item.name}</p>
+                                    <p className="text-xs font-mono" style={{ color: "#e8a87c" }}>{item.credits} cr</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Input */}
