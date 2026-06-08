@@ -1090,20 +1090,19 @@ export default function StreamView() {
 
                           {/* Gifts tab */}
                           {fsTipTab === "gifts" && (
-                            <div className="flex gap-2 px-3 py-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                              {quickGifts.map(gift => (
+                            <div className="grid grid-cols-3 gap-2 px-3 py-2.5 max-h-44 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+                              {allGifts.map(gift => (
                                 <button
                                   key={gift.id}
                                   onClick={() => { sendGift(gift); setFsTipOpen(false); }}
                                   disabled={credits < gift.creditCost}
-                                  className="flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                                   style={{
                                     background: sentGift === gift.id ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
                                     border: sentGift === gift.id ? "1px solid #14b8a6" : "1px solid rgba(255,255,255,0.1)",
-                                    minWidth: "60px",
                                   }}>
-                                  <span className="text-xl leading-none">{gift.emoji}</span>
-                                  <span className="text-xs text-white font-semibold mt-1 truncate max-w-[56px]">{gift.name}</span>
+                                  <span className="text-2xl leading-none">{gift.emoji}</span>
+                                  <span className="text-xs text-white font-semibold mt-1 text-center leading-tight">{gift.name}</span>
                                   <span className="text-xs font-mono" style={{ color: "#14b8a6" }}>{gift.creditCost} cr</span>
                                 </button>
                               ))}
