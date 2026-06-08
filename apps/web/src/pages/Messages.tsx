@@ -618,25 +618,34 @@ export default function Messages() {
                     messages.map((msg) => {
                       const isMe = msg.senderId === user?.id || msg.senderId === "me" || msg.sender?.id === user?.id;
                       const senderAv = isMe ? null : avatarUrl(selectedConv.otherParticipant);
+                      const myBadgeEmoji = localStorage.getItem("vl_equipped_badge_emoji_v1") || null;
                       return (
                         <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                           {!isMe && (
-                            senderAv
-                              ? <img src={senderAv} alt="" className="w-6 h-6 rounded-full object-cover mr-2 flex-shrink-0 self-end mb-1" />
-                              : <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0 self-end mb-1"
-                                  style={{ background: "linear-gradient(135deg,#14b8a6,#0d9488)", color: "white" }}>
-                                  {avatarInitial(selectedConv.otherParticipant)}
-                                </div>
+                            <div className="relative mr-2 flex-shrink-0 self-end mb-1">
+                              {senderAv
+                                ? <img src={senderAv} alt="" className="w-6 h-6 rounded-full object-cover" />
+                                : <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                                    style={{ background: "linear-gradient(135deg,#14b8a6,#0d9488)", color: "white" }}>
+                                    {avatarInitial(selectedConv.otherParticipant)}
+                                  </div>
+                              }
+                            </div>
                           )}
-                          <div className="max-w-[72%] px-3.5 py-2.5 rounded-2xl text-sm"
-                            style={isMe
-                              ? { background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white", borderBottomRightRadius: "4px" }
-                              : { background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.88)", borderBottomLeftRadius: "4px" }
-                            }>
-                            <p style={{ lineHeight: 1.45 }}>{msg.text}</p>
-                            <p className="text-xs mt-1 opacity-50 text-right">
-                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                            </p>
+                          <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[72%]`}>
+                            {isMe && myBadgeEmoji && (
+                              <span className="text-xs mb-0.5 px-1" title="Your profile badge">{myBadgeEmoji}</span>
+                            )}
+                            <div className="px-3.5 py-2.5 rounded-2xl text-sm w-full"
+                              style={isMe
+                                ? { background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white", borderBottomRightRadius: "4px" }
+                                : { background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.88)", borderBottomLeftRadius: "4px" }
+                              }>
+                              <p style={{ lineHeight: 1.45 }}>{msg.text}</p>
+                              <p className="text-xs mt-1 opacity-50 text-right">
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       );

@@ -28,6 +28,8 @@ interface ChatMsg {
   text: string;
   creditTip: number;
   createdAt: string;
+  /** Equipped profile badge emoji, shown before username */
+  badge?: string;
 }
 
 // ── Creator Drop (sent FROM creator TO viewers) ───────────────────────────────
@@ -183,6 +185,8 @@ export default function StreamView() {
 
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
+  /** Current user's equipped badge emoji — read from localStorage, refreshes on mount */
+  const myBadge = localStorage.getItem("vl_equipped_badge_emoji_v1") || undefined;
   const [viewerCount, setViewerCount] = useState(0);
   const [muted, setMuted] = useState(true);
   const [showGifts, setShowGifts] = useState(false);
@@ -383,6 +387,7 @@ export default function StreamView() {
         text: String(data.text ?? ""),
         creditTip: Number(data.creditTip ?? 0),
         createdAt: String(data.createdAt ?? new Date().toISOString()),
+        badge: typeof data.badge === "string" ? data.badge : undefined,
       }]);
     });
 
@@ -474,6 +479,7 @@ export default function StreamView() {
         text,
         creditTip: 0,
         createdAt: new Date().toISOString(),
+        badge: myBadge,
       }]);
     }
   }, [draft, user, isLoggedIn, spendCredits, showToast]);
@@ -495,7 +501,7 @@ export default function StreamView() {
         } else {
           setMsgs(prev => [...prev, {
             id: String(Date.now()), userId: user?.id ?? "me",
-            username: user?.username ?? "You", text,
+            username: user?.username ?? "You", text, badge: myBadge,
             creditTip: gift.creditCost, createdAt: new Date().toISOString(),
           }]);
         }
@@ -510,7 +516,7 @@ export default function StreamView() {
         const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
         setMsgs(prev => [...prev, {
           id: String(Date.now()), userId: user?.id ?? "me",
-          username: user?.username ?? "You", text,
+          username: user?.username ?? "You", text, badge: myBadge,
           creditTip: gift.creditCost, createdAt: new Date().toISOString(),
         }]);
       }
@@ -525,7 +531,7 @@ export default function StreamView() {
       const text = `${gift.emoji} +${gift.creditCost} tip — ${gift.name}!`;
       setMsgs(prev => [...prev, {
         id: String(Date.now()), userId: user?.id ?? "me",
-        username: user?.username ?? "You", text,
+        username: user?.username ?? "You", text, badge: myBadge,
         creditTip: gift.creditCost, createdAt: new Date().toISOString(),
       }]);
     }
@@ -546,7 +552,7 @@ export default function StreamView() {
     } else {
       setMsgs(prev => [...prev, {
         id: String(Date.now()), userId: user?.id ?? "me",
-        username: user?.username ?? "You", text,
+        username: user?.username ?? "You", text, badge: myBadge,
         creditTip: item.credits, createdAt: new Date().toISOString(),
       }]);
     }
@@ -587,6 +593,7 @@ export default function StreamView() {
       text: `🎁 I just claimed the drop: ${activeDrop.typeEmoji} ${activeDrop.description}!`,
       creditTip: 0,
       createdAt: new Date().toISOString(),
+      badge: myBadge,
     }]);
 
     showToast({ title: "🎁 Claimed!", description: activeDrop.description });
@@ -1063,6 +1070,9 @@ export default function StreamView() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-baseline gap-1 flex-wrap">
+                    {msg.badge && (
+                      <span className="text-xs leading-none" title="Profile badge">{msg.badge}</span>
+                    )}
                     <span className="text-xs font-bold" style={{ color: msg.creditTip > 0 ? "#e8a87c" : "#14b8a6" }}>
                       {msg.username}
                     </span>

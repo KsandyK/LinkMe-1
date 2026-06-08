@@ -312,8 +312,14 @@ export default function Account() {
   const handleEquipBadge = (id: string) => {
     const next = equippedBadge === id ? null : id;
     setEquippedBadge(next);
-    if (next) localStorage.setItem("vl_equipped_badge_v1", next);
-    else localStorage.removeItem("vl_equipped_badge_v1");
+    if (next) {
+      localStorage.setItem("vl_equipped_badge_v1", next);
+      const emoji = ACCOUNT_BADGES.find(b => b.id === next)?.emoji ?? "";
+      localStorage.setItem("vl_equipped_badge_emoji_v1", emoji);
+    } else {
+      localStorage.removeItem("vl_equipped_badge_v1");
+      localStorage.removeItem("vl_equipped_badge_emoji_v1");
+    }
   };
 
   // Danger zone modals
