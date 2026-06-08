@@ -14,7 +14,7 @@ import { MOCK_LIVE_FEEDS, MOCK_GIFTS } from "@/lib/mock-data";
 import { createLiveSocket, CravrSocket } from "@/lib/socket";
 import {
   ChevronLeft, Eye, Gift, Zap, Send, Users,
-  Volume2, VolumeX, Maximize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
+  Volume2, VolumeX, Maximize2, Minimize2, Crown, Radio, Loader2, ChevronDown, Target, BarChart, Sparkles, X,
   Bell, CheckCircle2, CreditCard, Star,
 } from "lucide-react";
 import { ReportButton } from "@/components/ReportButton";
@@ -247,6 +247,8 @@ export default function StreamView() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<CravrSocket | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const giftDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close gift dropdown on outside click; reset expanded state when closed
@@ -449,6 +451,21 @@ export default function StreamView() {
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = muted;
   }, [muted]);
+
+  // ── Fullscreen ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      videoContainerRef.current?.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
 
   // ── Chat message credit cost (matches private message cost in Messages.tsx) ──
   const CHAT_CREDIT_COST = 5;
@@ -930,7 +947,7 @@ export default function StreamView() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* ── Video area ────────────────────────────────────────────────────── */}
           {/* HLS.js when feed.hlsUrl is set; animated demo placeholder otherwise */}
-          <div className="relative flex-1 bg-black flex items-center justify-center" style={{ minHeight: 0 }}>
+          <div ref={videoContainerRef} className="relative flex-1 bg-black flex items-center justify-center" style={{ minHeight: 0 }}>
             {/* HLS video element — visible when live stream is active */}
             <video ref={videoRef} autoPlay playsInline muted={muted}
               className="absolute inset-0 w-full h-full object-cover"
@@ -1000,8 +1017,14 @@ export default function StreamView() {
                       ? <VolumeX className="w-4 h-4 text-white" />
                       : <Volume2 className="w-4 h-4 text-white" />}
                   </button>
-                  <button className="p-2 rounded-lg transition-all hover:bg-white/10" style={{ background: "rgba(0,0,0,0.5)" }}>
-                    <Maximize2 className="w-4 h-4 text-white" />
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-2 rounded-lg transition-all hover:bg-white/10"
+                    style={{ background: "rgba(0,0,0,0.5)" }}
+                    title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
+                    {isFullscreen
+                      ? <Minimize2 className="w-4 h-4 text-white" />
+                      : <Maximize2 className="w-4 h-4 text-white" />}
                   </button>
                 </div>
               </div>
