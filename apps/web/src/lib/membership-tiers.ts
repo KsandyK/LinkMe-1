@@ -216,17 +216,13 @@ export const BOOST_TIERS: BoostTier[] = [
     features: ["50 boosts/month — peak + selected off-peak slots", "Top of every feed", "Custom profile frame", "Full revenue & analytics suite"],
   },
   {
-    id: "pinnacle", name: "Pinnacle", emoji: "🌠", price: 249, color: "#00d4ff", boosts: 120, popular: false,
+    id: "pinnacle", name: "Pinnacle", emoji: "🌠", price: 249.99, color: "#00d4ff", boosts: 120, popular: false,
     features: [
       "120 boosts/month — maximum daily coverage, all timezones",
       "Guaranteed homepage placement daily",
-      "Cross-platform social promotion",
-      "Custom branded boost campaigns",
       "Full revenue & analytics API access",
       "Dedicated VIP support line (< 1hr SLA)",
       "Pinnacle crown profile frame",
-      "Newsletter & campaign features",
-      "Quarterly performance strategy review",
     ],
   },
 ];
