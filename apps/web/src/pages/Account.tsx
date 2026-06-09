@@ -141,7 +141,14 @@ export default function Account() {
   });
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [notifs, setNotifs] = useState({ messages: true, liveAlerts: true, promotions: false, security: true });
+  const NOTIF_KEY = "vl_notif_prefs_v1";
+  const [notifs, setNotifs] = useState<{ messages: boolean; liveAlerts: boolean; promotions: boolean; security: boolean }>(() => {
+    try {
+      const stored = localStorage.getItem(NOTIF_KEY);
+      return stored ? JSON.parse(stored) : { messages: true, liveAlerts: true, promotions: false, security: true };
+    } catch { return { messages: true, liveAlerts: true, promotions: false, security: true }; }
+  });
+  const [notifSaved, setNotifSaved] = useState(false);
 
   // Security sub-states
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
@@ -1190,13 +1197,21 @@ export default function Account() {
             {/* Notifications tab */}
             {activeTab === "notifications" && (
               <div className="space-y-5">
-                <h2 className="text-base font-bold text-white">Notification Preferences</h2>
-                {[
-                  { key: "messages" as const, label: "New Messages", desc: "When a creator messages you" },
-                  { key: "liveAlerts" as const, label: "Live Alerts", desc: "When creators you follow go live" },
-                  { key: "promotions" as const, label: "Promotions & Offers", desc: "Credit deals and special offers" },
-                  { key: "security" as const, label: "Security Alerts", desc: "Login and account activity" },
-                ].map(n => (
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-bold text-white">Notification Preferences</h2>
+                  {notifSaved && (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold"
+                      style={{ color: "#14b8a6" }}>
+                      <CheckCircle className="w-3.5 h-3.5" /> Saved
+                    </span>
+                  )}
+                </div>
+                {([
+                  { key: "messages"   as const, label: "New Messages",        desc: "When a creator messages you" },
+                  { key: "liveAlerts" as const, label: "Live Alerts",          desc: "When creators you follow go live" },
+                  { key: "promotions" as const, label: "Promotions & Offers",  desc: "Credit deals and special offers" },
+                  { key: "security"   as const, label: "Security Alerts",      desc: "Login and account activity" },
+                ] as const).map(n => (
                   <div key={n.key} className="flex items-center justify-between py-3 border-b"
                     style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                     <div>
@@ -1204,7 +1219,16 @@ export default function Account() {
                       <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{n.desc}</p>
                     </div>
                     <button
-                      onClick={() => setNotifs(prev => ({ ...prev, [n.key]: !prev[n.key] }))}
+                      role="switch"
+                      aria-checked={notifs[n.key]}
+                      aria-label={n.label}
+                      onClick={() => {
+                        const next = { ...notifs, [n.key]: !notifs[n.key] };
+                        setNotifs(next);
+                        try { localStorage.setItem(NOTIF_KEY, JSON.stringify(next)); } catch {}
+                        setNotifSaved(true);
+                        setTimeout(() => setNotifSaved(false), 2000);
+                      }}
                       className="w-11 h-6 rounded-full transition-all duration-200 relative flex-shrink-0"
                       style={{ background: notifs[n.key] ? "#14b8a6" : "rgba(255,255,255,0.1)" }}>
                       <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200"
@@ -1212,6 +1236,9 @@ export default function Account() {
                     </button>
                   </div>
                 ))}
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  Preferences are saved to this device. Push notifications require the mobile app.
+                </p>
               </div>
             )}
           </div>
