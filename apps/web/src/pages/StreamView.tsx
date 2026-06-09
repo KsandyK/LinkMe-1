@@ -127,7 +127,6 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
     perks: [
       "Obsidian 🔮 badge + bi-weekly video calls + all subscriber content",
       "Opportunity to co-create or appear in the creator's content",
-      "Exclusive hand-signed physical merchandise shipped monthly",
       "Vote on upcoming content topics and formats",
     ],
   },
@@ -138,7 +137,7 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
       "Platinum 🪙 badge + bi-weekly calls + all subscriber content",
       "Unlimited direct messages to the creator, any time",
       "Your name credited in content descriptions & posts",
-      "Guaranteed reply to every message within 4 hours",
+      "Guaranteed reply to every message within 24 hours",
     ],
   },
   {
@@ -148,7 +147,7 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
       "Legend 🏆 badge + unlimited DMs + all subscriber content",
       "Monthly exclusive private livestream for Legend members only",
       "Named as a character or reference in the creator's content",
-      "On-request direct video call access with the creator",
+      "Priority response to every DM within 12 hours",
     ],
   },
   {
