@@ -866,49 +866,36 @@ export default function Account() {
                     ))}
                   </div>
 
-                  {/* Add card form */}
+                  {/* Add card — coming soon panel */}
                   {showAddCard && (
-                    <div className="rounded-xl p-4 space-y-3"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(20,184,166,0.2)" }}>
-                      <p className="text-xs font-bold text-white mb-1">New Card</p>
-                      <div>
-                        <input value={cardForm.number} onChange={e => setCardForm(f => ({ ...f, number: fmtCardNum(e.target.value) }))}
-                          placeholder="Card number" maxLength={19}
-                          className="vl-input w-full font-mono"
-                          style={{ borderColor: cardErrors.number ? "rgba(239,68,68,0.5)" : undefined }} />
-                        {cardErrors.number && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.number}</p>}
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <input value={cardForm.expiry} onChange={e => setCardForm(f => ({ ...f, expiry: fmtExpiry(e.target.value) }))}
-                            placeholder="MM/YY" maxLength={5}
-                            className="vl-input w-full"
-                            style={{ borderColor: cardErrors.expiry ? "rgba(239,68,68,0.5)" : undefined }} />
-                          {cardErrors.expiry && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.expiry}</p>}
+                    <div className="rounded-xl overflow-hidden"
+                      style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>
+                      <div className="p-6 text-center">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                          style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.15)" }}>
+                          <Lock className="w-5 h-5" style={{ color: "#14b8a6" }} />
                         </div>
-                        <div>
-                          <input value={cardForm.cvv} onChange={e => setCardForm(f => ({ ...f, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                            placeholder="CVV" maxLength={4}
-                            className="vl-input w-full"
-                            style={{ borderColor: cardErrors.cvv ? "rgba(239,68,68,0.5)" : undefined }} />
-                          {cardErrors.cvv && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.cvv}</p>}
-                        </div>
+                        <p className="text-sm font-bold text-white mb-1.5">Payment methods available once checkout is live</p>
+                        <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+                          Cards are added securely through our payment processor at checkout — coming soon.
+                        </p>
                       </div>
-                      <div>
-                        <input value={cardForm.name} onChange={e => setCardForm(f => ({ ...f, name: e.target.value }))}
-                          placeholder="Name on card"
-                          className="vl-input w-full"
-                          style={{ borderColor: cardErrors.name ? "rgba(239,68,68,0.5)" : undefined }} />
-                        {cardErrors.name && <p className="text-xs mt-1" style={{ color: "#f87171" }}>{cardErrors.name}</p>}
+                      <div className="px-6 pb-4 text-center">
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          Processed securely · Statement shows "CRAVR"
+                        </p>
                       </div>
-                      <div className="flex gap-2 pt-1">
-                        <button onClick={() => { setShowAddCard(false); setCardErrors({}); }}
-                          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
-                          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Cancel</button>
-                        <button onClick={handleAddCard}
-                          className="flex-1 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-                          style={{ background: "#14b8a6", color: "white" }}>
-                          {cardSaved ? "✓ Saved" : "Save Card"}
+                      <div className="px-6 py-3 text-center"
+                        style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          All transactions are processed securely. Charges will appear on your statement as "CRAVR".
+                        </p>
+                      </div>
+                      <div className="px-6 pb-4 pt-3 flex justify-center">
+                        <button onClick={() => setShowAddCard(false)}
+                          className="text-xs px-4 py-1.5 rounded-lg transition-all hover:bg-white/5"
+                          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}>
+                          Close
                         </button>
                       </div>
                     </div>
