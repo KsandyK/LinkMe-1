@@ -112,21 +112,13 @@ const CREATOR_SUB_TIERS: CreatorSubTier[] = [
   },
   // ── Next 5 (revealed via Show More) ──────────────────────────────────────
   {
-    id: "diamond", name: "Diamond", emoji: "💠", price: 149.99, priceStr: "$149.99",
+    id: "diamond", name: "Diamond", emoji: "💠", price: 299.99, priceStr: "$299.99",
     color: "#38bdf8", popular: false,
     perks: [
-      "Diamond 💠 badge + weekly video calls + all subscriber content",
+      "Diamond 💠 badge + all subscriber content",
       "Monthly personalized video message recorded just for you",
       "Behind-the-scenes content not available anywhere else",
       "First access to merchandise before public release",
-    ],
-  },
-  {
-    id: "obsidian", name: "Obsidian", emoji: "🔮", price: 299.99, priceStr: "$299.99",
-    color: "#a78bfa", popular: false,
-    perks: [
-      "Obsidian 🔮 badge + bi-weekly video calls + all subscriber content",
-      "Opportunity to co-create or appear in the creator's content",
       "Vote on upcoming content topics and formats",
     ],
   },
