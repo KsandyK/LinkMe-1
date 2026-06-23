@@ -495,27 +495,26 @@ export default function Home() {
               const rankColors = ["#f59e0b", "#94a3b8", "#cd7c4e"];
               const rankEmojis = ["🥇", "🥈", "🥉"];
               return (
-                <Link key={creator.id} href={`/profile/${creator.userId}`}>
-                  <div className="vl-card p-4 flex items-center gap-4 cursor-pointer group hover:bg-white/5 transition-all">
-                    <div className="text-xl font-bold w-8 text-center flex-shrink-0">{rankEmojis[i]}</div>
-                    <img src={avatarUrl} alt={displayName}
-                      className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2"
-                      style={{ borderColor: rankColors[i] }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-white truncate">{displayName}</p>
-                      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        ${(creator.totalEarnings ?? 0).toLocaleString()} in gifts
-                      </p>
-                    </div>
-                    <Link href={`/gifts`}>
-                      <button onClick={e => e.stopPropagation()}
-                        className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
-                        style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
-                        Gift 🎁
-                      </button>
-                    </Link>
+                <div key={creator.id} role="link" tabIndex={0}
+                  onClick={() => navigate(`/profile/${creator.userId}`)}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/profile/${creator.userId}`); } }}
+                  className="vl-card p-4 flex items-center gap-4 cursor-pointer group hover:bg-white/5 transition-all">
+                  <div className="text-xl font-bold w-8 text-center flex-shrink-0">{rankEmojis[i]}</div>
+                  <img src={avatarUrl} alt={displayName}
+                    className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2"
+                    style={{ borderColor: rankColors[i] }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-white truncate">{displayName}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      ${(creator.totalEarnings ?? 0).toLocaleString()} in gifts
+                    </p>
                   </div>
-                </Link>
+                  <button onClick={e => { e.stopPropagation(); navigate("/gifts"); }}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
+                    style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
+                    Gift 🎁
+                  </button>
+                </div>
               );
             })}
           </div>
