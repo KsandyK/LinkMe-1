@@ -1438,9 +1438,11 @@ export default function CreatorDashboard() {
                 return acc;
               }, {});
 
-              // Boost tier cards — the purchase surface, now living in the dashboard
+              // Boost tier cards — the purchase surface, now living in the dashboard.
+              // This renders inside the 2/3-width main column (lg:col-span-2), so cap
+              // at 2–3 columns; 4 would crowd the cards and force heavy text wrapping.
               const boostPlansGrid = (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   {BOOST_TIERS.map(pkg => {
                     const isPinnacle = pkg.id === "pinnacle";
                     const isActive = activeBoost === pkg.id;
