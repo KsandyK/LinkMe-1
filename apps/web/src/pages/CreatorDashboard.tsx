@@ -1448,7 +1448,7 @@ export default function CreatorDashboard() {
                     const isActive = activeBoost === pkg.id;
                     return (
                       <div key={pkg.id}
-                        className="vl-tier-card relative flex flex-col p-4 rounded-2xl border"
+                        className="vl-tier-card relative flex flex-col p-5 rounded-2xl border"
                         style={{
                           borderColor: isActive ? "#4ade80" : isPinnacle ? `${pkg.color}88` : pkg.popular ? pkg.color : "rgba(255,255,255,0.08)",
                           background: isPinnacle
@@ -1469,14 +1469,19 @@ export default function CreatorDashboard() {
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
                             style={{ background: "#4ade80", color: "#04121a" }}>✓ ACTIVE</div>
                         )}
-                        <div className="text-3xl mb-1.5">{pkg.emoji}</div>
-                        <h3 className="text-base font-bold text-white mb-0.5">{pkg.name}</h3>
-                        <p className="font-black text-2xl mb-0" style={{ color: pkg.color }}>{pkg.boosts >= 9999 ? "∞" : pkg.boosts}</p>
-                        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>{pkg.boosts >= 9999 ? "unlimited" : "boosts/mo"}</p>
-                        <p className="text-xl font-bold text-white mb-3">
-                          ${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}
-                          <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
-                        </p>
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="text-3xl">{pkg.emoji}</span>
+                          <div>
+                            <h3 className="text-lg font-black text-white">{pkg.name}</h3>
+                            <p className="text-xs" style={{ color: pkg.color }}>
+                              {pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/mo`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <span className="text-3xl font-black text-white">${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}</span>
+                          <span className="text-sm ml-1" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
+                        </div>
                         <ul className="space-y-1.5 flex-1 mb-4">
                           {pkg.features.map(f => (
                             <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
