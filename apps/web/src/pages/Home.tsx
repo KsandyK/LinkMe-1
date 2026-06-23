@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { profiles as profilesApi, livefeeds as liveApi, stats as statsApi, CreatorProfileItem, LiveFeedItem } from "@/lib/api";
 import { MOCK_PROFILES, MOCK_LIVE_FEEDS } from "@/lib/mock-data";
 import { Radio, Zap, Shield, Crown, ChevronRight, ChevronLeft, Eye, Star, Search, Gift, Sparkles } from "lucide-react";
+import { ActivityDot } from "@/components/ActivityStatus";
+import { getViewed } from "@/lib/viewHistory";
+import { DailyReward } from "@/components/DailyReward";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -37,6 +40,7 @@ function CreatorCard({ creator }: { creator: CreatorProfileItem }) {
           </div>
           {location && <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {location}</p>}
           {creator.bio && <p className="text-xs line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>{creator.bio}</p>}
+          <div className="mb-2"><ActivityDot seed={creator.user.username} isLive={creator.isLive} /></div>
           <div className="rounded-lg py-2 text-center text-xs font-bold text-white transition-all duration-200"
             style={{ background: creator.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
             {creator.isLive ? "● Join Live" : "View Profile"}
@@ -76,9 +80,23 @@ const MOCK_TOP_GIFTED: CreatorProfileItem[] = [...MOCK_PROFILES]
   }));
 
 export default function Home() {
-  const { ageVerificationStatus, activeBoost } = useApp();
+  const { ageVerificationStatus, activeBoost, isLoggedIn } = useApp();
   const [, navigate] = useLocation();
   const hasFeaturedSpot = activeBoost === "inferno" || activeBoost === "legend";
+
+  // ── "For You" — recommendations from recently-viewed history ──────────────
+  const forYou = useMemo(() => {
+    const viewed = getViewed();
+    if (viewed.length === 0) return [];
+    const viewedProfiles = viewed
+      .map(v => MOCK_PROFILES.find(p => p.id === v || p.username === v))
+      .filter((p): p is typeof MOCK_PROFILES[number] => Boolean(p));
+    const topGender = viewedProfiles[0]?.gender;
+    const notViewed = MOCK_PROFILES.filter(p => !viewed.includes(p.id) && !viewed.includes(p.username));
+    const biased = topGender ? notViewed.filter(p => p.gender === topGender) : [];
+    const rest = notViewed.filter(p => !biased.includes(p));
+    return [...biased, ...rest].slice(0, 4);
+  }, []);
   const [liveFeeds, setLiveFeeds] = useState<LiveFeedItem[]>([]);
   const [featuredCreators, setFeaturedCreators] = useState<CreatorProfileItem[]>([]);
   const [newCreators, setNewCreators] = useState<CreatorProfileItem[]>(MOCK_NEW_CREATORS);
@@ -352,6 +370,63 @@ export default function Home() {
                           : <span />}
                         <span className="text-xs font-semibold"
                           style={{ color: "#ef4444" }}>● Join</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Daily reward + For You (logged-in retention loops) ── */}
+      {isLoggedIn && (
+        <section className="pt-8">
+          <div className="container">
+            <DailyReward />
+          </div>
+        </section>
+      )}
+
+      {/* ── For You — personalized from browse history ── */}
+      {isLoggedIn && forYou.length > 0 && (
+        <section className="py-6">
+          <div className="container">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                <h2 className="vl-section-title">For You</h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                  style={{ background: "rgba(20,184,166,0.12)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.25)" }}>
+                  PICKED FOR YOU
+                </span>
+              </div>
+              <Link href="/profiles"><span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>See more →</span></Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {forYou.map(p => {
+                const avatar = p.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`;
+                const cover = p.coverUrl ?? `https://picsum.photos/seed/${p.username}-cover/600/200`;
+                return (
+                  <Link key={p.id} href={`/profile/${p.id}`}>
+                    <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group">
+                      <div className="relative h-24 overflow-hidden">
+                        <img src={cover} alt={p.displayName ?? p.username}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.9) 0%, transparent 70%)" }} />
+                        {p.isLive && (
+                          <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />LIVE
+                          </div>
+                        )}
+                        <img src={avatar} alt={p.displayName ?? p.username}
+                          className="absolute bottom-0 translate-y-1/2 left-3 w-10 h-10 rounded-full border-2 object-cover z-10"
+                          style={{ borderColor: "#14b8a6" }} />
+                      </div>
+                      <div className="p-3 pt-7">
+                        <p className="text-sm font-bold text-white truncate">{p.displayName ?? p.username}</p>
+                        <div className="mt-1"><ActivityDot seed={p.username} isLive={p.isLive} /></div>
                       </div>
                     </div>
                   </Link>

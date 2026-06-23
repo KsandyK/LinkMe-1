@@ -64,19 +64,27 @@ export default function LiveFeeds() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    const mockFor = (cat: Category) =>
+      cat === "all" ? MOCK_FEED_ITEMS : MOCK_FEED_ITEMS.filter(f => f.category === cat);
     try {
       const data = await liveApi.list({
         category: category !== "all" ? category : undefined,
         limit: 30,
       });
-      setFeeds(Array.isArray(data) ? data : []);
-      setUsingFallback(false);
+      const arr = Array.isArray(data) ? data : [];
+      // A *successful* empty response (nobody live) is the common production
+      // case. Don't leave the page dead — seed demo activity so /live always
+      // has streams to browse. Only an error used to trigger this fallback.
+      if (arr.length === 0) {
+        setFeeds(mockFor(category));
+        setUsingFallback(true);
+      } else {
+        setFeeds(arr);
+        setUsingFallback(false);
+      }
     } catch {
       // API unavailable — use mock data, filter client-side
-      const results = category === "all"
-        ? MOCK_FEED_ITEMS
-        : MOCK_FEED_ITEMS.filter(f => f.category === category);
-      setFeeds(results);
+      setFeeds(mockFor(category));
       setUsingFallback(true);
     } finally {
       setLoading(false);

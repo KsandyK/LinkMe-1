@@ -5,6 +5,8 @@ import { MOCK_PROFILES } from "@/lib/mock-data";
 import { useApp } from "@/contexts/AppContext";
 import { Heart, Share2, Lock, Users, Star, ThumbsUp, Loader2, Bot } from "lucide-react";
 import { ReportButton } from "@/components/ReportButton";
+import { SimilarCreators } from "@/components/SimilarCreators";
+import { recordView } from "@/lib/viewHistory";
 
 interface ContentItem {
   id: string;
@@ -59,6 +61,7 @@ export default function ProfileDetail() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+    recordView(id); // remember for "For You" + similar recommendations
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -428,6 +431,11 @@ export default function ProfileDetail() {
           </div>
         </div>
       </div>
+
+      <SimilarCreators
+        currentId={creator.userId}
+        gender={MOCK_PROFILES.find(p => p.id === creator.userId || p.username === creator.user.username)?.gender}
+      />
     </div>
   );
 }

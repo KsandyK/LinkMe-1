@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { profiles as profilesApi, CreatorProfileItem } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { Search, Radio, Loader2, ArrowUpDown, ChevronDown } from "lucide-react";
+import { ActivityDot } from "@/components/ActivityStatus";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -131,9 +132,12 @@ function ProfileCard({ creator }: { creator: CreatorProfileItem }) {
           {creator.bio && (
             <p className="text-xs line-clamp-2 mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>{creator.bio}</p>
           )}
-          <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-            {creator.subscriberCount.toLocaleString()} subscribers
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <ActivityDot seed={creator.user.username} isLive={creator.isLive} />
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {creator.subscriberCount.toLocaleString()} subs
+            </span>
+          </div>
           <div className="rounded-lg py-2 text-center text-xs font-bold text-white transition-all duration-200"
             style={{ background: creator.isLive ? "#ef4444" : "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
             {creator.isLive ? "● Live" : "View"}
@@ -342,8 +346,9 @@ export default function Profiles() {
         ) : (
           <>
             <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Showing {creators.length} creator{creators.length !== 1 ? "s" : ""}
-              {category !== "all" && <span> in <span style={{ color: "#14b8a6" }}>{CATEGORIES.find(c => c.id === category)?.label}</span></span>}
+              {category !== "all"
+                ? <>Browsing <span style={{ color: "#14b8a6" }}>{CATEGORIES.find(c => c.id === category)?.label}</span></>
+                : "Fresh faces added daily"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {creators.map(creator => (
@@ -379,9 +384,9 @@ export default function Profiles() {
                 </button>
               </div>
             )}
-            {!hasMore && creators.length > 0 && !usingFallback && (
-              <p className="text-center mt-8 text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-                Showing all {total} creator{total !== 1 ? "s" : ""}
+            {!hasMore && creators.length > 0 && (
+              <p className="text-center mt-8 text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                ✨ You're all caught up — new creators join every day
               </p>
             )}
           </>

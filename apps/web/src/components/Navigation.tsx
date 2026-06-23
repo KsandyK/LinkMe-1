@@ -1,9 +1,61 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle, ShoppingBag } from "lucide-react";
+import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle, ShoppingBag, Bell, Gift } from "lucide-react";
+import { MOCK_PROFILES } from "@/lib/mock-data";
+import { isRewardAvailable } from "@/lib/streak";
 
 const LOCAL_CONVS_KEY = "vl_local_convs_v1";
+const NOTIFS_SEEN_KEY = "vl_notifs_seen_v1";
+
+interface AppNotif {
+  id: string;
+  icon: "live" | "message" | "reward";
+  title: string;
+  sub: string;
+  accent: string;
+  href: string;
+}
+
+function buildNotifs(unread: number, loggedIn: boolean): AppNotif[] {
+  const out: AppNotif[] = [];
+  // Live creators (from the catalogue's live set) — the core re-engagement pull
+  MOCK_PROFILES.filter(p => p.isLive).slice(0, 4).forEach(p => {
+    out.push({
+      id: `live-${p.username}`,
+      icon: "live",
+      title: `${p.displayName ?? p.username} is live now`,
+      sub: p.location ? `Streaming from ${p.location}` : "Tap to watch",
+      accent: "#ef4444",
+      href: `/profile/${p.id}`,
+    });
+  });
+  if (unread > 0) {
+    out.push({
+      id: `msg-${unread}`,
+      icon: "message",
+      title: `${unread} new message${unread !== 1 ? "s" : ""}`,
+      sub: "Creators are waiting to hear back",
+      accent: "#14b8a6",
+      href: "/messages",
+    });
+  }
+  if (loggedIn && isRewardAvailable()) {
+    out.push({
+      id: `reward-${new Date().toISOString().slice(0, 10)}`,
+      icon: "reward",
+      title: "Daily reward ready",
+      sub: "Claim your bonus credits on the homepage",
+      accent: "#f5a623",
+      href: "/",
+    });
+  }
+  return out;
+}
+
+function loadSeen(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(NOTIFS_SEEN_KEY) ?? "[]")); } catch { return new Set(); }
+}
 
 function getUnreadCount(): number {
   try {
@@ -32,10 +84,43 @@ const NAV_LINKS = [
 
 export function Navigation() {
   const { ageGateAccepted, credits, ageVerificationStatus, user, isLoggedIn, logout, showToast } = useApp();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // ── Notification bell ──────────────────────────────────────────────────────
+  const [bellOpen, setBellOpen] = useState(false);
+  const [seen, setSeen] = useState<Set<string>>(loadSeen);
+  const bellRef = useRef<HTMLDivElement>(null);
+  const notifs = buildNotifs(unreadMessages, isLoggedIn);
+  const unseenCount = notifs.filter(n => !seen.has(n.id)).length;
+
+  const toggleBell = () => {
+    const willOpen = !bellOpen;
+    setBellOpen(willOpen);
+    if (willOpen && notifs.length > 0) {
+      const next = new Set(seen);
+      notifs.forEach(n => next.add(n.id));
+      setSeen(next);
+      try { localStorage.setItem(NOTIFS_SEEN_KEY, JSON.stringify([...next])); } catch { /* ignore */ }
+    }
+  };
+
+  const openNotif = (href: string) => {
+    setBellOpen(false);
+    navigate(href);
+  };
+
+  // Close the bell dropdown on outside click
+  useEffect(() => {
+    if (!bellOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [bellOpen]);
 
   // Refresh unread count on route change and on a 30s poll
   useEffect(() => {
@@ -123,6 +208,69 @@ export function Navigation() {
                   Verify Age
                 </div>
               </Link>
+            )}
+
+            {/* Notification bell — only when signed in */}
+            {isLoggedIn && (
+              <div className="relative" ref={bellRef}>
+                <button onClick={toggleBell}
+                  className="relative flex items-center justify-center w-9 h-9 rounded-lg transition-all hover:bg-white/5"
+                  aria-label="Notifications">
+                  <Bell className="w-4 h-4" style={{ color: bellOpen ? "#14b8a6" : "rgba(255,255,255,0.6)" }} />
+                  {unseenCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-[#09091a]"
+                      style={{ background: "#ef4444" }}>
+                      {unseenCount}
+                    </span>
+                  )}
+                </button>
+                {bellOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-80 rounded-xl overflow-hidden z-50 animate-fade-up"
+                    style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}>
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                      <span className="text-sm font-bold text-white">Notifications</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{notifs.length}</span>
+                    </div>
+                    {notifs.length === 0 ? (
+                      <div className="px-4 py-8 text-center">
+                        <Bell className="w-7 h-7 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>You're all caught up</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifs.map(n => (
+                          <button key={n.id} onClick={() => openNotif(n.href)}
+                            className="w-full flex items-start gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 border-b last:border-b-0"
+                            style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                              style={{ background: `${n.accent}1a`, border: `1px solid ${n.accent}33` }}>
+                              {n.icon === "live"    && <Radio className="w-4 h-4" style={{ color: n.accent }} />}
+                              {n.icon === "message" && <MessageCircle className="w-4 h-4" style={{ color: n.accent }} />}
+                              {n.icon === "reward"  && <Gift className="w-4 h-4" style={{ color: n.accent }} />}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-white truncate">{n.title}</p>
+                              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{n.sub}</p>
+                            </div>
+                            {n.icon === "live" && (
+                              <span className="vl-badge-live flex items-center gap-1 mt-1 flex-shrink-0">
+                                <span className="w-1 h-1 rounded-full bg-white animate-pulse" />LIVE
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <Link href="/live">
+                      <div onClick={() => setBellOpen(false)}
+                        className="px-4 py-2.5 text-center text-xs font-semibold cursor-pointer transition-all hover:bg-white/5 border-t"
+                        style={{ color: "#14b8a6", borderColor: "rgba(255,255,255,0.06)" }}>
+                        View all live streams →
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
             )}
 
             {isLoggedIn ? (
