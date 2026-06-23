@@ -398,21 +398,22 @@ export default function ProfileDetail() {
                           )
                         ) : (
                           <>
-                            {/* Locked, or unlocked-but-still-fetching → blurred public preview */}
+                            {/* Locked, or unlocked-but-still-fetching → blurred public preview.
+                                On hover the blur + overlay ease back to "peek" at the content. */}
                             <img
                               src={item.thumbnailUrl ?? `https://picsum.photos/seed/${item.id}/400/300`}
                               alt={item.title}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 blur-sm scale-105"
+                              className="w-full h-full object-cover transition-all duration-300 scale-105 group-hover:scale-110 blur-sm group-hover:blur-[2px]"
                             />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center"
-                              style={{ background: "rgba(9,9,26,0.5)" }}>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center transition-colors duration-300 bg-[rgba(9,9,26,0.55)] group-hover:bg-[rgba(9,9,26,0.3)]">
                               {isUnlocked && isRevealing ? (
                                 <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#14b8a6" }} />
                               ) : (
                                 <>
-                                  <Lock className="w-5 h-5 mb-1" style={{ color: "#14b8a6" }} />
+                                  <Lock className="w-5 h-5 mb-1 transition-transform duration-300 group-hover:scale-110" style={{ color: "#14b8a6" }} />
                                   <span className="text-xs font-bold" style={{ color: "#14b8a6" }}>{item.creditCost} credits</span>
-                                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
+                                  <span className="text-xs font-semibold group-hover:hidden" style={{ color: "rgba(255,255,255,0.5)" }}>Tap to unlock</span>
+                                  <span className="text-xs font-semibold hidden group-hover:inline" style={{ color: "#5eead4" }}>👀 Unlock to reveal</span>
                                 </>
                               )}
                             </div>

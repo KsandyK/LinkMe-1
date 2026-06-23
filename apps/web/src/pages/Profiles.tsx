@@ -105,10 +105,18 @@ function ProfileCard({ creator }: { creator: CreatorProfileItem }) {
 
   return (
     <Link href={`/profile/${creator.userId}`}>
-      <div className="vl-card overflow-hidden cursor-pointer group">
+      <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group">
         <div className="relative h-36 overflow-hidden">
           <img src={coverUrl} alt={displayName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+          {/* Hover reveal */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ background: "rgba(9,9,26,0.4)" }}>
+            <span className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"
+              style={{ background: creator.isLive ? "rgba(239,68,68,0.95)" : "rgba(20,184,166,0.95)", color: creator.isLive ? "#fff" : "#04121a" }}>
+              {creator.isLive ? "● Join Live" : "View Profile →"}
+            </span>
+          </div>
           {creator.isLive && (
             <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />

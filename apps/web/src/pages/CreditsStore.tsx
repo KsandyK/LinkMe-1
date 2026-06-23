@@ -1,9 +1,25 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { CUSTOMER_TIERS } from "@/lib/mock-data";
 import { credits as creditsApi } from "@/lib/api";
-import { Tag, Zap, Crown, X, CreditCard, ShieldCheck } from "lucide-react";
+import { Tag, Zap, Crown, X, CreditCard, ShieldCheck, Clock } from "lucide-react";
+
+// Live countdown to midnight (local) for the daily flash bonus
+function useMidnightCountdown() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const end = (() => { const d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); })();
+  const ms = Math.max(0, end - now);
+  const s = Math.floor(ms / 1000);
+  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
 import { StripeCheckoutModal, isStripeEnabled, type CheckoutPkg } from "@/components/StripeCheckoutModal";
 import { MEMBER_TIERS } from "@/lib/membership-tiers";
 
@@ -52,6 +68,8 @@ export default function CreditsStore() {
   } = useApp();
 
   const [tab, setTab] = useState<StoreTab>("credits");
+  const flashCountdown = useMidnightCountdown();
+  const [flashDismissed, setFlashDismissed] = useState(false);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [stripeModal, setStripeModal] = useState<{ pkg: CheckoutPkg; finalPrice: number } | null>(null);
 
@@ -177,6 +195,29 @@ export default function CreditsStore() {
         {/* ═══════════════════════════════ CREDITS TAB ═══════════════════════════ */}
         {tab === "credits" && (
           <div className="animate-fade-up">
+            {/* Daily flash bonus — urgency banner with live countdown to midnight */}
+            {!flashDismissed && (
+              <div className="rounded-2xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap"
+                style={{ background: "linear-gradient(135deg, rgba(245,166,35,0.16), rgba(239,68,68,0.08))", border: "1px solid rgba(245,166,35,0.3)" }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(245,166,35,0.18)" }}>
+                    <Zap className="w-5 h-5" style={{ color: "#f5a623" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Today's flash bonus — extra credits on every pack</p>
+                    <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+                      <Clock className="w-3.5 h-3.5" style={{ color: "#f5a623" }} />
+                      Ends in <span className="font-mono font-bold" style={{ color: "#f5a623" }}>{flashCountdown}</span>
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setFlashDismissed(true)}
+                  className="p-1.5 rounded-lg transition-all hover:bg-white/10" style={{ color: "rgba(255,255,255,0.4)" }} aria-label="Dismiss">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {/* Tier Progress */}
             <div className="vl-card-elevated p-6 mb-8">
               <div className="flex items-center justify-between mb-3">

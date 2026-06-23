@@ -38,6 +38,13 @@ const MEMBERSHIP_DISPLAY_NAMES: Record<string, string> = {
 
 const isUnlimitedPlan = (limit: number) => !isFinite(limit);
 
+// Deterministic "seats left" so VIP sessions feel scarce (and stay stable per stream)
+function seatsLeft(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) { h = (h << 5) - h + id.charCodeAt(i); h |= 0; }
+  return 2 + (Math.abs(h) % 7); // 2–8 seats
+}
+
 // VIP live streams
 const VIP_LIVE_STREAMS = MOCK_LIVE_FEEDS.filter(f => f.isVip);
 
@@ -304,8 +311,24 @@ export default function VipLounge() {
                         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{stream.hostName}</p>
                       </div>
                     </div>
-                    <div className="px-3 py-2 text-xs font-semibold" style={{ color: "#8b5cf6" }}>
-                      VIP Access · {stream.vipCost ? `${stream.vipCost} cr` : "Included"}
+                    <div className="px-3 py-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold" style={{ color: "#8b5cf6" }}>
+                        VIP Access · {stream.vipCost ? `${stream.vipCost} cr` : "Included"}
+                      </span>
+                      {(() => {
+                        const seats = seatsLeft(stream.id);
+                        const low = seats <= 4;
+                        return (
+                          <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
+                            style={{
+                              background: low ? "rgba(239,68,68,0.12)" : "rgba(245,166,35,0.12)",
+                              border: `1px solid ${low ? "rgba(239,68,68,0.3)" : "rgba(245,166,35,0.3)"}`,
+                              color: low ? "#f87171" : "#f5a623",
+                            }}>
+                            🔥 {seats} {seats === 1 ? "seat" : "seats"} left
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </Link>
