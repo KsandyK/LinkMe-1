@@ -151,7 +151,7 @@ export default function VipLounge() {
             ))}
           </div>
 
-          <Link href="/boosts">
+          <Link href="/credits">
             <button className="px-8 py-3 rounded-xl font-bold text-white"
               style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }}>
               Upgrade Membership

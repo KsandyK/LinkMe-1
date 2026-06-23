@@ -418,7 +418,7 @@ export default function Home() {
           </div>
           {!hasFeaturedSpot && (
             <p className="text-xs text-center mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Get an <Link href="/boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Inferno or Legend boost</span></Link> to feature your profile here
+              Get an <Link href="/creator?tab=boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Inferno or Legend boost</span></Link> to feature your profile here
             </p>
           )}
         </div>

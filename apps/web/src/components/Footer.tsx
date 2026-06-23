@@ -53,7 +53,7 @@ export function Footer() {
               {[
                 { href: "/become-creator", label: "Become a Cravr" },
                 { href: "/creator",        label: "Creator Dashboard" },
-                { href: "/boosts",         label: "Boost Your Profile" },
+                { href: "/creator?tab=boosts", label: "Boost Your Profile" },
               ].map(l => (
                 <li key={l.href}>
                   <Link href={l.href} className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>

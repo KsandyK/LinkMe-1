@@ -159,7 +159,7 @@ export default function LiveFeeds() {
           </div>
           {!hasFeaturedLive && (
             <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Get a <Link href="/boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Flame+ boost</span></Link> to feature your stream here
+              Get a <Link href="/creator?tab=boosts"><span className="underline cursor-pointer" style={{ color: "#f97316" }}>Flame+ boost</span></Link> to feature your stream here
             </p>
           )}
         </div>

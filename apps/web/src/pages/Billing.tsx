@@ -561,7 +561,7 @@ export default function Billing() {
                 <Star className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
                 <p className="font-bold text-white mb-1">No Active Subscriptions</p>
                 <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Upgrade your plan to unlock bonus credits, boosts, and exclusive content.</p>
-                <Link href="/boosts">
+                <Link href="/credits">
                   <button className="vl-btn-primary px-6 py-2.5 text-sm">Browse Plans</button>
                 </Link>
               </div>
@@ -617,10 +617,10 @@ export default function Billing() {
                   <div>
                     <p className="text-sm font-semibold text-white">Want to upgrade or add a plan?</p>
                     <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-                      Browse memberships &amp; boost packages on the Plans page.
+                      Browse memberships in the Store, or manage boosts in your Creator Dashboard.
                     </p>
                   </div>
-                  <Link href="/boosts">
+                  <Link href="/credits">
                     <button className="text-xs font-bold px-4 py-2 rounded-lg flex-shrink-0"
                       style={{ background: "rgba(20,184,166,0.12)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
                       Browse Plans <ChevronRight className="inline w-3 h-3 -mt-0.5" />

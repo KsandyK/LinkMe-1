@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle } from "lucide-react";
+import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle, ShoppingBag } from "lucide-react";
 
 const LOCAL_CONVS_KEY = "vl_local_convs_v1";
 
@@ -26,7 +26,7 @@ const NAV_LINKS = [
   { href: "/profiles", label: "Creators", icon: Users },
   { href: "/live",     label: "Live",     icon: Radio, badge: "LIVE" },
   { href: "/messages", label: "Messages", icon: MessageCircle },
-  { href: "/credits",  label: "Credits",  icon: Zap   },
+  { href: "/credits",  label: "Store",    icon: ShoppingBag },
   { href: "/vip-lounge", label: "VIP",    icon: Crown },
 ];
 

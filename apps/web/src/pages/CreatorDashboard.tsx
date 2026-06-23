@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { creator as creatorApi, CreatorDashboardData } from "@/lib/api";
+import { creator as creatorApi, CreatorDashboardData, boosts as boostsApi } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X, Crown } from "lucide-react";
 import { BOOST_TIERS, MEMBER_BY_ID, MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
@@ -178,7 +178,7 @@ const MOCK_DASHBOARD = {
 const QUICK_ACTIONS: { label: string; icon: React.ElementType; color: string; href: string | null; tab?: string }[] = [
   { label: "Go Live", icon: Radio, color: "#ef4444", href: null, tab: "stream" },
   { label: "Upload Content", icon: Upload, color: "#14b8a6", href: null, tab: "content" },
-  { label: "Manage Tiers", icon: Zap, color: "#e8a87c", href: "/boosts" },
+  { label: "Profile Boosts", icon: Zap, color: "#e8a87c", href: null, tab: "boosts" },
   { label: "Account Settings", icon: Settings, color: "#a78bfa", href: "/account" },
 ];
 
@@ -187,13 +187,21 @@ function centsToDisplay(cents: number) {
 }
 
 export default function CreatorDashboard() {
-  const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user } = useApp();
+  const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user, setActiveBoost, recordPurchase } = useApp();
   // Admins (platform owner/staff) get everything unlocked regardless of boost/membership.
   const isAdmin = user?.role === "ADMIN";
   const analyticsTier = isAdmin ? "enterprise" : getAnalyticsTier(activeBoost, activeMembership);
   // $749+ tier holders (and admins) get a preview of upcoming real-time analytics
   const showUltimatePreview = isAdmin || isUltimateTier(activeBoost, activeMembership);
-  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "content" | "fans" | "analytics" | "boosts" | "referral" | "stream">(() => {
+    // Allow deep-linking to a tab, e.g. /creator?tab=boosts (boost-intent links)
+    try {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      const valid = ["overview", "content", "fans", "analytics", "boosts", "referral", "stream"];
+      if (t && valid.includes(t)) return t as typeof activeTab;
+    } catch { /* ignore */ }
+    return "overview";
+  });
 
   // ── Stream key state ──────────────────────────────────────────────────────────
   const [streamKeyData, setStreamKeyData] = useState<{
@@ -262,6 +270,32 @@ export default function CreatorDashboard() {
     }
   };
   const scheduledCount = Object.values(schedule).filter(Boolean).length;
+
+  // ── Boost purchase (moved in from the old standalone /boosts page) ──────────
+  const [loadingBoost, setLoadingBoost] = useState<string | null>(null);
+  const [boostPicker, setBoostPicker] = useState(false); // show tier cards even when a boost is active
+  const handleBuyBoost = async (pkg: typeof BOOST_TIERS[0]) => {
+    if (activeBoost === pkg.id) return;
+    setLoadingBoost(pkg.id);
+    const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
+    try {
+      await boostsApi.subscribe(pkg.id);
+      setActiveBoost(pkg.id);
+      recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+      showToast({ title: `${pkg.emoji} ${pkg.name} Boost active!`, description: `${boostLabel} for 30 days` });
+      setBoostPicker(false);
+    } catch {
+      if (import.meta.env.DEV) {
+        setActiveBoost(pkg.id);
+        recordPurchase(pkg.price, `${pkg.emoji} ${pkg.name} Boost — ${boostLabel}`);
+        showToast({ title: `[Demo] ${pkg.name} Boost`, description: `${boostLabel} activated locally` });
+        setBoostPicker(false);
+      } else {
+        showToast({ title: "Couldn't activate boost", description: "Make sure you have enough credits, then try again.", variant: "destructive" });
+      }
+    }
+    setLoadingBoost(null);
+  };
 
   // Referral milestone progress — from the API (real code + real revenue counts)
   const REFERRAL_TARGET_COUNT = 25;
@@ -952,12 +986,11 @@ export default function CreatorDashboard() {
                     </span>
                   </div>
                   {analyticsTier === "none" && (
-                    <Link href="/boosts">
-                      <button className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                        style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
-                        Upgrade Boost →
-                      </button>
-                    </Link>
+                    <button onClick={() => setActiveTab("boosts")}
+                      className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                      style={{ background: "rgba(20,184,166,0.1)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                      Upgrade Boost →
+                    </button>
                   )}
                 </div>
 
@@ -987,12 +1020,11 @@ export default function CreatorDashboard() {
                         </div>
                       ))}
                     </div>
-                    <Link href="/boosts">
-                      <button className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
-                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-                        Get a Boost Package
-                      </button>
-                    </Link>
+                    <button onClick={() => setActiveTab("boosts")}
+                      className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
+                      style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+                      Get a Boost Package
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -1360,12 +1392,11 @@ export default function CreatorDashboard() {
                             Unlock deeper insights to grow your creator business
                           </p>
                         </div>
-                        <Link href="/boosts">
-                          <button className="text-xs font-bold px-4 py-2 rounded-lg flex-shrink-0"
-                            style={{ background: "rgba(20,184,166,0.12)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
-                            Upgrade →
-                          </button>
-                        </Link>
+                        <button onClick={() => setActiveTab("boosts")}
+                          className="text-xs font-bold px-4 py-2 rounded-lg flex-shrink-0"
+                          style={{ background: "rgba(20,184,166,0.12)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.2)" }}>
+                          Upgrade →
+                        </button>
                       </div>
                     )}
                   </>
@@ -1407,26 +1438,107 @@ export default function CreatorDashboard() {
                 return acc;
               }, {});
 
+              // Boost tier cards — the purchase surface, now living in the dashboard
+              const boostPlansGrid = (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {BOOST_TIERS.map(pkg => {
+                    const isPinnacle = pkg.id === "pinnacle";
+                    const isActive = activeBoost === pkg.id;
+                    return (
+                      <div key={pkg.id}
+                        className="vl-tier-card relative flex flex-col p-4 rounded-2xl border"
+                        style={{
+                          borderColor: isActive ? "#4ade80" : isPinnacle ? `${pkg.color}88` : pkg.popular ? pkg.color : "rgba(255,255,255,0.08)",
+                          background: isPinnacle
+                            ? `linear-gradient(135deg, rgba(6,6,20,0.98) 0%, ${pkg.color}22 100%)`
+                            : pkg.popular
+                              ? `linear-gradient(135deg, ${pkg.color}18, ${pkg.color}07)`
+                              : "rgba(255,255,255,0.02)",
+                        }}>
+                        {pkg.popular && !isActive && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-white text-xs font-bold whitespace-nowrap"
+                            style={{ background: pkg.color }}>MOST POPULAR</div>
+                        )}
+                        {isPinnacle && !isActive && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
+                            style={{ background: "linear-gradient(90deg, #00d4ff, #0099bb)", color: "#000" }}>✦ TOP TIER</div>
+                        )}
+                        {isActive && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap"
+                            style={{ background: "#4ade80", color: "#04121a" }}>✓ ACTIVE</div>
+                        )}
+                        <div className="text-3xl mb-1.5">{pkg.emoji}</div>
+                        <h3 className="text-base font-bold text-white mb-0.5">{pkg.name}</h3>
+                        <p className="font-black text-2xl mb-0" style={{ color: pkg.color }}>{pkg.boosts >= 9999 ? "∞" : pkg.boosts}</p>
+                        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>{pkg.boosts >= 9999 ? "unlimited" : "boosts/mo"}</p>
+                        <p className="text-xl font-bold text-white mb-3">
+                          ${pkg.price % 1 === 0 ? pkg.price.toLocaleString() : pkg.price}
+                          <span className="text-xs font-normal" style={{ color: "rgba(255,255,255,0.35)" }}>/mo</span>
+                        </p>
+                        <ul className="space-y-1.5 flex-1 mb-4">
+                          {pkg.features.map(f => (
+                            <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                              <span className="flex-shrink-0 font-bold mt-0.5" style={{ color: pkg.color }}>✓</span>
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <button onClick={() => handleBuyBoost(pkg)}
+                          disabled={isActive || loadingBoost === pkg.id}
+                          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-default"
+                          style={isActive
+                            ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                            : { background: pkg.color, color: ["#f59e0b", "#00d4ff"].includes(pkg.color) ? "#000" : "#fff" }}>
+                          {loadingBoost === pkg.id ? "Activating…" : isActive ? "✓ Current plan" : "Get boost"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+
               if (!activePkg) {
                 return (
-                  <div className="vl-card p-8 text-center">
-                    <Zap className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
-                    <h3 className="text-base font-bold text-white mb-2">No active boost</h3>
-                    <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      Get a Profile Boost to unlock the scheduler, usage tracker, and activity log here.
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.25)" }}>
+                        FOR CREATORS
+                      </span>
+                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        Rank higher · Get discovered · Grow your audience
+                      </p>
+                    </div>
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Pick a Profile Boost to unlock the scheduler, usage tracker, and activity log.
                     </p>
-                    <Link href="/boosts">
-                      <button className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
-                        style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
-                        Browse Boost Plans
-                      </button>
-                    </Link>
+                    {boostPlansGrid}
                   </div>
                 );
               }
 
               return (
                 <div className="space-y-5">
+                  {/* ── Plan header + change-plan toggle ──────────── */}
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.25)" }}>
+                        FOR CREATORS
+                      </span>
+                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Manage your boost, schedule, and placements</p>
+                    </div>
+                    <button onClick={() => setBoostPicker(v => !v)}
+                      className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
+                      style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}>
+                      {boostPicker ? "Close plans" : "Change plan"}
+                    </button>
+                  </div>
+
+                  {boostPicker && (
+                    <div className="animate-fade-up">{boostPlansGrid}</div>
+                  )}
+
                   {/* ── Boost Balance ─────────────────────────────── */}
                   <div className="vl-card p-5">
                     {/* Header row */}
@@ -1657,7 +1769,7 @@ export default function CreatorDashboard() {
                       <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
                         Upgrade to <strong style={{ color: "#14b8a6" }}>Flame</strong> or above to schedule your boosts
                       </p>
-                      <Link href="/boosts"><button className="text-xs px-4 py-2 rounded-lg font-semibold" style={{ background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.2)" }}>Upgrade Plan</button></Link>
+                      <button onClick={() => setBoostPicker(true)} className="text-xs px-4 py-2 rounded-lg font-semibold" style={{ background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.2)" }}>Upgrade Plan</button>
                     </div>
                   )}
 

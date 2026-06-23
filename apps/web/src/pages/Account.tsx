@@ -910,7 +910,7 @@ export default function Account() {
                       style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
                       <Star className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
                       <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>No active subscriptions</p>
-                      <Link href="/boosts">
+                      <Link href="/credits">
                         <button className="text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
                           style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)", color: "#14b8a6" }}>
                           Browse Plans
