@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { gifts as giftsApi, profiles as profilesApi, GiftItem, CreatorProfileItem } from "@/lib/api";
 import { MOCK_GIFTS, MOCK_PROFILES } from "@/lib/mock-data";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 
 export default function GiftsStore() {
-  const { spendCredits, isLoggedIn, showToast } = useApp();
+  const { spendCredits, credits, isLoggedIn, showToast } = useApp();
   const [catalogue, setCatalogue] = useState<GiftItem[]>([]);
   const [creators, setCreators] = useState<CreatorProfileItem[]>([]);
   const [selectedRecipientId, setSelectedRecipientId] = useState<string | null>(null);
@@ -105,53 +106,71 @@ export default function GiftsStore() {
   const loading = loadingCatalogue || loadingCreators;
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen py-8 px-4" style={{ background: "#09091a" }}>
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Gifts Store</h1>
-        <p className="text-muted-foreground mb-6">Send virtual gifts to show appreciation</p>
+        {/* Header */}
+        <div className="flex items-end justify-between mb-7 flex-wrap gap-4">
+          <div>
+            <h1 className="vl-display text-white" style={{ fontSize: "2.75rem" }}>Gifts</h1>
+            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Send virtual gifts to show your favorite creators some love.
+            </p>
+          </div>
+          <Link href="/credits">
+            <div className="flex items-center gap-2.5 px-5 py-3 rounded-2xl cursor-pointer transition-all hover:border-white/20"
+              style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.25)" }}>
+              <Zap className="w-5 h-5" style={{ color: "#14b8a6" }} />
+              <div>
+                <p className="text-2xl font-black leading-none" style={{ color: "#14b8a6", fontFamily: "'DM Mono', monospace" }}>{credits.toLocaleString()}</p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Your balance</p>
+              </div>
+            </div>
+          </Link>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#14b8a6" }} />
           </div>
         ) : (
-          <>
+          <div className="animate-fade-up">
             {/* Recipient selector */}
             {creators.length > 0 ? (
-              <div className="p-4 rounded-xl border border-border bg-card mb-6">
-                <p className="text-sm font-semibold text-foreground mb-3">Send gift to:</p>
+              <div className="vl-card-elevated p-5 mb-6">
+                <p className="text-sm font-semibold text-white mb-3">Send gift to:</p>
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {creators.map(c => {
                     const name = c.user.profile?.displayName ?? c.user.username;
                     const avatar = c.user.profile?.avatarUrl
                       ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.user.username}`;
+                    const selected = selectedRecipientId === c.userId;
                     return (
                       <button key={c.userId} onClick={() => setSelectedRecipientId(c.userId)}
-                        className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all min-w-[80px] ${
-                          selectedRecipientId === c.userId ? "border-primary bg-primary/10" : "border-border bg-background"
-                        }`}>
-                        <img src={avatar} alt={name} className="w-10 h-10 rounded-full object-cover" />
-                        <p className="text-xs text-foreground font-medium whitespace-nowrap">{name.split(" ")[0]}</p>
-                        {c.isLive && <span className="text-xs text-red-500 font-bold">LIVE</span>}
+                        className="vl-tier-card flex flex-col items-center gap-1 p-3 rounded-2xl border transition-all min-w-[80px]"
+                        style={selected
+                          ? { borderColor: "#14b8a6", background: "rgba(20,184,166,0.12)" }
+                          : { borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>
+                        <img src={avatar} alt={name} className="w-10 h-10 rounded-full object-cover"
+                          style={selected ? { boxShadow: "0 0 0 2px #14b8a6" } : undefined} />
+                        <p className="text-xs font-medium whitespace-nowrap" style={{ color: selected ? "#fff" : "rgba(255,255,255,0.7)" }}>{name.split(" ")[0]}</p>
+                        {c.isLive && <span className="text-xs font-bold" style={{ color: "#ef4444" }}>LIVE</span>}
                       </button>
                     );
                   })}
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-xl border border-border bg-card mb-6 text-center">
+              <div className="vl-card-elevated p-5 mb-6 text-center">
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>No creators available — gifts will go to a demo recipient</p>
               </div>
             )}
 
             {/* Categories */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+            <div className="vl-segment mb-6 max-w-full overflow-x-auto">
               {categories.map(c => (
                 <button key={c} onClick={() => setCatFilter(c)}
-                  className={`px-4 py-1.5 rounded-full text-sm capitalize whitespace-nowrap transition-colors ${
-                    catFilter === c ? "text-white" : "text-muted-foreground border border-border bg-card"
-                  }`}
-                  style={catFilter === c ? { background: "#14B8A6" } : {}}>
+                  className="vl-segment-btn capitalize whitespace-nowrap"
+                  data-active={catFilter === c}>
                   {c === "all" ? "All Gifts" : c}
                 </button>
               ))}
@@ -159,34 +178,40 @@ export default function GiftsStore() {
 
             {/* Gifts Grid */}
             {filtered.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">No gifts in this category</div>
+              <div className="text-center py-16" style={{ color: "rgba(255,255,255,0.4)" }}>No gifts in this category</div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {filtered.map(gift => (
-                  <div key={gift.id} className={`relative p-4 rounded-xl border transition-all duration-200 hover:scale-105 ${
-                    sentGift === gift.id ? "border-primary" : "border-border bg-card"
-                  }`}>
-                    {sentGift === gift.id && (
-                      <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-primary/20 z-10">
-                        <p className="text-primary font-bold text-lg">Sent! 🎉</p>
-                      </div>
-                    )}
-                    <div className="text-4xl text-center mb-2">{gift.emoji}</div>
-                    <p className="font-semibold text-foreground text-center text-sm mb-1">{gift.name}</p>
-                    <p className="text-center font-bold text-primary mb-2">{gift.creditCost} credits</p>
-                    <button
-                      onClick={() => sendGift(gift)}
-                      disabled={sending === gift.id}
-                      className="w-full py-2 rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-1.5"
-                      style={{ background: "#14B8A6" }}>
-                      {sending === gift.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                      Send to {recipientName.split(" ")[0]}
-                    </button>
-                  </div>
-                ))}
+                {filtered.map(gift => {
+                  const sent = sentGift === gift.id;
+                  return (
+                    <div key={gift.id}
+                      className="vl-tier-card relative p-4 rounded-2xl border"
+                      style={sent
+                        ? { borderColor: "#14b8a6", background: "rgba(20,184,166,0.06)" }
+                        : { borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.025)" }}>
+                      {sent && (
+                        <div className="absolute inset-0 rounded-2xl flex items-center justify-center z-10 animate-scale-in"
+                          style={{ background: "rgba(20,184,166,0.2)", backdropFilter: "blur(2px)" }}>
+                          <p className="font-bold text-lg" style={{ color: "#14b8a6" }}>Sent! 🎉</p>
+                        </div>
+                      )}
+                      <div className="text-4xl text-center mb-2">{gift.emoji}</div>
+                      <p className="font-semibold text-white text-center text-sm mb-1">{gift.name}</p>
+                      <p className="text-center font-bold mb-2" style={{ color: "#14b8a6", fontFamily: "'DM Mono', monospace" }}>{gift.creditCost} credits</p>
+                      <button
+                        onClick={() => sendGift(gift)}
+                        disabled={sending === gift.id}
+                        className="w-full py-2 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-1.5"
+                        style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
+                        {sending === gift.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                        Send to {recipientName.split(" ")[0]}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

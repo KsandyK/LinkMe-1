@@ -106,7 +106,7 @@ export default function VipLounge() {
             style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.1))", border: "1px solid rgba(139,92,246,0.3)" }}>
             <Lock className="w-10 h-10" style={{ color: "#8b5cf6" }} />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-3">VIP Lounge</h1>
+          <h1 className="vl-display text-white mb-3" style={{ fontSize: "2.75rem" }}>VIP Lounge</h1>
           <p className="text-base mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
             Exclusive access for <span className="font-bold" style={{ color: "#14b8a6" }}>All-Access</span> and{" "}
             <span className="font-bold" style={{ color: "#e8a87c" }}>Creator Pass</span> members.
@@ -118,7 +118,7 @@ export default function VipLounge() {
           {/* Perk preview */}
           <div className="grid grid-cols-2 gap-3 mb-8 text-left">
             {PERKS.slice(0, 4).map(perk => (
-              <div key={perk.title} className="rounded-xl p-4 opacity-60"
+              <div key={perk.title} className="vl-tier-card rounded-2xl p-4 opacity-70"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <perk.icon className="w-4 h-4 mb-2" style={{ color: "#8b5cf6" }} />
                 <p className="text-xs font-semibold text-white">{perk.title}</p>
@@ -213,7 +213,7 @@ export default function VipLounge() {
             style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }}>
             <Crown className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">VIP Lounge</h1>
+          <h1 className="vl-display text-white mb-2" style={{ fontSize: "3.25rem" }}>VIP Lounge</h1>
           <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
             <span className="px-3 py-1 rounded-full text-xs font-bold"
               style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.25)", color: "#14b8a6" }}>
@@ -236,7 +236,7 @@ export default function VipLounge() {
         </div>
 
         {/* Session progress */}
-        <div className="vl-card p-5 mb-8">
+        <div className="vl-card-elevated p-5 mb-8">
           {isUnlimitedPlan(limit) ? (
             /* Unlimited plan — show a celebration banner instead of a progress bar */
             <div className="flex items-center justify-between">
@@ -285,7 +285,7 @@ export default function VipLounge() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {VIP_LIVE_STREAMS.map(stream => (
                 <Link key={stream.id} href={`/live/${stream.id}`}>
-                  <div className="vl-card overflow-hidden cursor-pointer group">
+                  <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group">
                     <div className="relative" style={{ aspectRatio: "16/9" }}>
                       <img src={stream.thumbnailUrl ?? `https://picsum.photos/seed/${stream.id}/640/360`}
                         alt={stream.title}
@@ -317,7 +317,7 @@ export default function VipLounge() {
         {/* Perks grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {PERKS.map(perk => (
-            <div key={perk.title} className="vl-card p-5">
+            <div key={perk.title} className="vl-card vl-tier-card p-5">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3"
                 style={{ background: "rgba(139,92,246,0.12)" }}>
                 <perk.icon className="w-5 h-5" style={{ color: "#8b5cf6" }} />
@@ -343,7 +343,7 @@ export default function VipLounge() {
             const isViewed = openedContent.has(item.id);
             const TypeIcon = item.type === "photo" ? Image : item.type === "video" ? Film : Play;
             return (
-              <div key={item.id} className="vl-card overflow-hidden flex flex-col">
+              <div key={item.id} className="vl-card vl-tier-card overflow-hidden flex flex-col">
                 <div className="relative overflow-hidden" style={{ height: 140 }}>
                   {item.thumbnailUrl ? (
                     <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
@@ -390,7 +390,7 @@ export default function VipLounge() {
         </div>
 
         {/* Credits callout */}
-        <div className="vl-card p-5 flex items-center justify-between">
+        <div className="vl-card-elevated p-5 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-white mb-0.5">Your Current Balance</p>
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
