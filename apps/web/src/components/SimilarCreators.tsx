@@ -8,7 +8,7 @@
  */
 import { Link } from "wouter";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { ActivityDot } from "@/components/ActivityStatus";
+import { CompactCreatorCard } from "@/components/CompactCreatorCard";
 
 export function SimilarCreators({
   currentId,
@@ -35,35 +35,9 @@ export function SimilarCreators({
         </Link>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {picks.map(p => {
-          const avatar = p.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`;
-          const cover = p.coverUrl ?? `https://picsum.photos/seed/${p.username}-cover/600/200`;
-          return (
-            <Link key={p.id} href={`/profile/${p.id}`}>
-              <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group">
-                <div className="relative h-24 overflow-hidden">
-                  <img src={cover} alt={p.displayName ?? p.username}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.9) 0%, transparent 70%)" }} />
-                  {p.isLive && (
-                    <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />LIVE
-                    </div>
-                  )}
-                  <img src={avatar} alt={p.displayName ?? p.username}
-                    className="absolute bottom-0 translate-y-1/2 left-3 w-10 h-10 rounded-full border-2 object-cover z-10"
-                    style={{ borderColor: "#14b8a6" }} />
-                </div>
-                <div className="p-3 pt-7">
-                  <p className="text-sm font-bold text-white truncate">{p.displayName ?? p.username}</p>
-                  <div className="mt-1">
-                    <ActivityDot seed={p.username} isLive={p.isLive} />
-                  </div>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+        {picks.map(p => (
+          <CompactCreatorCard key={p.id} c={p} />
+        ))}
       </div>
     </div>
   );

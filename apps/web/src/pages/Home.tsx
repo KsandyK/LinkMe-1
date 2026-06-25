@@ -7,6 +7,7 @@ import { Radio, Zap, Shield, Crown, ChevronRight, ChevronLeft, Eye, Star, Search
 import { ActivityDot } from "@/components/ActivityStatus";
 import { getViewed } from "@/lib/viewHistory";
 import { DailyReward } from "@/components/DailyReward";
+import { CompactCreatorCard } from "@/components/CompactCreatorCard";
 
 const HERO_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&w=1920&q=80";
 
@@ -413,33 +414,9 @@ export default function Home() {
               <Link href="/profiles"><span className="text-sm font-semibold cursor-pointer" style={{ color: "#14b8a6" }}>See more →</span></Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {forYou.map(p => {
-                const avatar = p.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`;
-                const cover = p.coverUrl ?? `https://picsum.photos/seed/${p.username}-cover/600/200`;
-                return (
-                  <Link key={p.id} href={`/profile/${p.id}`}>
-                    <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group">
-                      <div className="relative h-24 overflow-hidden">
-                        <img src={cover} alt={p.displayName ?? p.username}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.9) 0%, transparent 70%)" }} />
-                        {p.isLive && (
-                          <div className="absolute top-2 left-2 vl-badge-live flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />LIVE
-                          </div>
-                        )}
-                        <img src={avatar} alt={p.displayName ?? p.username}
-                          className="absolute bottom-0 translate-y-1/2 left-3 w-10 h-10 rounded-full border-2 object-cover z-10"
-                          style={{ borderColor: "#14b8a6" }} />
-                      </div>
-                      <div className="p-3 pt-7">
-                        <p className="text-sm font-bold text-white truncate">{p.displayName ?? p.username}</p>
-                        <div className="mt-1"><ActivityDot seed={p.username} isLive={p.isLive} /></div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {forYou.map(p => (
+                <CompactCreatorCard key={p.id} c={p} />
+              ))}
             </div>
           </div>
         </section>
@@ -473,7 +450,7 @@ export default function Home() {
               const avatar = creator.user.profile?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.user.username}`;
               return (
                 <Link key={creator.id} href={`/profile/${creator.userId}`}>
-                  <div className="vl-card overflow-hidden cursor-pointer group relative">
+                  <div className="vl-card vl-tier-card overflow-hidden cursor-pointer group relative">
                     {/* Featured badge */}
                     <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
                       style={{ background: badge.color, color: "#fff" }}>
@@ -482,6 +459,14 @@ export default function Home() {
                     <div className="relative h-32 overflow-hidden">
                       <img src={cover} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(9,9,26,0.85) 0%, transparent 60%)" }} />
+                      {/* Hover reveal */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: "rgba(9,9,26,0.4)" }}>
+                        <span className="px-3 py-1.5 rounded-full text-xs font-bold"
+                          style={{ background: creator.isLive ? "rgba(239,68,68,0.95)" : "rgba(20,184,166,0.95)", color: creator.isLive ? "#fff" : "#04121a" }}>
+                          {creator.isLive ? "● Join Live" : "View Profile →"}
+                        </span>
+                      </div>
                       <img src={avatar} alt={name}
                         className="absolute bottom-0 translate-y-1/2 left-3 w-12 h-12 rounded-full border-2 object-cover z-10"
                         style={{ borderColor: badge.color }} />
@@ -489,6 +474,7 @@ export default function Home() {
                     <div className="p-3 pt-8">
                       <h3 className="font-bold text-sm text-white">{name}</h3>
                       {location && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>📍 {location}</p>}
+                      <div className="mt-1.5"><ActivityDot seed={creator.user.username} isLive={creator.isLive} /></div>
                       <div className="mt-2 rounded-lg py-1.5 text-center text-xs font-bold text-white"
                         style={{ background: `linear-gradient(135deg, ${badge.color}cc, ${badge.color}88)` }}>
                         View Profile
