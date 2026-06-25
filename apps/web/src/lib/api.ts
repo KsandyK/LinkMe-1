@@ -463,6 +463,21 @@ export const boosts = {
   active: () => get<unknown | null>("/api/boosts/active"),
 };
 
+// ── Notifications ───────────────────────────────────────────────────────────
+
+export interface ServerNotif {
+  id: string;
+  type: "live" | "message";
+  title: string;
+  sub: string;
+  href: string;
+}
+
+export const notifications = {
+  /** GET /api/notifications — server-computed live + unread-message alerts */
+  list: () => get<{ notifications: ServerNotif[] }>("/api/notifications"),
+};
+
 // ── Creator ───────────────────────────────────────────────────────────────────
 
 export interface CreatorDashboardData {

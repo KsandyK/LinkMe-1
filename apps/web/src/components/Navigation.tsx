@@ -4,6 +4,7 @@ import { useApp } from "@/contexts/AppContext";
 import { Menu, X, Zap, Users, Radio, Crown, User, LayoutDashboard, ChevronDown, Shield, MessageCircle, ShoppingBag, Bell, Gift } from "lucide-react";
 import { MOCK_PROFILES } from "@/lib/mock-data";
 import { isRewardAvailable } from "@/lib/streak";
+import { notifications as notifApi, type ServerNotif } from "@/lib/api";
 
 const LOCAL_CONVS_KEY = "vl_local_convs_v1";
 const NOTIFS_SEEN_KEY = "vl_notifs_seen_v1";
@@ -17,9 +18,25 @@ interface AppNotif {
   href: string;
 }
 
-function buildNotifs(unread: number, loggedIn: boolean): AppNotif[] {
+// Client-only daily-reward nudge (the login streak lives in localStorage)
+function rewardNotif(loggedIn: boolean): AppNotif | null {
+  if (loggedIn && isRewardAvailable()) {
+    return {
+      id: `reward-${new Date().toISOString().slice(0, 10)}`,
+      icon: "reward",
+      title: "Daily reward ready",
+      sub: "Claim your bonus credits on the homepage",
+      accent: "#f5a623",
+      href: "/",
+    };
+  }
+  return null;
+}
+
+// Mock fallback used when the notifications API is unreachable (offline/demo):
+// live creators from the catalogue + locally-tracked unread messages.
+function mockNotifs(unread: number): AppNotif[] {
   const out: AppNotif[] = [];
-  // Live creators (from the catalogue's live set) — the core re-engagement pull
   MOCK_PROFILES.filter(p => p.isLive).slice(0, 4).forEach(p => {
     out.push({
       id: `live-${p.username}`,
@@ -40,17 +57,19 @@ function buildNotifs(unread: number, loggedIn: boolean): AppNotif[] {
       href: "/messages",
     });
   }
-  if (loggedIn && isRewardAvailable()) {
-    out.push({
-      id: `reward-${new Date().toISOString().slice(0, 10)}`,
-      icon: "reward",
-      title: "Daily reward ready",
-      sub: "Claim your bonus credits on the homepage",
-      accent: "#f5a623",
-      href: "/",
-    });
-  }
   return out;
+}
+
+// Map a server notification to the UI shape (icon + accent derived from type)
+function mapServerNotif(n: ServerNotif): AppNotif {
+  return {
+    id: n.id,
+    icon: n.type === "live" ? "live" : "message",
+    title: n.title,
+    sub: n.sub,
+    accent: n.type === "live" ? "#ef4444" : "#14b8a6",
+    href: n.href,
+  };
 }
 
 function loadSeen(): Set<string> {
@@ -93,7 +112,26 @@ export function Navigation() {
   const [bellOpen, setBellOpen] = useState(false);
   const [seen, setSeen] = useState<Set<string>>(loadSeen);
   const bellRef = useRef<HTMLDivElement>(null);
-  const notifs = buildNotifs(unreadMessages, isLoggedIn);
+  // Server-sourced live + message alerts (null until first fetch, or on failure → mock)
+  const [serverNotifs, setServerNotifs] = useState<AppNotif[] | null>(null);
+
+  // Fetch real notifications when signed in; poll every 60s. Falls back to the
+  // local mock feed if the API is unreachable so the bell is never empty.
+  useEffect(() => {
+    if (!isLoggedIn) { setServerNotifs(null); return; }
+    let cancelled = false;
+    const load = () =>
+      notifApi.list()
+        .then(d => { if (!cancelled) setServerNotifs(d.notifications.map(mapServerNotif)); })
+        .catch(() => { if (!cancelled) setServerNotifs(null); });
+    load();
+    const id = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isLoggedIn]);
+
+  const base = serverNotifs ?? mockNotifs(unreadMessages);
+  const reward = rewardNotif(isLoggedIn);
+  const notifs = reward ? [...base, reward] : base;
   const unseenCount = notifs.filter(n => !seen.has(n.id)).length;
 
   const toggleBell = () => {
