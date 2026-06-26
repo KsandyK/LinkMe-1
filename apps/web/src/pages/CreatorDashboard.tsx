@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { creator as creatorApi, CreatorDashboardData, boosts as boostsApi } from "@/lib/api";
 import { MOCK_PROFILES } from "@/lib/mock-data";
-import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X, Crown } from "lucide-react";
+import { DollarSign, Users, Eye, Radio, TrendingUp, Upload, Settings, ChevronRight, Zap, Loader2, AlertCircle, BarChart2, Lock, MessageSquare, Gift, Copy, Check as CheckIcon, Star, Calendar, Clock, ToggleLeft, ToggleRight, Home, UserPlus, ChevronDown, ChevronUp, RefreshCw, Eye as EyeIcon, EyeOff, Wifi, ExternalLink, ImagePlus, Video, Trash2, GripVertical, PencilLine, X, Crown, Award } from "lucide-react";
 import { BOOST_TIERS, MEMBER_BY_ID, MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
 import { VipStaffCard } from "@/components/VipStaffCard";
 import { DAYS, SLOTS, PEAK_CELLS, MOCK_BOOST_LOG, type ScheduleMap } from "@/lib/boost-data";
@@ -186,6 +186,21 @@ function centsToDisplay(cents: number) {
   return `$${(cents / 100).toFixed(2).replace(/\.00$/, "")}`;
 }
 
+// ── Creator payout tiers — revenue share grows with monthly earnings ──────────
+// Single source for both the sidebar rate panel and the "Payout Tiers" modal.
+interface RevenueTier { label: string; min: number; max: number; creatorPct: number; color: string; perk: string }
+const REVENUE_TIERS: RevenueTier[] = [
+  { label: "Growth",          min: 0,       max: 5000,    creatorPct: 80, color: "#14b8a6", perk: "Standard payouts, every Friday" },
+  { label: "Established",     min: 5001,    max: 15000,   creatorPct: 80, color: "#06b6d4", perk: "Priority support queue" },
+  { label: "Elite",           min: 15001,   max: 25000,   creatorPct: 83, color: "#8b5cf6", perk: "+3% revenue share · featured eligibility" },
+  { label: "Partner",         min: 25001,   max: 75000,   creatorPct: 85, color: "#f59e0b", perk: "+5% share · dedicated partner manager" },
+  { label: "Senior Partner",  min: 75001,   max: 150000,  creatorPct: 87, color: "#f97316", perk: "+7% share · early feature access" },
+  { label: "Exec Partner",    min: 150001,  max: 300000,  creatorPct: 88, color: "#ef4444", perk: "+8% share · co-marketing support" },
+  { label: "Premier Partner", min: 300001,  max: 500000,  creatorPct: 89, color: "#ec4899", perk: "+9% share · custom payout schedule" },
+  { label: "Top Partner",     min: 500001,  max: 1000000, creatorPct: 90, color: "#a855f7", perk: "Max 90% share · white-glove account team" },
+  { label: "Pinnacle",        min: 1000001, max: Infinity, creatorPct: 90, color: "#d4af37", perk: "Max 90% share · invite-only Pinnacle program" },
+];
+
 export default function CreatorDashboard() {
   const { credits, isLoggedIn, showToast, activeBoost, activeMembership, user, setActiveBoost, recordPurchase } = useApp();
   // Admins (platform owner/staff) get everything unlocked regardless of boost/membership.
@@ -252,6 +267,7 @@ export default function CreatorDashboard() {
     try { return JSON.parse(localStorage.getItem("vl_boost_auto_v1") ?? "false"); } catch { return false; }
   });
   const [showAllLog, setShowAllLog] = useState(false);
+  const [showPayoutTiers, setShowPayoutTiers] = useState(false);
 
   const saveSchedule = (s: ScheduleMap) => {
     setSchedule(s);
@@ -2248,24 +2264,19 @@ export default function CreatorDashboard() {
 
             {/* Payout */}
             <div className="vl-card p-4">
-              <h3 className="text-base font-bold text-white mb-1">Earnings</h3>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-base font-bold text-white">Earnings</h3>
+                <button onClick={() => setShowPayoutTiers(true)} className="vl-glow-btn">
+                  <Award className="w-3.5 h-3.5" />
+                  Payout Tiers
+                </button>
+              </div>
               <p className="text-3xl font-black text-white mb-0.5">{centsToDisplay(stats?.monthlyEarnings ?? 0)}</p>
               <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>This month</p>
 
               {/* Revenue share tier */}
               {(() => {
                 const monthly = (stats?.monthlyEarnings ?? 0) / 100;
-                const REVENUE_TIERS = [
-                  { label: "Growth",          min: 0,       max: 5000,    creatorPct: 80, color: "#14b8a6" },
-                  { label: "Established",     min: 5001,    max: 15000,   creatorPct: 80, color: "#06b6d4" },
-                  { label: "Elite",           min: 15001,   max: 25000,   creatorPct: 83, color: "#8b5cf6" },
-                  { label: "Partner",         min: 25001,   max: 75000,   creatorPct: 85, color: "#f59e0b" },
-                  { label: "Senior Partner",  min: 75001,   max: 150000,  creatorPct: 87, color: "#f97316" },
-                  { label: "Exec Partner",    min: 150001,  max: 300000,  creatorPct: 88, color: "#ef4444" },
-                  { label: "Premier Partner", min: 300001,  max: 500000,  creatorPct: 89, color: "#ec4899" },
-                  { label: "Top Partner",     min: 500001,  max: 1000000, creatorPct: 90, color: "#a855f7" },
-                  { label: "Pinnacle",        min: 1000001, max: Infinity, creatorPct: 90, color: "#d4af37" },
-                ];
                 const current = REVENUE_TIERS.find(t => monthly >= t.min && monthly <= t.max) ?? REVENUE_TIERS[0];
                 // Distinct *rate* levels (some adjacent brackets share a %), so the
                 // ladder and "next bump" focus on rate changes that actually matter.
@@ -2350,6 +2361,73 @@ export default function CreatorDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Payout Tiers modal ──────────────────────────────────────────── */}
+      {showPayoutTiers && (() => {
+        const monthlyD = (stats?.monthlyEarnings ?? 0) / 100;
+        const currentTier = REVENUE_TIERS.find(t => monthlyD >= t.min && monthlyD <= t.max) ?? REVENUE_TIERS[0];
+        const k = (n: number) => n >= 1_000_000 ? `$${Math.round(n / 1_000_000)}M` : n >= 1000 ? `$${Math.round(n / 1000)}k` : `$${n}`;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
+            onClick={e => { if (e.target === e.currentTarget) setShowPayoutTiers(false); }}>
+            <div className="relative w-full max-w-lg rounded-2xl overflow-hidden animate-scale-in"
+              style={{ background: "#0f1622", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 25px 60px rgba(0,0,0,0.7)" }}>
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                <div className="flex items-center gap-2.5">
+                  <Award className="w-5 h-5" style={{ color: "#14b8a6" }} />
+                  <div>
+                    <h3 className="text-base font-bold text-white">Creator Payout Tiers</h3>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Your revenue share grows with monthly earnings</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPayoutTiers(false)} className="p-1 rounded-lg transition-all hover:bg-white/10" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {/* Tier ladder */}
+              <div className="max-h-[58vh] overflow-y-auto p-3">
+                {REVENUE_TIERS.map(t => {
+                  const isCurrent = t.label === currentTier.label;
+                  const range = t.max === Infinity ? `${k(t.min)}+/mo` : `${k(t.min)} – ${k(t.max)}/mo`;
+                  return (
+                    <div key={t.label} className="flex items-center gap-3 p-3 rounded-xl mb-1.5"
+                      style={{
+                        background: isCurrent ? `${t.color}14` : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${isCurrent ? `${t.color}55` : "rgba(255,255,255,0.06)"}`,
+                      }}>
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ background: t.color, boxShadow: isCurrent ? `0 0 8px ${t.color}` : undefined }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-white">{t.label}</p>
+                          {isCurrent && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full" style={{ background: t.color, color: "#04121a" }}>
+                              YOU'RE HERE
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{range} · {t.perk}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-lg font-black" style={{ color: t.color }}>{t.creatorPct}%</p>
+                        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>you keep</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Footer */}
+              <div className="p-4 border-t text-center" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Paid every Friday · $50 minimum · Rates per Creator Agreement §2.9
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
