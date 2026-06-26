@@ -2267,37 +2267,74 @@ export default function CreatorDashboard() {
                   { label: "Pinnacle",        min: 1000001, max: Infinity, creatorPct: 90, color: "#d4af37" },
                 ];
                 const current = REVENUE_TIERS.find(t => monthly >= t.min && monthly <= t.max) ?? REVENUE_TIERS[0];
-                const nextTier = REVENUE_TIERS[REVENUE_TIERS.indexOf(current) + 1];
-                // The next bracket that actually raises the payout % (some adjacent tiers share a rate)
-                const nextRaise = REVENUE_TIERS.find(t => t.min > monthly && t.creatorPct > current.creatorPct);
+                // Distinct *rate* levels (some adjacent brackets share a %), so the
+                // ladder and "next bump" focus on rate changes that actually matter.
+                const rateLevels = REVENUE_TIERS.filter(
+                  (t, i, arr) => i === 0 || t.creatorPct !== arr[i - 1].creatorPct,
+                );
+                const currentRateIdx = rateLevels.reduce((acc, t, i) => (t.creatorPct === current.creatorPct ? i : acc), 0);
+                const nextRate = rateLevels[currentRateIdx + 1]; // next rate unlock (undefined = maxed)
+                const toNextRate = nextRate ? Math.max(0, nextRate.min - monthly) : 0;
                 return (
-                  <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <div className="rounded-xl p-3.5 mb-3" style={{ background: `${current.color}10`, border: `1px solid ${current.color}33` }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>
                       Your payout rate
                     </p>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold" style={{ color: current.color }}>{current.label} bracket</span>
-                      <span className="text-xs font-black" style={{ color: current.color }}>You keep {current.creatorPct}%</span>
+
+                    {/* Current tier + rate — the hero */}
+                    <div className="flex items-end justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: current.color, boxShadow: `0 0 8px ${current.color}` }} />
+                        <div>
+                          <p className="text-sm font-black text-white leading-none">{current.label}</p>
+                          <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>your tier</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black leading-none" style={{ color: current.color }}>{current.creatorPct}%</p>
+                        <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>you keep</p>
+                      </div>
                     </div>
-                    {nextTier && (
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        ${(nextTier.min - monthly).toLocaleString(undefined, { maximumFractionDigits: 0 })} more this month → <span className="font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>{nextTier.label}</span> bracket
-                        {nextTier.creatorPct > current.creatorPct ? ` · keep ${nextTier.creatorPct}%` : ""}
+
+                    {/* Rate ladder — every payout level, current one taller + lit */}
+                    <div className="flex items-center gap-1 mb-1.5">
+                      {rateLevels.map((t, i) => {
+                        const achieved = i <= currentRateIdx;
+                        const isCurrent = i === currentRateIdx;
+                        return (
+                          <div key={t.creatorPct} className="flex-1 rounded-full transition-all"
+                            title={`${t.label} — keep ${t.creatorPct}%`}
+                            style={{
+                              height: isCurrent ? 7 : 4,
+                              background: achieved ? t.color : "rgba(255,255,255,0.1)",
+                              boxShadow: isCurrent ? `0 0 6px ${t.color}` : undefined,
+                            }} />
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>{rateLevels[0].creatorPct}%</span>
+                      <span className="text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>{rateLevels[rateLevels.length - 1].creatorPct}% max</span>
+                    </div>
+
+                    {/* Next rate unlock — the single thing that matters next */}
+                    {nextRate ? (
+                      <div className="rounded-lg px-2.5 py-2" style={{ background: "rgba(0,0,0,0.2)", border: `1px solid ${nextRate.color}33` }}>
+                        <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
+                          <span style={{ color: nextRate.color }}>↑ Next:</span> earn{" "}
+                          <strong className="text-white">${toNextRate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong> more this month to reach{" "}
+                          <strong style={{ color: nextRate.color }}>{nextRate.label}</strong> and keep{" "}
+                          <strong style={{ color: nextRate.color }}>{nextRate.creatorPct}%</strong>
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-bold text-center py-1" style={{ color: current.color }}>
+                        🎉 You're at the top payout rate
                       </p>
                     )}
-                    <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                      <div className="h-full rounded-full transition-all" style={{
-                        width: nextTier ? `${Math.min(100, Math.max(3, ((monthly - current.min) / (nextTier.min - current.min)) * 100))}%` : "100%",
-                        background: current.color,
-                      }} />
-                    </div>
-                    {nextRaise && nextRaise !== nextTier && (
-                      <p className="text-xs mt-2" style={{ color: "#14b8a6" }}>
-                        ↑ Next rate bump: {nextRaise.label} at ${nextRaise.min.toLocaleString()}/mo → keep {nextRaise.creatorPct}%
-                      </p>
-                    )}
-                    <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      Higher monthly earnings → bigger share. Paid every Friday · $50 minimum.
+
+                    <p className="text-[10px] mt-2.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Paid every Friday · $50 minimum
                     </p>
                   </div>
                 );
