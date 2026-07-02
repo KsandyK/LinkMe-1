@@ -30,7 +30,7 @@ const LEGAL_DOCS = [
     href: "/legal/conduct",
     icon: Users,
     title: "Code of Conduct",
-    desc: "Community standards, prohibited behaviour, enforcement tiers, and content moderation appeal process.",
+    desc: "Community standards, prohibited behavior, enforcement tiers, and content moderation appeal process.",
     updated: "May 27, 2026",
     color: "#ec4899",
   },
@@ -97,7 +97,7 @@ export default function LegalHub() {
         {/* Header */}
         <div className="mb-10">
           <p className="text-xs font-bold tracking-widest mb-3" style={{ color: "#14b8a6" }}>Cravr LLC</p>
-          <h1 className="text-4xl font-black text-white mb-2">Legal Centre</h1>
+          <h1 className="text-4xl font-black text-white mb-2">Legal Center</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
             All legal documents, policies, and contact information in one place.
             Last reviewed: May 27, 2026.

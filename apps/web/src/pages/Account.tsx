@@ -5,6 +5,7 @@ import { profiles as profilesApi, subscriptions as subsApi, credits as creditsAp
 import type { LocalTransaction } from "@/contexts/AppContext";
 import { MEMBERSHIP_INFO, BOOST_INFO } from "@/lib/membership-tiers";
 import { VipStaffCard } from "@/components/VipStaffCard";
+import { DailyReward } from "@/components/DailyReward";
 import { User, Shield, Zap, Bell, Lock, ChevronRight, CheckCircle, X, AlertTriangle, Smartphone, Award, Heart, Radio, CreditCard, Receipt, Plus, Trash2, Star, Users, Camera, Loader2 } from "lucide-react";
 
 // ── Favorites storage ─────────────────────────────────────────────────────────
@@ -554,6 +555,9 @@ export default function Account() {
             )}
           </div>
         </div>
+
+        {/* Daily login streak — visible reward tracker */}
+        <DailyReward />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar tabs */}

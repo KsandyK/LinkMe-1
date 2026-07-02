@@ -1486,7 +1486,7 @@ export default function LegalPages() {
         {/* Back Link */}
         <Link href="/legal" className="text-teal-400 hover:text-teal-300 mb-6 inline-flex items-center gap-2">
           <ChevronRight className="w-4 h-4 rotate-180" />
-          Back to Legal Centre
+          Back to Legal Center
         </Link>
 
         {/* Title */}
@@ -1574,7 +1574,7 @@ export default function LegalPages() {
             </a>
             {" · "}
             <Link href="/legal" className="hover:underline" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Legal Centre
+              Legal Center
             </Link>
           </p>
         </div>

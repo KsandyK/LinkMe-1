@@ -89,7 +89,7 @@ export function Footer() {
             <h4 className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Legal</h4>
             <ul className="space-y-2">
               {[
-                { href: "/legal",          label: "Legal Centre" },
+                { href: "/legal",          label: "Legal Center" },
                 { href: "/legal/terms",    label: "Terms of Service" },
                 { href: "/legal/privacy",  label: "Privacy Policy" },
                 { href: "/legal/refund",   label: "Refund & Cancellation" },

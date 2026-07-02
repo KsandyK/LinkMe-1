@@ -195,7 +195,7 @@ const REVENUE_TIERS: RevenueTier[] = [
   { label: "Elite",           min: 15001,   max: 25000,   creatorPct: 83, color: "#8b5cf6", perk: "+3% revenue share · featured eligibility" },
   { label: "Partner",         min: 25001,   max: 75000,   creatorPct: 85, color: "#f59e0b", perk: "+5% share · dedicated partner manager" },
   { label: "Senior Partner",  min: 75001,   max: 150000,  creatorPct: 87, color: "#f97316", perk: "+7% share · early feature access" },
-  { label: "Exec Partner",    min: 150001,  max: 300000,  creatorPct: 88, color: "#ef4444", perk: "+8% share · co-marketing support" },
+  { label: "Executive Partner", min: 150001, max: 300000,  creatorPct: 88, color: "#ef4444", perk: "+8% share · co-marketing support" },
   { label: "Premier Partner", min: 300001,  max: 500000,  creatorPct: 89, color: "#ec4899", perk: "+9% share · custom payout schedule" },
   { label: "Top Partner",     min: 500001,  max: 1000000, creatorPct: 90, color: "#a855f7", perk: "Max 90% share · white-glove account team" },
   { label: "Pinnacle",        min: 1000001, max: Infinity, creatorPct: 90, color: "#d4af37", perk: "Max 90% share · invite-only Pinnacle program" },
@@ -2028,7 +2028,7 @@ export default function CreatorDashboard() {
                           try {
                             await creatorApi.claimReferralBoost();
                             setBoostClaimed(true);
-                            showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket. See Creator Agreement §2.9." });
+                            showToast({ title: "🎉 Tier Boost Unlocked!", description: "Your revenue share rate has been permanently boosted to the next bracket. See Creator Agreement §2c." });
                           } catch {
                             showToast({ title: "Couldn't claim yet", description: "Milestones must be met and verified. Please try again shortly.", variant: "destructive" });
                           }
@@ -2074,7 +2074,7 @@ export default function CreatorDashboard() {
                     ))}
                   </div>
                   <div className="mt-5 p-3 rounded-xl text-xs" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
-                    One-time reward per account. Non-repeatable. Rate boosted to next bracket (e.g. 80%→83%, 85%→87%), capped at 90%. Referrals must stay active 30+ days. Earnings measured on a rolling 30-day window. See Creator Agreement §2.9.
+                    One-time reward per account. Non-repeatable. Rate boosted to next bracket (e.g. 80%→83%, 85%→87%), capped at 90%. Referrals must stay active 30+ days. Earnings measured on a rolling 30-day window. See Creator Agreement §2c.
                   </div>
                 </div>
               </div>
@@ -2445,7 +2445,7 @@ export default function CreatorDashboard() {
               {/* Footer */}
               <div className="p-4 border-t text-center" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Paid every Friday · $50 minimum · Rates per Creator Agreement §2.9
+                  Paid every Friday · $50 minimum · Rates per Creator Agreement §2b
                 </p>
               </div>
             </div>
