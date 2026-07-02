@@ -1,4 +1,4 @@
-# LinkMe — Change Log
+# CRAVR — Change Log
 
 ## [Unreleased] — 2026-05-24
 
@@ -14,7 +14,7 @@ This document captures all changes made in the current development session **bef
 
 ### Context
 
-The previous sessions completed a full redesign of the LinkMe frontend to match the Manus VibeLink platform UI. This session focuses on two areas:
+The previous sessions completed a full redesign of the CRAVR frontend to match the Manus VibeLink platform UI. This session focuses on two areas:
 
 1. **Bug fixes** — correcting encoding corruption (UTF-8 mojibake), wrong import paths, and placeholder pages.
 2. **Simplification** — removing gender identity filters and fields per product decision to keep the platform inclusive and simple.
@@ -216,14 +216,14 @@ All changes verified in-browser at `http://localhost:5175`:
 
 | Page | Status |
 |---|---|
-| `/` (Home) | ✅ Hero, Live Now, Featured Creators, Why LinkMe, CTA, Footer |
+| `/` (Home) | ✅ Hero, Live Now, Featured Creators, Why CRAVR, CTA, Footer |
 | `/profiles` | ✅ Search + All/Live filters working, 3-col grid, emoji badges render |
 | `/profile/profile-1` | ✅ Cover, avatar, stats, details (no gender row), exclusive content |
 | `/live` | ✅ 5 stream cards, category filter, viewer counts |
 | `/messages` | ✅ Contact list, chat panel, mock conversation, send input |
 | `/credits` | ✅ Package grid, tier bar shows "Link Explorer" → "Link Connector" |
 | `/vip-lounge` | ✅ 6 perks, 3 tiers, credits callout |
-| `/register` | ✅ 3-step form, no gender field in step 2, "LinkMe" branding |
+| `/register` | ✅ 3-step form, no gender field in step 2, "CRAVR" branding |
 | No console errors | ✅ Zero JS errors across all pages |
 
 ---

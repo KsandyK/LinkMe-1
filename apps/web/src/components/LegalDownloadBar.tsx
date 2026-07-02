@@ -31,7 +31,7 @@ export function LegalDownloadBar({ doc }: { doc: LegalDoc }) {
         <button
           onClick={() => handleDownload("all")}
           className="flex-1 sm:flex-initial px-4 py-2 rounded-lg border border-primary text-primary text-xs font-semibold transition-colors hover:bg-primary/10 whitespace-nowrap">
-          {downloaded === "all" ? "✓ Downloaded" : "Download All (4 docs)"}
+          {downloaded === "all" ? "✓ Downloaded" : "Download All (8 docs)"}
         </button>
       </div>
     </div>

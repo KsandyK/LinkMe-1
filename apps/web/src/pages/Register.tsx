@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import { auth as authApi } from "@/lib/api";
 
 type Step = "account" | "profile" | "preferences" | "done";
 
@@ -17,9 +18,10 @@ const LOOKING_FOR = [
 ];
 
 export default function Register() {
-  const { addCredits } = useApp();
+  const { login } = useApp();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("account");
+  const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     email: "",
@@ -48,9 +50,24 @@ export default function Register() {
     }));
   };
 
+  // Obvious fake / disposable domains blocked instantly client-side (offline-safe);
+  // the backend MX check is the authoritative backstop.
+  const BLOCKED_EMAIL_DOMAINS = new Set([
+    "test.com", "test.test", "example.com", "example.org", "example.net",
+    "domain.com", "email.com", "fake.com", "fakemail.com", "mailinator.com",
+    "guerrillamail.com", "10minutemail.com", "tempmail.com", "temp-mail.org",
+    "yopmail.com", "trashmail.com", "throwaway.email", "getnada.com",
+    "sharklasers.com", "maildrop.cc", "dispostable.com", "fakeinbox.com",
+  ]);
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
   const validateAccount = () => {
     const errs: Record<string, string> = {};
-    if (!form.email.includes("@")) errs.email = "Enter a valid email address";
+    if (!EMAIL_RE.test(form.email.trim())) {
+      errs.email = "Enter a valid email address";
+    } else if (BLOCKED_EMAIL_DOMAINS.has(form.email.trim().split("@")[1].toLowerCase())) {
+      errs.email = "Please use a real, non-disposable email address";
+    }
     if (form.username.length < 3) errs.username = "Username must be at least 3 characters";
     if (/\s/.test(form.username)) errs.username = "Username cannot contain spaces";
     if (form.password.length < 8) errs.password = "Password must be at least 8 characters";
@@ -68,10 +85,21 @@ export default function Register() {
     return errs;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === "account") {
       const errs = validateAccount();
       if (Object.keys(errs).length) { setErrors(errs); return; }
+      // Server-side domain check (MX records). Skipped silently if API offline.
+      setSubmitting(true);
+      let emailReason = "";
+      try {
+        const r = await authApi.checkEmail(form.email.trim());
+        if (!r.ok) emailReason = r.reason ?? "Please use a valid email address";
+      } catch {
+        // API unreachable — allow through; backend register still enforces on submit
+      }
+      setSubmitting(false);
+      if (emailReason) { setErrors({ email: emailReason }); return; }
       setErrors({});
       setStep("profile");
     } else if (step === "profile") {
@@ -80,8 +108,35 @@ export default function Register() {
       setErrors({});
       setStep("preferences");
     } else if (step === "preferences") {
+      setSubmitting(true);
+      // Try API registration; swallow any error — demo mode kicks in via login() below
+      try {
+        await authApi.register({
+          username: form.username,
+          email: form.email || undefined,
+          password: form.password,
+          displayName: form.displayName.trim() || undefined,
+          location: form.location.trim() || undefined,
+          bio: form.bio.trim() || undefined,
+        });
+      } catch {
+        // API offline or registration error — login() below will try to authenticate
+        // or fall through to demo mode on network failures
+      }
+      // Authenticate — login() re-throws if the API rejected the credentials (e.g.
+      // username was taken and registration silently failed). Demo mode on network errors.
+      try {
+        await login(form.username, form.password);
+      } catch {
+        // Registration likely failed (username taken) — go back to step 1 with error
+        setErrors({ username: "Username or email already taken. Please choose another." });
+        setStep("account");
+        setSubmitting(false);
+        return;
+      }
+      // Credits are granted server-side (250 on register) — no local addCredits needed
       setStep("done");
-      addCredits(200, "Welcome bonus — new member reward!");
+      setSubmitting(false);
     }
   };
 
@@ -98,13 +153,13 @@ export default function Register() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
           <div className="text-7xl mb-6">🎉</div>
-          <h1 className="text-3xl font-black text-foreground mb-3">Welcome to LinkMe!</h1>
+          <h1 className="text-3xl font-black text-foreground mb-3">Welcome to CRAVR!</h1>
           <p className="text-muted-foreground mb-2">
             Your account <span className="text-primary font-bold">@{form.username}</span> is ready.
           </p>
           <div className="my-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
-            <p className="text-primary font-bold text-lg">+200 Welcome Credits! 🎁</p>
-            <p className="text-muted-foreground text-sm mt-1">Added to your account as a new member bonus</p>
+            <p className="text-primary font-bold text-lg">You're all set! 🎉</p>
+            <p className="text-muted-foreground text-sm mt-1">Add credits to unlock content, message creators, and verify your age — all in one step.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {[
@@ -126,7 +181,7 @@ export default function Register() {
           </Link>
           <p className="mt-4 text-xs text-muted-foreground">
             Want to earn from content?{" "}
-            <Link href="/become-creator" className="text-primary hover:underline">Become a Creator</Link>
+            <Link href="/become-creator" className="text-primary hover:underline">Become a Cravr</Link>
           </p>
         </div>
       </div>
@@ -138,10 +193,7 @@ export default function Register() {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">💎</div>
-          <h1 className="text-3xl font-black text-foreground">
-            <span style={{ color: "#14B8A6" }}>Link</span>Me
-          </h1>
+          <img src="/Cravr.jpg" alt="CRAVR" className="h-28 w-auto mx-auto mb-2" />
           <p className="text-muted-foreground text-sm mt-1">Create your free member account</p>
         </div>
 
@@ -175,7 +227,7 @@ export default function Register() {
               <h2 className="text-xl font-bold text-foreground mb-4">Create Account</h2>
 
               <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-                🔞 LinkMe is for adults 18+ only. You must confirm your age below.
+                🔞 CRAVR is for adults 18+ only. You must confirm your age below.
               </div>
 
               <Field label="Email Address" error={errors.email}>
@@ -311,36 +363,34 @@ export default function Register() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
                 <p className="text-primary font-semibold text-sm">🎁 Welcome Bonus</p>
                 <p className="text-muted-foreground text-xs mt-1">
-                  Complete registration and receive <strong className="text-foreground">200 free credits</strong> to start exploring!
+                  Complete registration and receive <strong className="text-foreground">250 free credits</strong> to start exploring!
                 </p>
               </div>
             </div>
           )}
 
           {/* Nav buttons */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 mt-4">
             {step !== "account" && (
               <button
                 onClick={() => setStep(step === "preferences" ? "profile" : "account")}
-                className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground transition-colors">
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground transition-colors disabled:opacity-50">
                 ← Back
               </button>
             )}
             <button onClick={handleNext}
-              className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+              disabled={submitting}
+              className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-70"
               style={{ background: "#14B8A6" }}>
-              {step === "preferences" ? "Create Account 🎉" : "Continue →"}
+              {submitting ? "Creating account…" : step === "preferences" ? "Create Account 🎉" : "Continue →"}
             </button>
           </div>
         </div>
 
         <p className="text-center mt-5 text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/" className="text-primary hover:underline">Sign in</Link>
-        </p>
-        <p className="text-center mt-2 text-xs text-muted-foreground">
-          Want to earn as a creator?{" "}
-          <Link href="/become-creator" className="text-primary hover:underline">Creator registration →</Link>
+          <Link href="/login" className="text-primary hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

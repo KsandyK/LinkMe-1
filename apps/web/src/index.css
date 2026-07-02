@@ -1,5 +1,5 @@
 /*
- * LINKME â€” Global Styles
+ * CRAVR — Global Styles
  * Design System: Velvet Dark
  * Deep navy/midnight base, teal primary (#14b8a6), rose-gold accent (#e8a87c)
  * Fonts: Cormorant Garamond (display) + DM Sans (body) + DM Mono (numbers)
@@ -159,7 +159,7 @@
     min-width: 0;
   }
 
-  /* ===== LINKME DESIGN SYSTEM ===== */
+  /* ===== CRAVR DESIGN SYSTEM ===== */
 
   /* Card */
   .vl-card {
@@ -170,6 +170,101 @@
   }
   .vl-card:hover {
     border-color: rgba(20, 184, 166, 0.15);
+  }
+
+  /* Elevated card — layered depth + subtle top-light gradient (modern refresh) */
+  .vl-card-elevated {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 40%),
+      rgba(14, 14, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+      0 18px 40px -20px rgba(0, 0, 0, 0.7);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s, border-color 0.25s;
+  }
+  .vl-card-elevated:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
+      0 28px 60px -24px rgba(0, 0, 0, 0.85);
+  }
+
+  /* Tier / product card — adds a hover lift to coloured plan cards */
+  .vl-tier-card {
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s, border-color 0.25s;
+    will-change: transform;
+  }
+  .vl-tier-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px -22px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Segmented pill tab bar (modern store/dashboard navigation) */
+  .vl-segment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .vl-segment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .vl-segment-btn:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .vl-segment-btn[data-active="true"] {
+    color: #04121a;
+    background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+    box-shadow: 0 6px 16px -6px rgba(20, 184, 166, 0.6);
+  }
+
+  /* Display heading — Cormorant for an editorial, premium feel */
+  .vl-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+
+  /* Glowing pill button — draws the eye to a reward/upsell action */
+  .vl-glow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #04121a;
+    background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+    border: 1px solid rgba(45, 212, 191, 0.6);
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.5);
+    animation: vl-glow-pulse 2.4s ease-in-out infinite;
+    transition: transform 0.15s;
+  }
+  .vl-glow-btn:hover {
+    transform: translateY(-1px);
+    animation: none;
+    box-shadow: 0 6px 18px -4px rgba(20, 184, 166, 0.7);
   }
 
   /* Glass effect */
@@ -313,6 +408,16 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes vl-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.45); }
+  50%      { box-shadow: 0 0 14px 2px rgba(20, 184, 166, 0.55); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(120%) scale(0.92); }
+  to   { opacity: 1; transform: translateX(0)   scale(1); }
 }
 
 .animate-fade-up {
