@@ -643,7 +643,7 @@ export default function CreatorDashboard() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-3xl font-bold text-white">Creator Dashboard</h1>
-              {isDemoData && (
+              {isDemoData && import.meta.env.DEV && (
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full"
                   style={{ background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.25)", color: "#fb923c" }}>
                   Demo Data

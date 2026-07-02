@@ -264,7 +264,7 @@ export default function Profiles() {
           <h1 className="text-3xl font-bold text-white mb-1">Browse Creators</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
             {loading ? "Loading…" : `Discover ${total}+ verified adult creators`}
-            {usingFallback && (
+            {usingFallback && import.meta.env.DEV && (
               <span className="ml-2 text-xs px-2 py-0.5 rounded-full"
                 style={{ background: "rgba(232,168,124,0.1)", border: "1px solid rgba(232,168,124,0.2)", color: "#e8a87c" }}>
                 Demo
