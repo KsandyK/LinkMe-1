@@ -149,6 +149,11 @@ export default function CreditsStore() {
 
   const handleSubscribeMembership = (plan: typeof MEMBERSHIP_PLANS[0]) => {
     if (plan.id === "free" || activeMembership === plan.id) return;
+    // Can't switch memberships mid-cycle — the current plan must expire first.
+    if (activeMembership !== "free") {
+      showToast({ title: "Plan change locked", description: "You can switch plans once your current membership renews. Cancel from Account to stop auto-renewal.", variant: "destructive" });
+      return;
+    }
     if (!defaultCard) { setNoCardModal(true); return; }
     const rawPrice = billingCycle === "annual" ? plan.price * 0.8 : plan.price;
     const priceStr = rawPrice % 1 === 0 ? `$${rawPrice.toLocaleString()}` : `$${rawPrice.toFixed(2)}`;
@@ -364,6 +369,8 @@ export default function CreditsStore() {
                 const isBlackCard = plan.id === "blackcard";
                 const isUltra = ULTRA_MEMBERSHIP_IDS.has(plan.id);
                 const isFirstUltra = isUltra && !ULTRA_MEMBERSHIP_IDS.has(arr[i - 1]?.id ?? "");
+                // Locked while another paid plan is active — no mid-cycle switching
+                const mLocked = activeMembership !== "free" && plan.id !== "free" && activeMembership !== plan.id;
                 return (
                   <Fragment key={plan.id}>
                     {isFirstUltra && (
@@ -446,11 +453,12 @@ export default function CreditsStore() {
                         ))}
                       </ul>
                       <button onClick={() => handleSubscribeMembership(plan)}
-                        disabled={plan.id === "free" || activeMembership === plan.id || loadingMembership === plan.id}
-                        className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-default"
+                        disabled={plan.id === "free" || activeMembership === plan.id || mLocked || loadingMembership === plan.id}
+                        title={mLocked ? "Locked while another membership is active — switch after it renews" : undefined}
+                        className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:cursor-default"
                         style={
-                          plan.id === "free" || activeMembership === plan.id
-                            ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                          plan.id === "free" || activeMembership === plan.id || mLocked
+                            ? { background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.08)" }
                             : isBlackCard
                               ? { background: "linear-gradient(90deg, #d4af37, #b8962a)", color: "#000" }
                               : { background: plan.color, color: btnTextColor(plan.color) }
@@ -458,6 +466,7 @@ export default function CreditsStore() {
                         {loadingMembership === plan.id ? "Processing…"
                           : activeMembership === plan.id ? "✓ Active Plan"
                           : plan.id === "free" ? "Current (Free)"
+                          : mLocked ? "🔒 Locked"
                           : plan.cta}
                       </button>
                     </div>

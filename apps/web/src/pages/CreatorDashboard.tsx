@@ -292,6 +292,11 @@ export default function CreatorDashboard() {
   const [boostPicker, setBoostPicker] = useState(false); // show tier cards even when a boost is active
   const handleBuyBoost = async (pkg: typeof BOOST_TIERS[0]) => {
     if (activeBoost === pkg.id) return;
+    // Plans can't be switched mid-cycle — the current one must run out first.
+    if (activeBoost) {
+      showToast({ title: "Plan change locked", description: "You can switch plans once your current boost expires at the end of the cycle.", variant: "destructive" });
+      return;
+    }
     setLoadingBoost(pkg.id);
     const boostLabel = pkg.boosts >= 9999 ? "Unlimited boosts" : `${pkg.boosts} boosts/month`;
     try {
@@ -1454,6 +1459,13 @@ export default function CreatorDashboard() {
                 return acc;
               }, {});
 
+              // Plans lock once one is active — you can't switch mid-cycle; the
+              // current plan runs until it renews on the 1st of next month.
+              const planExpiry = (() => {
+                const d = new Date(); d.setMonth(d.getMonth() + 1); d.setDate(1);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              })();
+
               // Boost tier cards — the purchase surface, now living in the dashboard.
               // This renders inside the 2/3-width main column (lg:col-span-2), so cap
               // at 2–3 columns; 4 would crowd the cards and force heavy text wrapping.
@@ -1462,6 +1474,7 @@ export default function CreatorDashboard() {
                   {BOOST_TIERS.map(pkg => {
                     const isPinnacle = pkg.id === "pinnacle";
                     const isActive = activeBoost === pkg.id;
+                    const locked = !!activeBoost && !isActive; // a plan is active → can't switch yet
                     return (
                       <div key={pkg.id}
                         className="vl-tier-card relative flex flex-col p-5 rounded-2xl border"
@@ -1506,13 +1519,17 @@ export default function CreatorDashboard() {
                             </li>
                           ))}
                         </ul>
-                        <button onClick={() => handleBuyBoost(pkg)}
-                          disabled={isActive || loadingBoost === pkg.id}
-                          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-default"
-                          style={isActive
-                            ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
+                        <button onClick={() => !locked && handleBuyBoost(pkg)}
+                          disabled={isActive || locked || loadingBoost === pkg.id}
+                          title={locked ? `Locked while your ${activePkg?.name} plan is active — renews ${planExpiry}` : undefined}
+                          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all disabled:cursor-default"
+                          style={isActive || locked
+                            ? { background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.08)" }
                             : { background: pkg.color, color: ["#f59e0b", "#00d4ff"].includes(pkg.color) ? "#000" : "#fff" }}>
-                          {loadingBoost === pkg.id ? "Activating…" : isActive ? "✓ Current plan" : "Get boost"}
+                          {loadingBoost === pkg.id ? "Activating…"
+                            : isActive ? "✓ Current plan"
+                            : locked ? `🔒 Locked until ${planExpiry}`
+                            : "Get boost"}
                         </button>
                       </div>
                     );
@@ -1554,12 +1571,19 @@ export default function CreatorDashboard() {
                     <button onClick={() => setBoostPicker(v => !v)}
                       className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5"
                       style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}>
-                      {boostPicker ? "Close plans" : "Change plan"}
+                      {boostPicker ? "Close plans" : "View plans"}
                     </button>
                   </div>
 
                   {boostPicker && (
-                    <div className="animate-fade-up">{boostPlansGrid}</div>
+                    <div className="animate-fade-up space-y-3">
+                      <div className="rounded-xl px-3 py-2.5 flex items-center gap-2 text-xs"
+                        style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.22)", color: "#f5c877" }}>
+                        <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+                        Your <strong className="text-white">{activePkg.name}</strong> plan is active until it renews on <strong className="text-white">{planExpiry}</strong>. You can switch plans after it ends.
+                      </div>
+                      {boostPlansGrid}
+                    </div>
                   )}
 
                   {/* ── Boost Balance ─────────────────────────────── */}
